@@ -1868,6 +1868,52 @@
       feedbackBox.classList.add("flex");
     }
 
+    
+    // 5-Bar Live Level Meter via Web Audio AnalyserNode
+    function setupVisualizer(stream) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 64;
+        source.connect(analyserNode);
+
+        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+        const bars = document.querySelectorAll("#sMeterBars div");
+
+        function draw() {
+          if (!analyserNode) return;
+          analyserNode.getByteFrequencyData(dataArray);
+          for (let i = 0; i < 5; i++) {
+            const val = dataArray[i * 2] || 0;
+            const h = Math.max(6, Math.round((val / 255) * 24));
+            if (bars[i]) {
+              bars[i].style.height = `${h}px`;
+              bars[i].className = "w-[3px] rounded-full bg-primary transition-all duration-75";
+            }
+          }
+          animFrame = requestAnimationFrame(draw);
+        }
+        draw();
+      } catch (e) {
+        console.warn("Visualizer context warning:", e);
+      }
+    }
+
+    function teardownVisualizer() {
+      if (animFrame) cancelAnimationFrame(animFrame);
+      if (audioCtx && audioCtx.state !== "closed") {
+        try { audioCtx.close(); } catch(e) {}
+      }
+      analyserNode = null;
+      audioCtx = null;
+      document.querySelectorAll("#sMeterBars div").forEach(b => {
+        b.style.height = "8px";
+        b.className = "w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75";
+      });
+    }
+
     // MediaRecorder & Real-Time Acoustic Capture
     async function startStudentRecording() {
       try {
