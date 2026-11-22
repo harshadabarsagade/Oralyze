@@ -62,16 +62,33 @@
   async function fetchBundledQuestions() {
     if (bundledQuestionsCache) return bundledQuestionsCache;
     try {
-      const res = await fetch('./data/questions.json');
+      // Try both ./static/data/questions.json and ./data/questions.json
+      let res = await fetch('./data/questions.json');
+      if (!res.ok) res = await fetch('./static/data/questions.json');
       if (res.ok) {
-        bundledQuestionsCache = await res.json();
-        return bundledQuestionsCache;
+        const raw = await res.json();
+        let flattened = [];
+        if (Array.isArray(raw)) {
+          flattened = raw;
+        } else if (typeof raw === 'object' && raw !== null) {
+          // If JSON is organized by categories { "dbms": [...], "os": [...] }
+          Object.keys(raw).forEach(cat => {
+            if (Array.isArray(raw[cat])) {
+              flattened.push(...raw[cat]);
+            }
+          });
+        }
+        if (flattened.length > 0) {
+          bundledQuestionsCache = flattened;
+          return bundledQuestionsCache;
+        }
       }
     } catch (e) {
-      console.warn('[OralyzeApi] Failed to fetch ./data/questions.json', e);
+      console.warn('[OralyzeApi] Failed to fetch questions.json', e);
     }
-    // Hardcoded minimal fallback bank if fetch fails
-    return [
+
+    // Default fallback question list
+    bundledQuestionsCache = [
       {
         id: "q1",
         subject: "DBMS",
@@ -116,8 +133,18 @@
         bloom: "analyze",
         key_points: ["TCP is connection oriented and reliable", "UDP is connectionless with lower latency", "3-way handshake in TCP", "UDP for streaming and gaming"],
         ideal_seconds: 40
+      },
+      {
+        id: "q6",
+        subject: "Data Structures",
+        topic: "Trees and Graphs",
+        text: "Compare Depth-First Search (DFS) and Breadth-First Search (BFS) in terms of data structures used and time complexity.",
+        bloom: "analyze",
+        key_points: ["DFS uses stack or recursion", "BFS uses queue", "O(V + E) time complexity", "BFS finds shortest path in unweighted graphs"],
+        ideal_seconds: 40
       }
     ];
+    return bundledQuestionsCache;
   }
 
   function generateRandomCode() {
