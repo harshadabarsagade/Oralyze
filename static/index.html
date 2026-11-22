@@ -1,1299 +1,679 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Oralyze — Real-Time AI Viva Examination Platform</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Oralyze | Academic Viva Voce AI Evaluation</title>
+  
+  <!-- Fonts & Design Tokens from stitch_oralyze_ai_viva_platform -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#faf9ff",
+            "surface-dim": "#d2daf2",
+            "surface-bright": "#faf9ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f1f3ff",
+            "surface-container": "#e9edff",
+            "surface-container-high": "#e1e8ff",
+            "surface-container-highest": "#dbe2fa",
+            "on-surface": "#131b2d",
+            "on-surface-variant": "#444656",
+            "inverse-surface": "#283042",
+            "inverse-on-surface": "#edf0ff",
+            "outline": "#747688",
+            "outline-variant": "#c4c5d9",
+            "surface-tint": "#2448ef",
+            "primary": "#143de7",
+            "on-primary": "#ffffff",
+            "primary-container": "#3b5bff",
+            "on-primary-container": "#f2f1ff",
+            "inverse-primary": "#bac3ff",
+            "secondary": "#505f7a",
+            "on-secondary": "#ffffff",
+            "secondary-container": "#ceddfd",
+            "on-secondary-container": "#52617c",
+            "tertiary": "#006342",
+            "on-tertiary": "#ffffff",
+            "tertiary-container": "#007e56",
+            "on-tertiary-container": "#c5ffde",
+            "tertiary-fixed": "#81f9c1",
+            "on-tertiary-fixed-variant": "#005236",
+            "error": "#ba1a1a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "on-error-container": "#93000a",
+            "primary-fixed": "#dee0ff",
+            "primary-fixed-dim": "#bac3ff",
+            "on-primary-fixed": "#00105b",
+            "on-primary-fixed-variant": "#002eca"
+          },
+          fontFamily: {
+            sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  
   <style>
-    :root {
-      /* Surface & Canvas System (Webflow / Stripe / Linear inspired) */
-      --bg: #F8FAFC;
-      --surface: #FFFFFF;
-      --surface-subtle: #F1F5F9;
-      --surface-inset: #F8FAFC;
-      
-      /* Border Lines */
-      --border-subtle: #E2E8F0;
-      --border-strong: #CBD5E1;
-      --border-focus: #3B5BFF;
-
-      /* Typography Ink */
-      --ink-primary: #0F172A;
-      --ink-secondary: #334155;
-      --ink-muted: #64748B;
-      --ink-faint: #94A3B8;
-
-      /* Accent Palette (One single confident indigo-blue accent) */
-      --accent: #3B5BFF;
-      --accent-hover: #2945E2;
-      --accent-subtle: #EEF2FF;
-      --accent-border: #C7D2FE;
-
-      /* Semantic Indicators */
-      --status-success: #059669;
-      --status-success-bg: #ECFDF5;
-      --status-success-border: #A7F3D0;
-      
-      --status-warning: #D97706;
-      --status-warning-bg: #FFFBEB;
-      --status-warning-border: #FDE68A;
-      
-      --status-danger: #DC2626;
-      --status-danger-bg: #FEF2F2;
-      --status-danger-border: #FECACA;
-
-      /* Geometry Radii */
-      --r-xs: 6px;
-      --r-sm: 8px;
-      --r-md: 12px;
-      --r-lg: 18px;
-      --r-xl: 24px;
-      --r-full: 9999px;
-
-      /* Shadows (Layered diffused Webflow elevation) */
-      --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-      --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.03);
-      --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
-      --shadow-xl: 0 24px 48px -12px rgba(15, 23, 42, 0.08);
-
-      /* Motion */
-      --ease: cubic-bezier(0.16, 1, 0.3, 1);
-      --transition-fast: 140ms var(--ease);
-      --transition-normal: 220ms var(--ease);
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body {
+        overscroll-behavior-y: none;
+        background-color: #faf9ff;
+        color: #131b2d;
+        font-family: 'Inter', sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        font-size: 22px;
+        display: inline-block;
+        line-height: 1;
+      }
     }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--ink-secondary);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Ambient background grid pattern like modern SaaS landing pages */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image: radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
-      background-size: 24px 24px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Protocol alert banner */
-    .protocol-banner {
-      background: var(--status-warning-bg);
-      border-bottom: 1px solid var(--status-warning-border);
-      color: var(--status-warning);
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: 600;
+    ::-webkit-scrollbar { display: none; }
+    
+    .hidden-view { display: none !important; }
+    
+    /* Code inputs */
+    .code-box-input {
+      width: 54px;
+      height: 68px;
       text-align: center;
-      display: none;
-      position: relative;
-      z-index: 20;
-    }
-
-    /* Top Navigation Bar */
-    .nav-header {
-      width: 100%;
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 24px 24px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      z-index: 10;
-    }
-
-    .brand-mark {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      text-decoration: none;
-      user-select: none;
-    }
-
-    .brand-logo-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--r-sm);
-      background: var(--ink-primary);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 32px;
       font-weight: 700;
-      font-size: 14px;
-      letter-spacing: -0.02em;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .brand-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      letter-spacing: -0.02em;
-    }
-
-    .nav-right-cluster {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .nav-tab-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ink-muted);
-      padding: 8px 14px;
-      border-radius: var(--r-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .nav-tab-btn:hover {
-      background: var(--surface);
-      border-color: var(--border-subtle);
-      color: var(--ink-primary);
-      box-shadow: var(--shadow-xs);
-    }
-
-    /* Main Content Wrapper */
-    .app-main {
-      flex: 1;
-      width: 100%;
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 32px 24px 72px;
-      position: relative;
-      z-index: 5;
-    }
-
-    /* Webflow Card Style */
-    .webflow-card {
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-xl);
-      box-shadow: var(--shadow-md);
-      padding: 40px;
-      margin-bottom: 32px;
-      transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
-      position: relative;
-    }
-
-    /* Typography Hierarchy */
-    .headline-hero {
-      font-size: clamp(38px, 5.5vw, 64px);
-      font-weight: 750;
-      line-height: 1.08;
-      letter-spacing: -0.035em;
-      color: var(--ink-primary);
-      margin-bottom: 16px;
-    }
-
-    .headline-hero-gradient {
-      background: linear-gradient(135deg, var(--ink-primary) 30%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .body-lead {
-      font-size: 18px;
-      color: var(--ink-muted);
-      line-height: 1.65;
-      max-width: 58ch;
-      margin-bottom: 36px;
-    }
-
-    .meta-eyebrow {
-      font-size: 12px;
-      font-weight: 700;
+      color: #131b2d;
+      background: #ffffff;
+      border: 1px solid #c4c5d9;
+      border-radius: 14px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--ink-faint);
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .section-heading {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--ink-primary);
-      margin-bottom: 8px;
-    }
-
-    .question-headline {
-      font-size: clamp(26px, 3.6vw, 42px);
-      font-weight: 650;
-      line-height: 1.25;
-      letter-spacing: -0.025em;
-      color: var(--ink-primary);
-      text-wrap: balance;
-      margin-bottom: 24px;
-    }
-
-    .metric-value-huge {
-      font-size: clamp(48px, 6.5vw, 76px);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink-primary);
-      line-height: 1;
-    }
-
-    /* Buttons */
-    .btn-solid-primary {
-      width: 100%;
-      height: 54px;
-      background: var(--accent);
-      color: #FFFFFF;
-      border: 1px solid transparent;
-      border-radius: var(--r-md);
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 1px 3px rgba(59, 91, 255, 0.24), 0 4px 12px rgba(59, 91, 255, 0.16);
-      transition: all var(--transition-fast);
-      text-decoration: none;
-    }
-    .btn-solid-primary:hover:not(:disabled) {
-      background: var(--accent-hover);
-      box-shadow: 0 2px 6px rgba(59, 91, 255, 0.3), 0 8px 20px rgba(59, 91, 255, 0.2);
-      transform: translateY(-1px);
-    }
-    .btn-solid-primary:active:not(:disabled) {
-      transform: scale(0.985);
-    }
-    .btn-solid-primary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    .btn-outline {
-      height: 48px;
-      padding: 0 22px;
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-md);
-      color: var(--ink-secondary);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: var(--shadow-xs);
-      transition: all var(--transition-fast);
-    }
-    .btn-outline:hover {
-      background: var(--surface-subtle);
-      border-color: var(--border-strong);
-      color: var(--ink-primary);
-    }
-    .btn-outline:active {
-      transform: scale(0.985);
-    }
-
-    .btn-text-ghost {
-      background: transparent;
-      border: none;
-      color: var(--ink-muted);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px 16px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: var(--r-md);
-      transition: color var(--transition-fast);
-    }
-    .btn-text-ghost:hover {
-      color: var(--ink-primary);
-    }
-
-    /* Form Fields */
-    .field-wrap {
-      margin-bottom: 22px;
-    }
-
-    .field-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink-secondary);
-      margin-bottom: 8px;
-    }
-
-    .input-clean {
-      width: 100%;
-      height: 52px;
-      padding: 0 16px;
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-md);
-      font-size: 16px;
-      color: var(--ink-primary);
-      font-family: inherit;
-      box-shadow: var(--shadow-xs);
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    }
-    .input-clean:focus {
-      border-color: var(--border-focus);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.12);
+      transition: all 140ms ease;
     }
-
-    .custom-select-wrap {
-      position: relative;
-      width: 100%;
+    .code-box-input:focus {
+      border-color: #3b5bff;
+      box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.15);
     }
-    .custom-select-wrap::after {
-      content: "";
-      position: absolute;
-      right: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 12px;
-      height: 8px;
-      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2364748B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      pointer-events: none;
+    
+    @media (max-width: 640px) {
+      .code-box-input {
+        width: 44px;
+        height: 58px;
+        font-size: 24px;
+      }
     }
-    .select-clean {
-      width: 100%;
-      height: 52px;
-      padding: 0 44px 0 16px;
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-md);
-      font-size: 16px;
-      color: var(--ink-primary);
-      appearance: none;
-      font-family: inherit;
-      cursor: pointer;
-      box-shadow: var(--shadow-xs);
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    }
-    .select-clean:focus {
-      border-color: var(--border-focus);
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.12);
-    }
-
-    /* Segmented pill switch */
-    .segmented-switch {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      background: var(--surface-subtle);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-md);
-      padding: 4px;
-      gap: 4px;
-    }
-    .seg-pill {
-      height: 42px;
-      border: none;
-      border-radius: var(--r-sm);
-      background: transparent;
-      color: var(--ink-muted);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-    .seg-pill.active {
-      background: var(--surface);
-      color: var(--ink-primary);
-      box-shadow: var(--shadow-sm);
-    }
-
-    /* Role Split Cards (Webflow landing style) */
-    .role-cards-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 48px;
-    }
-
-    .role-box {
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-xl);
-      padding: 36px 32px;
-      cursor: pointer;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 220px;
-      transition: all var(--transition-normal);
-      position: relative;
-      overflow: hidden;
-    }
-    .role-box::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: transparent;
-      transition: background var(--transition-fast);
-    }
-    .role-box:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-lg);
-      border-color: var(--border-strong);
-    }
-    .role-box:hover::after {
-      background: var(--accent);
-    }
-
-    .role-icon-plate {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--r-md);
-      background: var(--accent-subtle);
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      border: 1px solid var(--accent-border);
-    }
-    .role-icon-plate svg {
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-    }
-
-    .role-heading {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      letter-spacing: -0.02em;
-      margin-bottom: 6px;
-    }
-
-    .role-description {
-      font-size: 15px;
-      color: var(--ink-muted);
-      line-height: 1.55;
-    }
-
-    .role-action-arrow {
-      align-self: flex-end;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ink-muted);
-      transition: color var(--transition-fast), transform var(--transition-fast);
-      margin-top: 16px;
-    }
-    .role-box:hover .role-action-arrow {
-      color: var(--accent);
-      transform: translateX(4px);
-    }
-
-    /* Technology Proof Ribbon */
-    .proof-ribbon {
-      border-top: 1px solid var(--border-subtle);
-      padding-top: 32px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-      text-align: center;
-    }
-    .proof-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--ink-faint);
-      margin-bottom: 4px;
-    }
-    .proof-tech {
-      font-size: 14px;
-      font-weight: 650;
-      color: var(--ink-secondary);
-    }
-
-    /* Code Input Boxes (Student Join) */
-    .code-grid-cluster {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin: 32px 0 28px;
-    }
-    .code-slot {
-      width: 58px;
-      height: 72px;
-      border: 1px solid var(--border-subtle);
-      background: var(--surface);
-      border-radius: var(--r-md);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 28px;
-      font-weight: 700;
-      text-align: center;
-      color: var(--ink-primary);
-      text-transform: uppercase;
-      box-shadow: var(--shadow-xs);
-      outline: none;
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    }
-    .code-slot:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.14);
-    }
-
-    /* Teacher Code Box */
-    .teacher-code-plate {
-      background: var(--surface-subtle);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-lg);
-      padding: 24px 36px;
-      display: inline-flex;
-      align-items: center;
-      gap: 24px;
-      margin: 16px 0 28px;
-    }
-    .code-text-huge {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 46px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      color: var(--ink-primary);
-    }
-
-    /* Live Badge Indicator */
-    .live-status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: var(--r-full);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: var(--status-success-bg);
-      border: 1px solid var(--status-success-border);
-      color: var(--status-success);
-    }
-    .pulse-beacon {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--status-success);
-      animation: beaconAnim 1.6s infinite var(--ease);
-    }
-    @keyframes beaconAnim {
-      0% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.3; transform: scale(0.85); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    /* Teacher Monitor Rows */
-    .feed-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 24px;
-    }
-    .feed-row {
-      background: var(--surface-subtle);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-md);
-      padding: 20px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 15px;
-      transition: all var(--transition-fast);
-    }
-    .status-marker {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 12px;
-    }
-    .status-marker.waiting { background: var(--border-strong); }
-    .status-marker.answering { background: var(--accent); animation: beaconAnim 1s infinite; }
-    .status-marker.scored { background: var(--status-success); }
-
-    /* Student Microphone Workspace */
-    .recording-stage {
-      background: var(--surface-inset);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-xl);
-      padding: 44px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 28px 0;
-      position: relative;
-    }
-
-    .mic-trigger-disc {
-      width: 104px;
-      height: 104px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-md);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-      transition: all var(--transition-fast);
-      position: relative;
-      z-index: 2;
-    }
-    .mic-trigger-disc svg {
-      width: 36px;
-      height: 36px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .mic-trigger-disc:hover {
-      transform: scale(1.03);
-      box-shadow: var(--shadow-lg);
-    }
-    .mic-trigger-disc:active {
-      transform: scale(0.97);
-    }
-
-    .recording-stage.is-active .mic-trigger-disc {
-      background: var(--accent);
-      color: #FFFFFF;
-      border-color: transparent;
-      box-shadow: 0 0 0 8px rgba(59, 91, 255, 0.16);
-    }
-
-    /* Live Transcript Feed Box */
-    .live-stream-box {
-      width: 100%;
-      max-width: 640px;
-      min-height: 84px;
-      max-height: 180px;
-      overflow-y: auto;
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-md);
-      padding: 18px 22px;
-      margin-top: 24px;
-      font-size: 17px;
-      color: var(--ink-secondary);
-      line-height: 1.6;
-      box-shadow: var(--shadow-xs);
-    }
-    .live-stream-interim {
-      color: var(--ink-faint);
-    }
-
-    /* 5-Bar Live Level Meter */
-    .live-meter-bars {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      height: 24px;
-      margin: 14px 0 6px;
-    }
-    .meter-slice {
-      width: 4px;
-      height: 6px;
-      background: var(--border-strong);
-      border-radius: 2px;
-      transition: height 60ms linear;
-    }
-    .recording-stage.is-active .meter-slice {
-      background: var(--accent);
-    }
-
-    /* Result Split Plate */
-    .result-score-plate {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-xl);
-      background: var(--surface);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      margin-bottom: 28px;
-    }
-    .score-cell {
-      padding: 36px 28px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .score-cell:first-child {
-      border-right: 1px solid var(--border-subtle);
-    }
-
-    /* Clean Tag Pills */
-    .tag-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: var(--r-full);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    .tag-badge-success { background: var(--status-success-bg); color: var(--status-success); border: 1px solid var(--status-success-border); }
-    .tag-badge-warning { background: var(--status-warning-bg); color: var(--status-warning); border: 1px solid var(--status-warning-border); }
-    .tag-badge-danger  { background: var(--status-danger-bg);  color: var(--status-danger);  border: 1px solid var(--status-danger-border); }
-
-    /* Metric Chips Cluster */
-    .chips-cluster {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-    .metric-capsule {
-      height: 38px;
-      padding: 0 16px;
-      border-radius: var(--r-full);
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ink-secondary);
-      display: inline-flex;
-      align-items: center;
-      font-variant-numeric: tabular-nums;
-      box-shadow: var(--shadow-xs);
-    }
-    .metric-capsule.alert {
-      background: var(--status-warning-bg);
-      border-color: var(--status-warning-border);
-      color: var(--status-warning);
-    }
-
-    /* Scorecard Table */
-    .table-responsive-box {
-      width: 100%;
-      overflow-x: auto;
-      margin: 24px 0 32px;
-    }
-    .modern-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 15px;
-      font-variant-numeric: tabular-nums;
-    }
-    .modern-table th, .modern-table td {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-    .modern-table th {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink-faint);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .modern-table tr:hover td {
-      background: var(--surface-subtle);
-    }
-    .cell-numeric-right {
-      text-align: right;
-    }
-
-    /* Empty state */
-    .empty-state-card {
-      text-align: center;
-      padding: 56px 24px;
-    }
-    .empty-icon-ring {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--surface-subtle);
-      border: 1px solid var(--border-subtle);
-      color: var(--ink-faint);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-    }
-
-    /* Utility */
-    .hidden { display: none !important; }
-
-    /* Responsive Breakpoint <= 760px */
-    @media (max-width: 760px) {
-      .app-main { padding: 20px 16px 48px; }
-      .webflow-card { padding: 24px 20px; }
-      .role-cards-grid { grid-template-columns: 1fr; }
-      .result-score-plate { grid-template-columns: 1fr; }
-      .score-cell:first-child { border-right: none; border-bottom: 1px solid var(--border-subtle); }
-      .proof-ribbon { grid-template-columns: 1fr 1fr; gap: 16px; }
-      .code-grid-cluster { gap: 8px; }
-      .code-slot { width: 44px; height: 60px; font-size: 22px; }
-      .teacher-code-plate { padding: 16px 20px; }
-      .code-text-huge { font-size: 34px; letter-spacing: 0.1em; }
-    }
-
-    /* Print Stylesheet */
+    
+    /* Print Styles */
     @media print {
-      body { background: #FFFFFF !important; font-size: 12pt; padding: 16mm; }
-      body::before, .nav-header, .btn-solid-primary, .btn-outline, .btn-text-ghost, .live-status-pill { display: none !important; }
-      .webflow-card { border: 1px solid #CBD5E1 !important; box-shadow: none !important; padding: 0 !important; }
-      .modern-table th, .modern-table td { border-bottom: 1px solid #CBD5E1 !important; }
+      body { background: #fff !important; font-size: 11pt; padding: 12mm; }
+      header, .no-print { display: none !important; }
+      .print-border { border: 1px solid #dbe2fa !important; box-shadow: none !important; }
     }
   </style>
 </head>
-<body>
+<body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed">
 
-  <!-- Insecure protocol warning -->
-  <div id="protocolWarning" class="protocol-banner">
-    Notice: Web Audio and Microphone access require localhost or HTTPS. Run <code>python app.py</code> and open <strong>http://localhost:5000</strong>.
-  </div>
-
-  <!-- Top Navigation -->
-  <header class="nav-header">
-    <div class="brand-mark" onclick="navTo('landing')">
-      <div class="brand-logo-icon">O</div>
-      <span class="brand-title">Oralyze</span>
-    </div>
-    <div class="nav-right-cluster">
-      <span id="demoPill" class="tag-badge" style="background:var(--surface); border:1px solid var(--border-subtle); color:var(--ink-muted);">Demo Mode</span>
-      <button class="nav-tab-btn" onclick="navTo('dashboard')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        <span>Dashboard</span>
-      </button>
+  <!-- Fixed App Header from Stitch Landing -->
+  <header class="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div class="h-16 max-w-[920px] mx-auto px-4 md:px-8 flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="navTo('landing')">
+        <img src="/static/brand/logo.png" alt="Oralyze Logo" class="w-8 h-8 rounded-xl object-contain shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-[20px] tracking-tight text-on-surface">Oralyze</span>
+          <span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span>
+        </div>
+      </div>
+      <nav class="flex items-center gap-6">
+        <button type="button" class="text-[14px] font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('landing')">Home</button>
+        <button type="button" class="text-[14px] font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('teacherSetup')">Create Viva</button>
+        <button type="button" class="text-[14px] font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('dashboard')">Teacher Dashboard</button>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div id="demoBadge" class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/40">
+          Demo Mode
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="app-main">
+  <!-- Insecure protocol warning -->
+  <div id="protocolWarning" class="hidden-view fixed top-16 left-0 right-0 z-40 bg-amber-50 border-b border-amber-200 text-amber-800 px-4 py-2 text-xs font-medium text-center">
+    Microphone and Speech Recognition require localhost or HTTPS. Run <code>python app.py</code> and open <strong>http://localhost:5000</strong>.
+  </div>
 
-    <!-- 1. LANDING SCREEN -->
-    <section id="secLanding">
-      <div style="margin-top: 36px;">
-        <span class="meta-eyebrow">Conversational Viva Assessment</span>
-        <h1 class="headline-hero">
-          Speak your viva.<br>
-          <span class="headline-hero-gradient">Get evaluated instantly.</span>
-        </h1>
-        <p class="body-lead">
-          Real-time AI voice examination platform powered by IBM Granite and Watson Speech. The instructor initiates the viva topic, questions are synthesized, and students answer verbally with live evaluation.
-        </p>
+  <main class="w-full flex-1 pt-16 bg-surface flex flex-col justify-between">
+    <div class="w-full max-w-[920px] mx-auto px-4 md:px-8 py-8 flex-1">
 
-        <!-- Role Selector Cards -->
-        <div class="role-cards-grid">
-          <!-- Teacher Box -->
-          <div class="role-box" onclick="navTo('teacherSetup')">
-            <div>
-              <div class="role-icon-plate">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                  <circle cx="12" cy="8" r="2"></circle>
-                </svg>
+      <!-- ========================================== -->
+      <!-- 1. LANDING VIEW (oralyze_landing)          -->
+      <!-- ========================================== -->
+      <section id="viewLanding" class="flex flex-col w-full items-center text-center">
+        <!-- Hero Section -->
+        <div class="flex flex-col items-center pt-8 pb-10 md:pb-14 max-w-[760px] mx-auto">
+          <h1 class="text-[40px] md:text-[56px] font-bold text-on-surface tracking-[-0.035em] leading-[1.1] text-center max-w-[680px]">
+            Practice the viva before the viva.
+          </h1>
+          <p class="mt-4 md:mt-6 text-[18px] text-secondary max-w-[52ch] text-center leading-[1.6]">
+            Speak your answer. Oralyze grades what you said and how you said it using IBM Granite and Watson Speech.
+          </p>
+        </div>
+
+        <!-- Role Cards Grid -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[880px] mx-auto pb-12">
+          <!-- Left Card: Teacher -->
+          <div class="group relative flex flex-col justify-between h-[180px] p-8 bg-surface-container-lowest rounded-[22px] shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(13,21,38,0.08),0_20px_40px_rgba(13,21,38,0.08)] text-left cursor-pointer border border-transparent hover:border-primary-container/20" onclick="navTo('teacherSetup')">
+            <div class="flex items-start justify-between w-full">
+              <div class="flex flex-col">
+                <div class="w-8 h-8 flex items-center justify-start text-secondary mb-3">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 4h18v12H3z"></path>
+                    <path d="M8 20l4-4 4 4"></path>
+                    <path d="M12 16v4"></path>
+                    <path d="M7 8h6"></path>
+                    <path d="M7 11h4"></path>
+                  </svg>
+                </div>
+                <h2 class="text-[22px] font-[650] text-on-surface tracking-tight leading-snug">
+                  I'm a teacher
+                </h2>
+                <p class="text-[16px] text-outline mt-1 font-normal">
+                  Create a viva and watch scores live
+                </p>
               </div>
-              <h2 class="role-heading">Instructor Portal</h2>
-              <p class="role-description">Define examination subjects, generate specialized viva questions, and monitor live attempts.</p>
             </div>
-            <div class="role-action-arrow">
-              <span>Create viva room</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <div class="absolute bottom-8 right-8 text-secondary group-hover:translate-x-1 transition-transform duration-150">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M5 12h14"></path>
+                <path d="M12 5l7 7-7 7"></path>
+              </svg>
             </div>
           </div>
 
-          <!-- Student Box -->
-          <div class="role-box" onclick="navTo('studentJoin')">
-            <div>
-              <div class="role-icon-plate">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                  <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path>
-                </svg>
+          <!-- Right Card: Student -->
+          <div class="group relative flex flex-col justify-between h-[180px] p-8 bg-surface-container-low rounded-[22px] shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(59,91,255,0.1),0_20px_40px_rgba(13,21,38,0.08)] text-left cursor-pointer border border-primary-container/20" onclick="navTo('studentJoin')">
+            <div class="flex items-start justify-between w-full">
+              <div class="flex flex-col">
+                <div class="w-8 h-8 flex items-center justify-start text-primary mb-3">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                  </svg>
+                </div>
+                <h2 class="text-[22px] font-[650] text-on-surface tracking-tight leading-snug">
+                  I'm a student
+                </h2>
+                <p class="text-[16px] text-outline mt-1 font-normal">
+                  Join with a 6-character code
+                </p>
               </div>
-              <h2 class="role-heading">Student Portal</h2>
-              <p class="role-description">Join an active examination with a 6-character room code and answer questions aloud.</p>
             </div>
-            <div class="role-action-arrow">
-              <span>Enter room code</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <div class="absolute bottom-8 right-8 text-primary group-hover:translate-x-1 transition-transform duration-150">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M5 12h14"></path>
+                <path d="M12 5l7 7-7 7"></path>
+              </svg>
             </div>
           </div>
         </div>
 
-        <!-- Infrastructure Proof -->
-        <div class="proof-ribbon">
-          <div>
-            <div class="proof-label">Reasoning Engine</div>
-            <div class="proof-tech">IBM Granite 3-8B</div>
-          </div>
-          <div>
-            <div class="proof-label">Speech Recognition</div>
-            <div class="proof-tech">Watson STT</div>
-          </div>
-          <div>
-            <div class="proof-label">Voice Synthesis</div>
-            <div class="proof-tech">Watson TTS</div>
-          </div>
-          <div>
-            <div class="proof-label">Scorecard Archive</div>
-            <div class="proof-tech">IBM Cloudant</div>
+        <!-- Infrastructure Proof Points -->
+        <div class="w-full max-w-[840px] mx-auto py-8 border-t border-surface-container-highest/60">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-y-6 md:gap-y-0 text-center">
+            <div class="flex flex-col items-center px-4">
+              <span class="text-[13px] font-semibold text-outline tracking-wider uppercase mb-1">AI Grading</span>
+              <span class="text-[15px] font-semibold text-on-surface tracking-tight">IBM Granite 3-8B</span>
+            </div>
+            <div class="flex flex-col items-center px-4 md:border-x md:border-surface-container-highest/60">
+              <span class="text-[13px] font-semibold text-outline tracking-wider uppercase mb-1">Voice & Timings</span>
+              <span class="text-[15px] font-semibold text-on-surface tracking-tight">Watson STT + TTS</span>
+            </div>
+            <div class="flex flex-col items-center px-4">
+              <span class="text-[13px] font-semibold text-outline tracking-wider uppercase mb-1">Persistence</span>
+              <span class="text-[15px] font-semibold text-on-surface tracking-tight">IBM Cloudant</span>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 2. TEACHER SETUP SCREEN -->
-    <section id="secTeacherSetup" class="hidden">
-      <div style="max-width: 620px; margin: 16px auto 0;">
-        <span class="meta-eyebrow">Room Configuration</span>
-        <h2 class="section-heading">Set examination parameters</h2>
-        
-        <div class="webflow-card" style="margin-top: 24px;">
-          <form onsubmit="event.preventDefault(); createVivaRoom();">
-            <div class="field-wrap">
-              <label class="field-label" for="tSubject">Subject or Domain</label>
-              <input type="text" id="tSubject" class="input-clean" value="DBMS" placeholder="e.g. DBMS, Operating Systems, Computer Networks">
+      <!-- ========================================== -->
+      <!-- 2. TEACHER SETUP (oralyze_teacher_setup)   -->
+      <!-- ========================================== -->
+      <section id="viewTeacherSetup" class="hidden-view w-full max-w-[720px] mx-auto flex flex-col pt-4 pb-12">
+        <header class="flex flex-col mb-8">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-primary-container"></span>
+            <span class="text-[13px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">Viva Configuration</span>
+          </div>
+          <h1 class="text-[36px] md:text-[44px] font-bold text-on-surface tracking-tight leading-tight">Create a viva</h1>
+          <p class="text-[18px] text-on-surface-variant mt-2">Pick a subject and a topic. Questions are generated in about three seconds.</p>
+        </header>
+
+        <div class="w-full bg-surface-container-lowest rounded-[22px] p-8 shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] relative overflow-hidden">
+          <form class="flex flex-col gap-6" onsubmit="event.preventDefault(); createVivaRoom();">
+            <!-- Subject -->
+            <div class="flex flex-col gap-2">
+              <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tSubject">Subject</label>
+              <input class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all placeholder:text-outline" id="tSubject" type="text" value="DBMS">
             </div>
 
-            <div class="field-wrap">
-              <label class="field-label" for="tTopic">Topic or Focus Area (Optional)</label>
-              <input type="text" id="tTopic" class="input-clean" value="Indexing & B+ Trees" placeholder="e.g. ACID Properties, Deadlocks, TCP Handshake">
+            <!-- Topic -->
+            <div class="flex flex-col gap-2">
+              <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tTopic">Topic or Chapter</label>
+              <input class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all placeholder:text-outline" id="tTopic" placeholder="Indexing, normalisation, transactions…" type="text" value="Indexing & B+ Trees">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="field-wrap">
-              <div>
-                <label class="field-label" for="tLevel">Academic Level</label>
-                <div class="custom-select-wrap">
-                  <select id="tLevel" class="select-clean">
-                    <option value="undergraduate" selected>Undergraduate</option>
-                    <option value="postgraduate">Postgraduate</option>
+            <!-- Academic Level & Language -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tLevel">Academic Level</label>
+                <div class="relative w-full">
+                  <select class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all appearance-none cursor-pointer pr-10" id="tLevel">
+                    <option selected value="undergraduate">Undergraduate (B.Tech / BCA)</option>
+                    <option value="postgraduate">Postgraduate (M.Tech / MCA)</option>
                   </select>
+                  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label class="field-label" for="tLang">Language Mode</label>
-                <div class="custom-select-wrap">
-                  <select id="tLang" class="select-clean">
-                    <option value="en" selected>English</option>
+
+              <div class="flex flex-col gap-2">
+                <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tLang">Language Mode</label>
+                <div class="relative w-full">
+                  <select class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all appearance-none cursor-pointer pr-10" id="tLang">
+                    <option selected value="en">English</option>
                     <option value="hi">Hindi / Hinglish</option>
                   </select>
+                  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="field-wrap" style="margin-bottom: 32px;">
-              <label class="field-label">Question Set Size</label>
-              <div class="segmented-switch">
-                <button type="button" class="seg-pill" onclick="setQCount(3)">3 Questions</button>
-                <button type="button" class="seg-pill active" onclick="setQCount(5)">5 Questions</button>
-                <button type="button" class="seg-pill" onclick="setQCount(7)">7 Questions</button>
+            <!-- Number of questions -->
+            <div class="flex flex-col gap-2">
+              <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold">Number of questions</label>
+              <div class="grid grid-cols-3 gap-3 p-1.5 bg-surface-container-low rounded-[16px]">
+                <button type="button" class="q-count-btn py-3 rounded-[12px] text-[16px] font-semibold text-secondary hover:text-on-surface transition-all" onclick="setQCount(3)">3 Questions</button>
+                <button type="button" class="q-count-btn active py-3 rounded-[12px] text-[16px] font-semibold bg-surface-container-lowest text-on-surface shadow-sm transition-all" onclick="setQCount(5)">5 Questions</button>
+                <button type="button" class="q-count-btn py-3 rounded-[12px] text-[16px] font-semibold text-secondary hover:text-on-surface transition-all" onclick="setQCount(7)">7 Questions</button>
               </div>
             </div>
 
-            <button type="submit" id="btnCreateViva" class="btn-solid-primary">
-              <span>Generate Viva Room</span>
-            </button>
-            <div style="font-size: 13px; color: var(--ink-faint); text-align: center; margin-top: 14px;">
-              Allocates ~1,500 Granite tokens per generated question.
+            <!-- Submit Button -->
+            <div class="flex flex-col gap-3 mt-4">
+              <button type="submit" id="btnCreateViva" class="w-full h-14 rounded-[14px] bg-primary text-on-primary text-[17px] font-semibold flex items-center justify-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99] shadow-sm">
+                <span>Create viva</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </button>
+              <p class="text-[13px] text-outline text-center">Uses ~1,500 Granite tokens per question.</p>
             </div>
           </form>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 3. TEACHER LIVE MONITOR SCREEN -->
-    <section id="secTeacherLive" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-        <div>
-          <span class="meta-eyebrow" id="tLiveSubjectMeta">DBMS • Undergraduate</span>
-          <h2 class="section-heading" id="tLiveTopicTitle">Indexing & B+ Trees</h2>
-        </div>
-        <div class="live-status-pill">
-          <span class="pulse-beacon"></span>
-          <span>Live Monitor Active</span>
-        </div>
-      </div>
-
-      <!-- Room Code Card -->
-      <div class="webflow-card" style="text-align: center; padding: 32px;">
-        <span class="meta-eyebrow">Participant Access Code</span>
-        <div class="teacher-code-plate">
-          <span class="code-text-huge" id="tLiveRoomCode">------</span>
-          <button type="button" class="btn-outline" style="height: 44px; padding: 0 18px;" onclick="copyCode()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            <span>Copy</span>
-          </button>
-        </div>
-        <p style="font-size: 14px; color: var(--ink-muted);">
-          Students navigate to <strong>http://localhost:5000</strong> or <strong>/join</strong> to input this access code.
-        </p>
-      </div>
-
-      <!-- Feed Card -->
-      <div class="webflow-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h3 style="font-size: 18px; font-weight: 700; color: var(--ink-primary);">Live Response Stream</h3>
-          <span id="tLiveStatusText" style="font-size: 13px; font-weight: 600; color: var(--accent);">Awaiting student entry…</span>
-        </div>
-
-        <div class="feed-container" id="tLiveFeed">
-          <!-- Dynamically populated via polling -->
-        </div>
-
-        <div style="margin-top: 32px; display: flex; justify-content: flex-end;">
-          <button type="button" class="btn-outline" onclick="viewScorecardFromTeacher()">
-            <span>Open Final Assessment</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. STUDENT JOIN SCREEN -->
-    <section id="secStudentJoin" class="hidden">
-      <div style="max-width: 480px; margin: 36px auto 0; text-align: center;">
-        <span class="meta-eyebrow">Student Authentication</span>
-        <h2 class="section-heading">Enter viva room code</h2>
-        <p style="font-size: 15px; color: var(--ink-muted); margin-bottom: 24px;">Type the 6-character code presented on the instructor's display.</p>
-
-        <div class="webflow-card">
-          <div class="code-grid-cluster" id="codeBoxesWrap">
-            <input type="text" class="code-slot" maxlength="1" autofocus>
-            <input type="text" class="code-slot" maxlength="1">
-            <input type="text" class="code-slot" maxlength="1">
-            <input type="text" class="code-slot" maxlength="1">
-            <input type="text" class="code-slot" maxlength="1">
-            <input type="text" class="code-slot" maxlength="1">
+      <!-- ========================================== -->
+      <!-- 3. LIVE MONITOR (oralyze_live_monitor)     -->
+      <!-- ========================================== -->
+      <section id="viewTeacherLive" class="hidden-view flex flex-col w-full pb-12">
+        <!-- Top Session Context Header -->
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-surface-container-highest/60">
+          <div class="flex items-center gap-3">
+            <button class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-secondary hover:text-primary transition-colors shadow-sm" onclick="navTo('teacherSetup')">
+              <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[12px] uppercase text-secondary tracking-wider font-semibold">Evaluation Session</span>
+                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                <span class="text-[12px] text-primary font-semibold" id="tLiveSubjectMeta">DBMS • Undergraduate</span>
+              </div>
+              <p class="text-[16px] text-on-surface font-semibold" id="tLiveTopicTitle">Indexing & B+ Trees</p>
+            </div>
           </div>
-
-          <button type="button" id="btnStudentJoin" class="btn-solid-primary" onclick="submitJoinCode()">
-            <span>Join Examination</span>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. STUDENT QUESTION SCREEN -->
-    <section id="secStudentQuestion" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <span class="meta-eyebrow" id="sQProgress">Question 1 of 5</span>
-        <span class="tag-badge tag-badge-success" id="sQBloom">Understand</span>
-      </div>
-
-      <h2 class="question-headline" id="sQText">Generating examination question…</h2>
-
-      <button type="button" class="btn-text-ghost" style="padding-left:0; margin-bottom: 20px;" onclick="replayAudio()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-        <span>Replay synthesized question</span>
-      </button>
-
-      <!-- Microphone Stage -->
-      <div class="recording-stage" id="sRecCard">
-        <button type="button" class="mic-trigger-disc" id="sMicBtn" onclick="toggleStudentRecording()" aria-label="Microphone Audio Input">
-          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-        </button>
-
-        <div id="sRecStatusLine" style="font-size: 16px; font-weight: 600; color: var(--ink-primary); margin-top: 18px;">
-          Tap microphone to record answer
-        </div>
-
-        <div class="live-meter-bars" id="sMeterBars">
-          <div class="meter-slice"></div>
-          <div class="meter-slice"></div>
-          <div class="meter-slice"></div>
-          <div class="meter-slice"></div>
-          <div class="meter-slice"></div>
-        </div>
-
-        <!-- Real-time transcript feed while speaking -->
-        <div class="live-stream-box" id="sLiveTranscriptBox">
-          <span id="sFinalSpoken"></span><span id="sInterimSpoken" class="live-stream-interim">Verbal transcription will stream here live as you speak…</span>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button type="button" class="btn-text-ghost" onclick="skipStudentQuestion()">Skip this question</button>
-        <button type="button" id="btnSubmitAnswer" class="btn-solid-primary" style="width: auto; padding: 0 36px;" onclick="submitStudentAnswer()" disabled>
-          <span>Submit for Evaluation</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- 6. STUDENT RESULT SCREEN -->
-    <section id="secStudentResult" class="hidden">
-      <span class="meta-eyebrow">Scoring Breakdown</span>
-      <h2 class="section-heading" style="margin-bottom: 24px;">Evaluation overview</h2>
-
-      <div class="result-score-plate">
-        <div class="score-cell">
-          <span class="meta-eyebrow">Technical Content</span>
-          <div class="metric-value-huge" id="resContentVal">0<span style="font-size: 22px; color: var(--ink-faint); font-weight: 600;">/10</span></div>
-          <div style="margin-top: 12px;">
-            <span class="tag-badge tag-badge-success" id="resVerdictPill">Correct</span>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-[12px] font-semibold">
+              <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+              Live Room Active
+            </span>
           </div>
         </div>
-        <div class="score-cell">
-          <span class="meta-eyebrow">Delivery Fluency</span>
-          <div class="metric-value-huge" id="resDeliveryVal">0<span style="font-size: 22px; color: var(--ink-faint); font-weight: 600;">/100</span></div>
-          <div style="margin-top: 12px;">
-            <span class="tag-badge tag-badge-success" id="resBandPill">Excellent</span>
+
+        <!-- Asymmetric Two-Column Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6 items-start">
+          <!-- LEFT COLUMN: Code Access Card (320px) -->
+          <div class="w-full bg-surface-container-lowest rounded-[22px] p-8 shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] flex flex-col items-center text-center">
+            <span class="text-[13px] uppercase text-secondary tracking-[0.08em] font-semibold mb-3">VIVA CODE</span>
+            <div class="text-[48px] leading-tight font-bold tracking-[0.12em] text-on-surface tabular-nums mb-4 select-all font-mono" id="tLiveRoomCode">
+              ------
+            </div>
+            <button class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-secondary hover:text-on-surface hover:bg-surface-container-low transition-all active:scale-[0.99] mb-6" onclick="copyCode()">
+              <span class="material-symbols-outlined text-[18px]">content_copy</span>
+              <span class="text-[15px] font-medium" id="copy-text">Copy code</span>
+            </button>
+            <div class="w-full h-[1px] bg-surface-container-highest mb-6"></div>
+            <p class="text-[15px] leading-relaxed text-secondary mb-6 px-1">
+              Student opens <span class="text-on-surface font-medium">localhost:5000</span> or joins at <span class="text-on-surface font-medium">/join</span> with this code.
+            </p>
+            <button class="w-full h-12 rounded-[14px] bg-surface-container-low text-on-surface text-[15px] font-semibold flex items-center justify-center gap-2 hover:bg-surface-container hover:text-primary transition-all active:scale-[0.99]" onclick="navTo('studentJoin')">
+              <span>Open student view</span>
+              <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+            </button>
+          </div>
+
+          <!-- RIGHT COLUMN: Live Question Feed -->
+          <div class="w-full bg-surface-container-lowest rounded-[22px] p-8 shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] flex flex-col">
+            <div class="flex items-center justify-between mb-6 pb-2 border-b border-surface-container-highest/60">
+              <h2 class="text-[20px] font-bold text-on-surface tracking-tight">Question Stream</h2>
+              <span id="tLiveStatusText" class="text-[13px] font-semibold text-primary">Awaiting student entry…</span>
+            </div>
+
+            <div class="flex flex-col gap-4" id="tLiveFeed">
+              <!-- Dynamically populated via polling -->
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-surface-container-highest/60 flex justify-end">
+              <button class="h-12 px-6 rounded-[14px] bg-primary text-on-primary text-[15px] font-semibold flex items-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99]" onclick="viewScorecardFromTeacher()">
+                <span>View Full Scorecard</span>
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Metric Chips -->
-      <div class="chips-cluster" id="resChipsRow">
-      </div>
+      <!-- ========================================== -->
+      <!-- 4. STUDENT JOIN VIEW                       -->
+      <!-- ========================================== -->
+      <section id="viewStudentJoin" class="hidden-view max-w-[500px] mx-auto pt-6 pb-12 flex flex-col items-center text-center">
+        <span class="text-[13px] uppercase tracking-[0.08em] text-secondary font-semibold mb-2">Student Portal</span>
+        <h1 class="text-[36px] font-bold text-on-surface tracking-tight mb-2">Join Viva Room</h1>
+        <p class="text-[16px] text-secondary mb-8">Enter the 6-character room code generated by your instructor.</p>
 
-      <!-- Feedback Plate -->
-      <div class="webflow-card" style="padding: 24px; margin-bottom: 24px; border-left: 3px solid var(--accent);">
-        <span class="meta-eyebrow">Examiner Analysis</span>
-        <p id="resFeedbackText" style="font-size: 16px; color: var(--ink-secondary); line-height: 1.65; margin-top: 4px;">Evaluation underway.</p>
-      </div>
+        <div class="w-full bg-surface-container-lowest rounded-[22px] p-8 shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] flex flex-col items-center">
+          <div class="flex gap-2 sm:gap-3 justify-center mb-8" id="codeBoxesWrap">
+            <input type="text" class="code-box-input" maxlength="1" autofocus>
+            <input type="text" class="code-box-input" maxlength="1">
+            <input type="text" class="code-box-input" maxlength="1">
+            <input type="text" class="code-box-input" maxlength="1">
+            <input type="text" class="code-box-input" maxlength="1">
+            <input type="text" class="code-box-input" maxlength="1">
+          </div>
 
-      <div style="display: flex; justify-content: flex-end;">
-        <button type="button" id="btnNextStudentQ" class="btn-solid-primary" style="width: auto; padding: 0 36px;" onclick="proceedToNextQuestion()">
-          <span>Next question</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-    </section>
-
-    <!-- 7. SCORECARD SCREEN -->
-    <section id="secScorecard" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px;">
-        <div>
-          <span class="meta-eyebrow">Examination Scorecard</span>
-          <h2 class="section-heading" id="scTitle">DBMS Viva</h2>
-          <div style="font-size: 14px; color: var(--ink-muted);" id="scMetaLine">Code: ------</div>
+          <button type="button" id="btnStudentJoin" class="w-full h-14 rounded-[14px] bg-primary text-on-primary text-[17px] font-semibold flex items-center justify-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99] shadow-sm" onclick="submitJoinCode()">
+            <span>Enter Viva Room</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+          </button>
         </div>
-        <div class="tag-badge tag-badge-success">
-          Complete
-        </div>
-      </div>
+      </section>
 
-      <!-- Metric Summary Band -->
-      <div class="webflow-card" style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 28px 20px;">
-        <div>
-          <span class="meta-eyebrow">Composite Grade</span>
-          <div class="metric-value-huge" id="scTotalVal">0%</div>
+      <!-- ========================================================== -->
+      <!-- 5. STUDENT VOICE RECORDING (oralyze_student_live_voice...) -->
+      <!-- ========================================================== -->
+      <section id="viewStudentQuestion" class="hidden-view flex flex-col w-full pb-8 select-none">
+        <!-- Progress Header -->
+        <div class="flex items-center justify-between mb-4 pt-1">
+          <span class="text-[13px] uppercase tracking-wider text-secondary font-semibold" id="sQProgress">Question 1 of 5</span>
+          <div class="flex items-center gap-1.5" id="sProgressBar">
+            <div class="h-1.5 w-6 rounded-full bg-primary"></div>
+            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
+            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
+            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
+            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
+          </div>
         </div>
-        <div>
-          <span class="meta-eyebrow">Content Coverage</span>
-          <div class="metric-value-huge" id="scContentAvg">0%</div>
+
+        <!-- Prompt Formulation -->
+        <div class="mb-5">
+          <h2 class="text-[26px] md:text-[36px] font-semibold text-on-surface leading-tight tracking-tight" id="sQText">
+            Generating examination question…
+          </h2>
         </div>
-        <div>
-          <span class="meta-eyebrow">Speech Fluency</span>
-          <div class="metric-value-huge" id="scDeliveryAvg">0</div>
+
+        <!-- Voice Visualizer Stage (from stitch screen) -->
+        <div class="w-full bg-surface-container-lowest rounded-[22px] p-6 md:p-8 shadow-sm flex flex-col items-center relative overflow-hidden mb-6" id="sRecCard">
+          <!-- Glow Backdrop -->
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-primary/5 blur-2xl pointer-events-none"></div>
+
+          <!-- Live Status Pill -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low text-primary mb-6 z-10">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span class="text-[12px] uppercase tracking-wider font-semibold" id="sChannelStatus">Acoustic Channel Ready</span>
+          </div>
+
+          <!-- Center Pulse Mic Module -->
+          <div class="relative w-36 h-36 flex items-center justify-center mb-6">
+            <div class="absolute w-36 h-36 rounded-full bg-primary/[0.07] animate-pulse"></div>
+            <div class="absolute w-[120px] h-[120px] rounded-full bg-primary/[0.14]"></div>
+            <button aria-label="Microphone Recording Trigger" id="sMicBtn" class="relative z-10 w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-[#6E5BFF] flex items-center justify-center text-on-primary shadow-lg shadow-primary/25 cursor-pointer hover:scale-105 active:scale-95 transition-all" type="button" onclick="toggleStudentRecording()">
+              <span class="material-symbols-outlined text-[36px]">mic</span>
+            </button>
+          </div>
+
+          <div id="sRecStatusLine" class="text-[16px] font-semibold text-on-surface mb-3">
+            Tap to answer
+          </div>
+
+          <!-- 5-bar live volume meter -->
+          <div class="flex items-center justify-center gap-1.5 h-6 mb-5" id="sMeterBars">
+            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
+            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
+            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
+            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
+            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
+          </div>
+
+          <!-- Live Transcript Stream Box -->
+          <div class="w-full max-w-[640px] min-h-[80px] max-h-[160px] overflow-y-auto bg-surface-container-low rounded-[14px] p-4 text-[16px] text-on-surface text-left leading-relaxed" id="sLiveTranscriptBox">
+            <span id="sFinalSpoken"></span><span id="sInterimSpoken" class="text-outline">Verbal transcript will appear here live as you talk…</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Question List Table -->
-      <div class="table-responsive-box">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Index</th>
-              <th>Question Concept</th>
-              <th class="cell-numeric-right">Content</th>
-              <th class="cell-numeric-right">Delivery</th>
-              <th class="cell-numeric-right">Composite</th>
-            </tr>
-          </thead>
-          <tbody id="scTableRows">
-          </tbody>
-        </table>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 14px; margin-top: 28px;">
-        <button type="button" class="btn-outline" onclick="window.print()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-          <span>Print Scorecard</span>
-        </button>
-        <button type="button" class="btn-solid-primary" style="width: auto; padding: 0 32px;" onclick="navTo('landing')">
-          <span>Start New Session</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- 8. TEACHER DASHBOARD SCREEN -->
-    <section id="secDashboard" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px;">
-        <div>
-          <span class="meta-eyebrow">Cloudant Archive</span>
-          <h2 class="section-heading">Historical Examination Sessions</h2>
+        <div class="flex items-center justify-between gap-4">
+          <button type="button" class="text-[15px] font-semibold text-secondary hover:text-on-surface px-4 py-3" onclick="skipStudentQuestion()">
+            Skip question
+          </button>
+          <div class="flex items-center gap-3">
+            <button type="button" class="h-12 px-4 rounded-[14px] bg-surface-container-low text-on-surface text-[14px] font-semibold flex items-center gap-2 hover:bg-surface-container transition-all" onclick="replayAudio()">
+              <span class="material-symbols-outlined text-[18px]">volume_up</span>
+              <span>Replay Audio</span>
+            </button>
+            <button type="button" id="btnSubmitAnswer" class="h-12 px-6 rounded-[14px] bg-primary text-on-primary text-[15px] font-semibold flex items-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99] disabled:opacity-40" onclick="submitStudentAnswer()" disabled>
+              <span>Submit Answer</span>
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </div>
         </div>
-        <button type="button" class="btn-outline" style="height: 44px;" onclick="loadDashboard()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-          <span>Refresh Records</span>
-        </button>
-      </div>
+      </section>
 
-      <div class="webflow-card" style="padding: 0; overflow: hidden;">
-        <div class="table-responsive-box" style="margin: 0;">
-          <table class="modern-table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Subject</th>
-                <th>Focus Topic</th>
-                <th>Timestamp</th>
-                <th class="cell-numeric-right">Average Score</th>
-              </tr>
-            </thead>
-            <tbody id="dashTableRows">
-            </tbody>
-          </table>
+      <!-- ========================================================== -->
+      <!-- 6. STUDENT RESULT (oralyze_student_result_feedback)        -->
+      <!-- ========================================================== -->
+      <section id="viewStudentResult" class="hidden-view flex flex-col w-full pb-12">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[13px] font-semibold text-on-surface-variant tracking-wider uppercase">
+            Question Evaluation
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant" id="resVerdictPill">
+            Correct
+          </span>
         </div>
-      </div>
-    </section>
 
+        <!-- Hero Score Cards (Side-by-Side as designed) -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <!-- Left Card: Content -->
+          <div class="bg-surface-container-lowest rounded-[20px] p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <span class="text-[13px] font-semibold text-on-surface-variant uppercase tracking-wider block mb-1">
+                Content
+              </span>
+              <div class="flex items-baseline gap-1 my-1">
+                <span class="text-[48px] md:text-[56px] font-bold text-on-surface leading-none" id="resContentVal">
+                  0.0
+                </span>
+                <span class="text-[16px] text-on-surface-variant font-medium">/10</span>
+              </div>
+            </div>
+            <div class="mt-3">
+              <span class="text-xs text-secondary font-medium">Rubric concept coverage</span>
+            </div>
+          </div>
+
+          <!-- Right Card: Delivery -->
+          <div class="bg-surface-container-lowest rounded-[20px] p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <span class="text-[13px] font-semibold text-on-surface-variant uppercase tracking-wider block mb-1">
+                Delivery
+              </span>
+              <div class="flex items-baseline gap-1 my-1">
+                <span class="text-[48px] md:text-[56px] font-bold text-on-surface leading-none" id="resDeliveryVal">
+                  0
+                </span>
+                <span class="text-[16px] text-on-surface-variant font-medium">/100</span>
+              </div>
+            </div>
+            <div class="mt-3">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-fixed text-on-primary-fixed" id="resBandPill">
+                Excellent
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Chips (Stitch styling) -->
+        <div class="flex flex-wrap gap-2.5 mb-6" id="resChipsRow">
+        </div>
+
+        <!-- Examiner Feedback Card -->
+        <div class="bg-surface-container-lowest rounded-[20px] p-6 shadow-sm mb-8 border-l-4 border-primary">
+          <span class="text-[12px] font-bold uppercase tracking-wider text-outline block mb-2">Examiner Feedback</span>
+          <p class="text-[16px] text-on-surface leading-relaxed" id="resFeedbackText">Evaluating submission…</p>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="button" id="btnNextStudentQ" class="h-14 px-8 rounded-[14px] bg-primary text-on-primary text-[16px] font-semibold flex items-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99]" onclick="proceedToNextQuestion()">
+            <span>Next question</span>
+            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========================================================== -->
+      <!-- 7. SCORECARD (oralyze_viva_scorecard_evaluation_report)    -->
+      <!-- ========================================================== -->
+      <section id="viewScorecard" class="hidden-view flex flex-col w-full pb-12">
+        <header class="flex items-center justify-between mb-8 pb-4 border-b border-surface-container-highest/60">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[12px] font-bold uppercase tracking-wider text-secondary">Academic Viva Evaluation</span>
+              <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+              <span class="text-[12px] font-semibold text-primary" id="scCodeMeta">CODE: ------</span>
+            </div>
+            <h1 class="text-[32px] font-bold text-on-surface tracking-tight" id="scTitle">DBMS Viva Voce</h1>
+          </div>
+          <button class="no-print h-10 px-4 rounded-xl bg-surface-container-low text-on-surface text-[14px] font-semibold flex items-center gap-2 hover:bg-surface-container" onclick="window.print()">
+            <span class="material-symbols-outlined text-[18px]">print</span>
+            <span>Print Report</span>
+          </button>
+        </header>
+
+        <!-- Summary Grid -->
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <div class="bg-surface-container-lowest p-6 rounded-[20px] shadow-sm text-center">
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Total Grade</span>
+            <div class="text-[40px] md:text-[52px] font-bold text-on-surface leading-tight font-mono" id="scTotalVal">0%</div>
+          </div>
+          <div class="bg-surface-container-lowest p-6 rounded-[20px] shadow-sm text-center">
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Content Avg</span>
+            <div class="text-[40px] md:text-[52px] font-bold text-primary leading-tight font-mono" id="scContentAvg">0%</div>
+          </div>
+          <div class="bg-surface-container-lowest p-6 rounded-[20px] shadow-sm text-center">
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Fluency Avg</span>
+            <div class="text-[40px] md:text-[52px] font-bold text-tertiary leading-tight font-mono" id="scDeliveryAvg">0</div>
+          </div>
+        </div>
+
+        <!-- Question Performance Table -->
+        <div class="bg-surface-container-lowest rounded-[22px] p-6 shadow-sm overflow-hidden mb-8">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[15px]">
+              <thead>
+                <tr class="border-b border-surface-container-highest/60 text-secondary text-[12px] uppercase font-bold tracking-wider">
+                  <th class="py-3 px-4">#</th>
+                  <th class="py-3 px-4">Question</th>
+                  <th class="py-3 px-4 text-right">Content</th>
+                  <th class="py-3 px-4 text-right">Delivery</th>
+                  <th class="py-3 px-4 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody id="scTableRows" class="divide-y divide-surface-container-highest/40">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="no-print flex justify-end gap-3">
+          <button type="button" class="h-12 px-6 rounded-[14px] bg-primary text-on-primary text-[15px] font-semibold flex items-center gap-2 hover:bg-primary-container" onclick="navTo('landing')">
+            <span>New Viva Session</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========================================================== -->
+      <!-- 8. TEACHER DASHBOARD (oralyze_teacher_dashboard)           -->
+      <!-- ========================================================== -->
+      <section id="viewDashboard" class="hidden-view flex flex-col w-full pb-12">
+        <header class="flex items-center justify-between mb-8 pb-4 border-b border-surface-container-highest/60">
+          <div>
+            <span class="text-[12px] font-bold uppercase tracking-wider text-secondary block mb-1">Instructor Review</span>
+            <h1 class="text-[32px] font-bold text-on-surface tracking-tight">Recent Viva Sessions</h1>
+          </div>
+          <button type="button" class="h-10 px-4 rounded-xl bg-surface-container-low text-on-surface text-[14px] font-semibold flex items-center gap-2 hover:bg-surface-container" onclick="loadDashboard()">
+            <span class="material-symbols-outlined text-[18px]">refresh</span>
+            <span>Refresh</span>
+          </button>
+        </header>
+
+        <div class="bg-surface-container-lowest rounded-[22px] p-6 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[15px]">
+              <thead>
+                <tr class="border-b border-surface-container-highest/60 text-secondary text-[12px] uppercase font-bold tracking-wider">
+                  <th class="py-3 px-4">Code</th>
+                  <th class="py-3 px-4">Subject</th>
+                  <th class="py-3 px-4">Topic</th>
+                  <th class="py-3 px-4">Timestamp</th>
+                  <th class="py-3 px-4 text-right">Average Total</th>
+                </tr>
+              </thead>
+              <tbody id="dashTableRows" class="divide-y divide-surface-container-highest/40">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
   </main>
 
-  <audio id="audioPlayer" class="hidden" preload="auto"></audio>
+  <audio id="audioPlayer" class="hidden-view" preload="auto"></audio>
 
+  <!-- Script Logic -->
   <script>
     // System State
     let activeCode = null;
@@ -1316,12 +696,12 @@
     let timerInterval = null;
     let secondsElapsed = 0;
 
-    // Check environment security
+    // Protocol check
     function checkProtocolSecurity() {
       const isFile = window.location.protocol === "file:";
       const isSecure = window.isSecureContext || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
       if (isFile || !isSecure) {
-        document.getElementById("protocolWarning").style.display = "block";
+        document.getElementById("protocolWarning").classList.remove("hidden-view");
       }
     }
     checkProtocolSecurity();
@@ -1331,13 +711,12 @@
       try {
         const resp = await fetch("/api/health");
         const data = await resp.json();
-        const pill = document.getElementById("demoPill");
+        const pill = document.getElementById("demoBadge");
         if (data.mock_mode) {
           pill.textContent = "Demo Mode";
-          pill.className = "tag-badge";
         } else {
           pill.textContent = "IBM Live Connected";
-          pill.className = "tag-badge tag-badge-success";
+          pill.className = "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant border border-tertiary/20";
         }
       } catch (e) {
         console.warn("Backend health check warning:", e);
@@ -1353,38 +732,44 @@
       }
 
       const screens = [
-        "secLanding", "secTeacherSetup", "secTeacherLive",
-        "secStudentJoin", "secStudentQuestion", "secStudentResult",
-        "secScorecard", "secDashboard"
+        "viewLanding", "viewTeacherSetup", "viewTeacherLive",
+        "viewStudentJoin", "viewStudentQuestion", "viewStudentResult",
+        "viewScorecard", "viewDashboard"
       ];
-      screens.forEach(s => document.getElementById(s).classList.add("hidden"));
+      screens.forEach(s => document.getElementById(s).classList.add("hidden-view"));
 
       if (screen === "landing") {
-        document.getElementById("secLanding").classList.remove("hidden");
+        document.getElementById("viewLanding").classList.remove("hidden-view");
       } else if (screen === "teacherSetup") {
-        document.getElementById("secTeacherSetup").classList.remove("hidden");
+        document.getElementById("viewTeacherSetup").classList.remove("hidden-view");
       } else if (screen === "teacherLive") {
-        document.getElementById("secTeacherLive").classList.remove("hidden");
+        document.getElementById("viewTeacherLive").classList.remove("hidden-view");
         startLiveMonitor();
       } else if (screen === "studentJoin") {
-        document.getElementById("secStudentJoin").classList.remove("hidden");
+        document.getElementById("viewStudentJoin").classList.remove("hidden-view");
         setupCodeInputs();
       } else if (screen === "studentQuestion") {
-        document.getElementById("secStudentQuestion").classList.remove("hidden");
+        document.getElementById("viewStudentQuestion").classList.remove("hidden-view");
       } else if (screen === "studentResult") {
-        document.getElementById("secStudentResult").classList.remove("hidden");
+        document.getElementById("viewStudentResult").classList.remove("hidden-view");
       } else if (screen === "scorecard") {
-        document.getElementById("secScorecard").classList.remove("hidden");
+        document.getElementById("viewScorecard").classList.remove("hidden-view");
       } else if (screen === "dashboard") {
-        document.getElementById("secDashboard").classList.remove("hidden");
+        document.getElementById("viewDashboard").classList.remove("hidden-view");
         loadDashboard();
       }
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
     function setQCount(cnt) {
       selectedQCount = cnt;
-      document.querySelectorAll(".seg-pill").forEach(btn => {
-        btn.classList.toggle("active", btn.textContent.startsWith(String(cnt)));
+      document.querySelectorAll(".q-count-btn").forEach(btn => {
+        const isActive = btn.textContent.startsWith(String(cnt));
+        if (isActive) {
+          btn.className = "q-count-btn active py-3 rounded-[12px] text-[16px] font-semibold bg-surface-container-lowest text-on-surface shadow-sm transition-all";
+        } else {
+          btn.className = "q-count-btn py-3 rounded-[12px] text-[16px] font-semibold text-secondary hover:text-on-surface transition-all";
+        }
       });
     }
 
@@ -1397,7 +782,7 @@
       const btn = document.getElementById("btnCreateViva");
 
       btn.disabled = true;
-      btn.innerHTML = `<span>Synthesizing examination set…</span>`;
+      btn.innerHTML = `<span>Creating room & questions…</span>`;
 
       try {
         const resp = await fetch("/api/viva", {
@@ -1412,7 +797,7 @@
         if (resp.status !== 200 || data.error) {
           alert("Error creating room: " + (data.error || "Unknown error"));
           btn.disabled = false;
-          btn.innerHTML = `<span>Generate Viva Room</span>`;
+          btn.innerHTML = `<span>Create viva</span>`;
           return;
         }
 
@@ -1426,14 +811,17 @@
         feed.innerHTML = "";
         data.questions.forEach((q, idx) => {
           const item = document.createElement("div");
-          item.className = "feed-row";
+          item.className = "flex items-center justify-between p-4 bg-surface-container-low rounded-[14px]";
           item.id = `monitor_q_${idx}`;
           item.innerHTML = `
-            <div>
-              <span class="status-marker waiting" id="dot_q_${idx}"></span>
-              <strong>Question ${idx + 1}:</strong> <span style="color:var(--ink-secondary);">${q.text}</span>
+            <div class="flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-outline-variant" id="dot_q_${idx}"></span>
+              <div>
+                <span class="text-[13px] font-semibold text-secondary">Question ${idx + 1}</span>
+                <p class="text-[15px] font-medium text-on-surface">${q.text}</p>
+              </div>
             </div>
-            <div id="score_q_${idx}" style="font-weight:600; color:var(--ink-faint); font-size:14px;">Awaiting response</div>
+            <div id="score_q_${idx}" class="text-[13px] font-semibold text-secondary">Waiting</div>
           `;
           feed.appendChild(item);
         });
@@ -1443,18 +831,20 @@
         alert("Network communication error: " + err);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Generate Viva Room</span>`;
+        btn.innerHTML = `<span>Create viva</span>`;
       }
     }
 
     function copyCode() {
       if (activeCode) {
         navigator.clipboard.writeText(activeCode);
-        alert("Access code copied to clipboard: " + activeCode);
+        const el = document.getElementById('copy-text');
+        el.innerText = 'Copied!';
+        setTimeout(() => el.innerText = 'Copy code', 2000);
       }
     }
 
-    // Teacher Flow: Live Monitor Polling (Every 2 seconds)
+    // Teacher Flow: Live Monitor Polling
     function startLiveMonitor() {
       if (!activeCode) return;
       pollLiveMonitor();
@@ -1472,10 +862,10 @@
         if (data.status === "waiting") {
           statusEl.textContent = "Awaiting student entry…";
         } else if (data.status === "answering") {
-          statusEl.textContent = `Student recording question ${data.current_index + 1} of ${data.total}…`;
+          statusEl.textContent = `Student answering question ${data.current_index + 1} of ${data.total}…`;
         } else if (data.status === "done") {
-          statusEl.textContent = "Examination completed";
-          statusEl.style.color = "var(--status-success)";
+          statusEl.textContent = "Viva completed!";
+          statusEl.className = "text-[13px] font-semibold text-tertiary";
         }
 
         // Update items in list
@@ -1483,26 +873,25 @@
           const dot = document.getElementById(`dot_q_${a.index}`);
           const scoreEl = document.getElementById(`score_q_${a.index}`);
           if (dot) {
-            dot.className = "status-marker scored";
+            dot.className = "w-2.5 h-2.5 rounded-full bg-tertiary";
           }
           if (scoreEl) {
             scoreEl.innerHTML = `
-              <span style="color:var(--accent);">Content: ${a.content.score}</span> · 
-              <span style="color:var(--status-success);">Delivery: ${a.delivery.fluency_score}</span> · 
-              <strong style="color:var(--ink-primary); font-size:15px;">${a.total}%</strong>
+              <span class="text-primary font-semibold">Content: ${a.content.score}</span> · 
+              <span class="text-tertiary font-semibold">Delivery: ${a.delivery.fluency_score}</span> · 
+              <strong class="text-on-surface">${a.total}%</strong>
             `;
           }
         });
 
-        // Set current active dot if answering
         if (data.status === "answering" && data.current_index < data.total) {
           const currDot = document.getElementById(`dot_q_${data.current_index}`);
-          if (currDot && !currDot.classList.contains("scored")) {
-            currDot.className = "status-marker answering";
+          if (currDot && !currDot.classList.contains("bg-tertiary")) {
+            currDot.className = "w-2.5 h-2.5 rounded-full bg-primary animate-ping";
           }
         }
       } catch (e) {
-        console.warn("[dashboard] live poll error:", e);
+        console.warn("[dashboard] poll error:", e);
       }
     }
 
@@ -1514,7 +903,7 @@
 
     // Student Flow: 6-Box Code Input
     function setupCodeInputs() {
-      const boxes = document.querySelectorAll(".code-slot");
+      const boxes = document.querySelectorAll(".code-box-input");
       boxes.forEach((box, idx) => {
         box.value = "";
         box.oninput = e => {
@@ -1544,7 +933,7 @@
     }
 
     async function submitJoinCode() {
-      const boxes = document.querySelectorAll(".code-slot");
+      const boxes = document.querySelectorAll(".code-box-input");
       let code = "";
       boxes.forEach(b => code += b.value.trim().toUpperCase());
 
@@ -1555,7 +944,7 @@
 
       const btn = document.getElementById("btnStudentJoin");
       btn.disabled = true;
-      btn.innerHTML = `<span>Validating code…</span>`;
+      btn.innerHTML = `<span>Joining viva…</span>`;
 
       try {
         const resp = await fetch(`/api/viva/${code}`);
@@ -1564,7 +953,7 @@
         if (resp.status !== 200 || data.error) {
           alert("Error: " + (data.error || "Room not found"));
           btn.disabled = false;
-          btn.innerHTML = `<span>Join Examination</span>`;
+          btn.innerHTML = `<span>Enter Viva Room</span>`;
           return;
         }
 
@@ -1583,15 +972,24 @@
         alert("Server connection error: " + err);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Join Examination</span>`;
+        btn.innerHTML = `<span>Enter Viva Room</span>`;
       }
     }
 
     function renderStudentQuestion(q, audioB64) {
       document.getElementById("sQProgress").textContent = `Question ${currentQIndex + 1} of ${totalQuestions}`;
-      document.getElementById("sQBloom").textContent = (q.level || "understand").toUpperCase();
       document.getElementById("sQText").textContent = q.text;
       currentAudioB64 = audioB64;
+      
+      // Update progress bars
+      const barContainer = document.getElementById("sProgressBar");
+      barContainer.innerHTML = "";
+      for (let i = 0; i < totalQuestions; i++) {
+        const bar = document.createElement("div");
+        bar.className = i <= currentQIndex ? "h-1.5 w-6 rounded-full bg-primary" : "h-1.5 w-6 rounded-full bg-surface-container-high";
+        barContainer.appendChild(bar);
+      }
+
       resetStudentRecordingUI();
     }
 
@@ -1644,7 +1042,7 @@
           if (secondsElapsed >= 90) stopStudentRecording();
         }, 1000);
 
-        document.getElementById("sRecCard").classList.add("is-active");
+        document.getElementById("sChannelStatus").textContent = "Acoustic Channel Active";
         document.getElementById("btnSubmitAnswer").disabled = true;
       } catch (err) {
         alert("Microphone permission required: " + err.message);
@@ -1659,8 +1057,8 @@
         speechRecognizer.stop();
       }
       clearInterval(timerInterval);
-      document.getElementById("sRecCard").classList.remove("is-active");
-      document.getElementById("sRecStatusLine").textContent = "Recording complete. Click Submit for Evaluation.";
+      document.getElementById("sChannelStatus").textContent = "Recording Complete";
+      document.getElementById("sRecStatusLine").textContent = "Recording complete. Click Submit Answer.";
     }
 
     function resetStudentRecordingUI() {
@@ -1672,10 +1070,10 @@
       liveFinalTranscript = "";
       liveInterimTranscript = "";
       document.getElementById("sFinalSpoken").textContent = "";
-      document.getElementById("sInterimSpoken").textContent = "Verbal transcription will stream here live as you speak…";
+      document.getElementById("sInterimSpoken").textContent = "Verbal transcript will appear here live as you talk…";
       document.getElementById("btnSubmitAnswer").disabled = true;
-      document.getElementById("sRecCard").classList.remove("is-active");
-      document.getElementById("sRecStatusLine").textContent = "Tap microphone to record answer";
+      document.getElementById("sChannelStatus").textContent = "Acoustic Channel Ready";
+      document.getElementById("sRecStatusLine").textContent = "Tap to answer";
     }
 
     function updateStudentTimer() {
@@ -1683,14 +1081,14 @@
       const secs = secondsElapsed % 60;
       const wordCount = (liveFinalTranscript + " " + liveInterimTranscript).trim().split(/\s+/).filter(Boolean).length;
       document.getElementById("sRecStatusLine").textContent = 
-        `Recording in progress (${mins}:${String(secs).padStart(2, '0')}) · ${wordCount} words detected`;
+        `Recording… ${mins}:${String(secs).padStart(2, '0')} · ${wordCount} words`;
     }
 
-    // Live Web Speech Recognition (Zero lag stream)
+    // Live Web Speech Recognition
     function setupLiveSpeechPreview() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {
-        document.getElementById("sInterimSpoken").textContent = "Recording audio stream directly…";
+        document.getElementById("sInterimSpoken").textContent = "Recording audio directly…";
         return;
       }
 
@@ -1732,15 +1130,18 @@
         source.connect(analyserNode);
 
         const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
-        const bars = document.querySelectorAll("#sMeterBars .meter-slice");
+        const bars = document.querySelectorAll("#sMeterBars div");
 
         function draw() {
           if (!analyserNode) return;
           analyserNode.getByteFrequencyData(dataArray);
           for (let i = 0; i < 5; i++) {
             const val = dataArray[i * 2] || 0;
-            const h = Math.max(4, Math.round((val / 255) * 24));
-            if (bars[i]) bars[i].style.height = `${h}px`;
+            const h = Math.max(6, Math.round((val / 255) * 24));
+            if (bars[i]) {
+              bars[i].style.height = `${h}px`;
+              bars[i].className = "w-1 rounded-full bg-primary transition-all duration-75";
+            }
           }
           animFrame = requestAnimationFrame(draw);
         }
@@ -1755,14 +1156,17 @@
       if (audioCtx && audioCtx.state !== "closed") audioCtx.close();
       analyserNode = null;
       audioCtx = null;
-      document.querySelectorAll("#sMeterBars .meter-slice").forEach(b => b.style.height = "6px");
+      document.querySelectorAll("#sMeterBars div").forEach(b => {
+        b.style.height = "8px";
+        b.className = "w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75";
+      });
     }
 
-    // Submit Answer for Granite & Fluency Grading
+    // Submit Answer for Grading
     async function submitStudentAnswer() {
       const btn = document.getElementById("btnSubmitAnswer");
       btn.disabled = true;
-      btn.innerHTML = `<span>Evaluating with IBM Granite…</span>`;
+      btn.innerHTML = `<span>Grading with Granite…</span>`;
 
       const formData = new FormData();
       formData.append("qid", `q_${currentQIndex}`);
@@ -1782,7 +1186,7 @@
         if (resp.status !== 200 || data.error) {
           alert("Submission error: " + (data.error || "Grading failure"));
           btn.disabled = false;
-          btn.innerHTML = `<span>Submit for Evaluation</span>`;
+          btn.innerHTML = `<span>Submit Answer</span>`;
           return;
         }
 
@@ -1792,7 +1196,7 @@
         alert("Grading connection error: " + err);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Submit for Evaluation</span>`;
+        btn.innerHTML = `<span>Submit Answer</span>`;
       }
     }
 
@@ -1804,32 +1208,35 @@
       const content = data.content || {};
       const delivery = data.delivery || {};
 
-      countUp(document.getElementById("resContentVal"), content.score || 0, true, "/10");
-      countUp(document.getElementById("resDeliveryVal"), delivery.fluency_score || 0, false, "/100");
+      countUp(document.getElementById("resContentVal"), content.score || 0, true);
+      countUp(document.getElementById("resDeliveryVal"), delivery.fluency_score || 0, false);
 
       const verd = (content.verdict || "evaluated").toLowerCase();
       const verdPill = document.getElementById("resVerdictPill");
       verdPill.textContent = verd.toUpperCase();
-      verdPill.className = `tag-badge ${verd === "correct" ? "tag-badge-success" : (verd === "partially correct" ? "tag-badge-warning" : "tag-badge-danger")}`;
+      verdPill.className = verd === "correct" 
+        ? "px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant"
+        : "px-3 py-1 rounded-full text-xs font-semibold bg-error-container text-on-error-container";
 
       const band = delivery.band || "Good";
       const bandPill = document.getElementById("resBandPill");
       bandPill.textContent = band;
-      bandPill.className = `tag-badge ${band === "Excellent" || band === "Good" ? "tag-badge-success" : (band === "Average" ? "tag-badge-warning" : "tag-badge-danger")}`;
 
-      // Metric Chips Cluster
+      // Metric Chips Cluster (Stitch styling)
       const chipsRow = document.getElementById("resChipsRow");
       chipsRow.innerHTML = "";
       const metrics = [
-        { text: `${delivery.wpm || 0} WPM`, warn: (delivery.wpm < 110 || delivery.wpm > 165) },
-        { text: `${delivery.filler_count || 0} Filler Words`, warn: delivery.filler_count > 3 },
-        { text: `${delivery.pause_count || 0} Hesitations`, warn: delivery.pause_count > 2 },
-        { text: `Longest Pause: ${delivery.longest_pause || 0}s`, warn: delivery.longest_pause > 1.5 },
-        { text: `Speech Confidence: ${Math.round(delivery.confidence || 90)}%`, warn: false }
+        { text: `${delivery.wpm || 0} wpm`, warn: (delivery.wpm < 110 || delivery.wpm > 165) },
+        { text: `${delivery.filler_count || 0} fillers`, warn: delivery.filler_count > 3 },
+        { text: `${delivery.pause_count || 0} pauses`, warn: delivery.pause_count > 2 },
+        { text: `longest ${delivery.longest_pause || 0}s`, warn: delivery.longest_pause > 1.5 },
+        { text: `confidence ${Math.round(delivery.confidence || 90)}%`, warn: false }
       ];
       metrics.forEach(m => {
         const span = document.createElement("span");
-        span.className = `metric-capsule ${m.warn ? "alert" : ""}`;
+        span.className = m.warn 
+          ? "px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200"
+          : "px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30";
         span.textContent = m.text;
         chipsRow.appendChild(span);
       });
@@ -1838,22 +1245,22 @@
 
       const nextBtn = document.getElementById("btnNextStudentQ");
       if (data.done) {
-        nextBtn.innerHTML = `<span>View Final Scorecard</span>`;
+        nextBtn.innerHTML = `<span>View Final Scorecard</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>`;
       } else {
-        nextBtn.innerHTML = `<span>Next Question</span>`;
+        nextBtn.innerHTML = `<span>Next question</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>`;
       }
     }
 
-    function countUp(el, endVal, isDecimal = false, suffix = "") {
+    function countUp(el, endVal, isDecimal = false) {
       const duration = 700;
       const start = performance.now();
       function update(now) {
         const progress = Math.min((now - start) / duration, 1);
         const ease = 1 - Math.pow(1 - progress, 3);
         const cur = ease * endVal;
-        el.innerHTML = `${isDecimal ? cur.toFixed(1) : Math.round(cur)}<span style="font-size:22px; color:var(--ink-faint); font-weight:600;">${suffix}</span>`;
+        el.textContent = isDecimal ? cur.toFixed(1) : Math.round(cur);
         if (progress < 1) requestAnimationFrame(update);
-        else el.innerHTML = `${isDecimal ? endVal.toFixed(1) : Math.round(endVal)}<span style="font-size:22px; color:var(--ink-faint); font-weight:600;">${suffix}</span>`;
+        else el.textContent = isDecimal ? endVal.toFixed(1) : Math.round(endVal);
       }
       requestAnimationFrame(update);
     }
@@ -1892,7 +1299,7 @@
         const data = await resp.json();
 
         document.getElementById("scTitle").textContent = `${data.subject || "Viva"} Scorecard`;
-        document.getElementById("scMetaLine").textContent = `Code: ${data.code || code} • Academic Level: ${data.level || "undergraduate"}`;
+        document.getElementById("scCodeMeta").textContent = `CODE: ${data.code || code}`;
 
         document.getElementById("scTotalVal").textContent = `${data.average_total || 0}%`;
         document.getElementById("scContentAvg").textContent = `${data.average_content || 0}%`;
@@ -1903,23 +1310,23 @@
         (data.answers || []).forEach((a, idx) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>#${idx + 1}</td>
-            <td style="max-width:380px; font-weight:500;">${a.question_text || "Question"}</td>
-            <td class="cell-numeric-right">${a.content_pct}%</td>
-            <td class="cell-numeric-right">${a.delivery.fluency_score}</td>
-            <td class="cell-numeric-right" style="font-weight:700; color:var(--ink-primary);">${a.total}%</td>
+            <td class="py-3 px-4 font-semibold text-secondary">${idx + 1}</td>
+            <td class="py-3 px-4 font-medium text-on-surface max-w-[340px]">${a.question_text || "Question"}</td>
+            <td class="py-3 px-4 text-right font-semibold text-primary">${a.content_pct}%</td>
+            <td class="py-3 px-4 text-right font-semibold text-tertiary">${a.delivery.fluency_score}</td>
+            <td class="py-3 px-4 text-right font-bold text-on-surface">${a.total}%</td>
           `;
           tbody.appendChild(tr);
         });
       } catch (err) {
-        console.error("Scorecard rendering exception:", err);
+        console.error("Scorecard rendering error:", err);
       }
     }
 
     // Teacher Dashboard
     async function loadDashboard() {
       const tbody = document.getElementById("dashTableRows");
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:var(--ink-faint);">Loading records from Cloudant…</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-secondary">Loading records…</td></tr>`;
 
       try {
         const resp = await fetch("/api/dashboard?limit=25");
@@ -1929,15 +1336,11 @@
         if (sessions.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="5">
-                <div class="empty-state-card">
-                  <div class="empty-icon-ring">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                  </div>
-                  <div style="font-weight:700; color:var(--ink-primary); font-size:16px; margin-bottom:4px;">No examination sessions recorded</div>
-                  <div style="font-size:14px; color:var(--ink-muted); margin-bottom:20px;">Initialize a live viva room to populate historical dashboard analytics.</div>
-                  <button type="button" class="btn-solid-primary" style="width:auto; padding:0 24px; height:44px; font-size:14px;" onclick="navTo('teacherSetup')">Create First Viva</button>
-                </div>
+              <td colspan="5" class="py-12 text-center">
+                <span class="material-symbols-outlined text-[36px] text-secondary mb-2">folder_open</span>
+                <p class="text-[16px] font-semibold text-on-surface">No viva records available</p>
+                <p class="text-[14px] text-secondary mb-4">Create your first examination room to view analytics.</p>
+                <button type="button" class="h-10 px-4 rounded-xl bg-primary text-on-primary text-[14px] font-semibold" onclick="navTo('teacherSetup')">Create Viva</button>
               </td>
             </tr>
           `;
@@ -1946,28 +1349,19 @@
 
         tbody.innerHTML = "";
         sessions.forEach(s => {
-          const dt = s.date ? new Date(s.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Recent";
+          const dt = s.date ? new Date(s.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "Recent";
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td><code style="font-weight:700; color:var(--accent); font-size:14px;">${s.code}</code></td>
-            <td><strong>${s.subject}</strong></td>
-            <td>${s.topic || "–"}</td>
-            <td style="color:var(--ink-muted);">${dt}</td>
-            <td class="cell-numeric-right" style="font-weight:750; color:var(--ink-primary);">${s.avg_total}%</td>
+            <td class="py-3 px-4 font-mono font-bold text-primary">${s.code}</td>
+            <td class="py-3 px-4 font-semibold text-on-surface">${s.subject}</td>
+            <td class="py-3 px-4 text-secondary">${s.topic || "–"}</td>
+            <td class="py-3 px-4 text-secondary">${dt}</td>
+            <td class="py-3 px-4 text-right font-bold text-on-surface">${s.avg_total}%</td>
           `;
           tbody.appendChild(tr);
         });
       } catch (e) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5">
-              <div class="empty-state-card">
-                <div style="font-weight:600; color:var(--ink-primary);">Unable to connect to session archive</div>
-                <div style="font-size:13px; color:var(--ink-muted); margin-top:4px;">Ensure <code>python app.py</code> is running.</div>
-              </div>
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-error font-medium">Unable to load dashboard records</td></tr>`;
       }
     }
   </script>
