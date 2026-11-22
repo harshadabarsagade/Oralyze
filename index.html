@@ -238,11 +238,17 @@
           <span class="font-bold text-[20px] tracking-tight text-on-surface">Oralyze</span>
         </div>
       </div>
-      <nav class="flex items-center gap-6">
-        <button type="button" class="text-[14px] font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('landing')">Home</button>
-        <button type="button" class="text-[14px] font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('teacherSetup')">Create Viva</button>
-        <button type="button" class="text-[14px] font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('dashboard')">Teacher Dashboard</button>
+            <!-- Dynamic Sliding Indicator Navigation -->
+      <nav class="relative flex items-center p-1 bg-surface-container-low/80 backdrop-blur-md rounded-full border border-line/60">
+        <!-- Floating Pill Slider -->
+        <div id="navSliderPill" class="absolute top-1 bottom-1 rounded-full bg-white shadow-sm border border-line/40 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"></div>
+
+        <button type="button" id="navBtn_landing" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-semibold text-primary transition-colors cursor-pointer" onclick="navTo('landing')">Home</button>
+        <button type="button" id="navBtn_teacherSetup" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('teacherSetup')">Create Viva</button>
+        <button type="button" id="navBtn_studentJoin" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('studentJoin')">Join Viva</button>
+        <button type="button" id="navBtn_dashboard" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('dashboard')">Dashboard</button>
       </nav>
+      <div id="demoBadge" class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30">Offline demo build</div>
       <div class="flex items-center gap-3">
         <div id="demoBadge" class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/40">
           Demo Mode
@@ -985,6 +991,33 @@
 
     window.addEventListener("hashchange", handleHashRouting);
 
+    
+    function updateNavSlider(screen) {
+      const pill = document.getElementById("navSliderPill");
+      let activeBtn = document.getElementById("navBtn_" + screen);
+      if (!activeBtn) {
+        if (screen === "teacherLive") activeBtn = document.getElementById("navBtn_teacherSetup");
+        else if (screen === "studentQuestion" || screen === "studentResult") activeBtn = document.getElementById("navBtn_studentJoin");
+        else if (screen === "scorecard") activeBtn = document.getElementById("navBtn_dashboard");
+      }
+      
+      const allBtns = document.querySelectorAll("[id^='navBtn_']");
+      allBtns.forEach(b => {
+        b.classList.remove("text-primary", "font-semibold");
+        b.classList.add("text-secondary", "font-medium");
+      });
+
+      if (pill && activeBtn) {
+        activeBtn.classList.remove("text-secondary", "font-medium");
+        activeBtn.classList.add("text-primary", "font-semibold");
+        pill.style.left = `${activeBtn.offsetLeft}px`;
+        pill.style.width = `${activeBtn.offsetWidth}px`;
+        pill.style.opacity = "1";
+      } else if (pill) {
+        pill.style.opacity = "0";
+      }
+    }
+
     // Screen Router
     function navTo(screen, updateHash = true) {
       if (monitorTimer) {
@@ -1032,6 +1065,7 @@
         loadDashboard();
       }
       window.scrollTo({ top: 0, behavior: "instant" });
+      updateNavSlider(screen);
     }
 
     // -------------------------------------------------------------
