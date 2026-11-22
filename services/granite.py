@@ -1,3 +1,4 @@
+from services.llm import call_llm
 """IBM Granite LLM service wrapper.
 
 Handles viva question generation from teacher natural-language prompts and rubric-based answer grading.
@@ -356,9 +357,8 @@ Return only the JSON object."""
 
 def _make_fallback_result(prompt: str, difficulty: str, language: str, count: int) -> dict:
     """Create structured viva result from offline question bank."""
-    # Detect subject in prompt
     p_low = prompt.lower()
-    subject = "Computer Science"
+    subject = "Cloud Computing" if ("cloud" in p_low or "paas" in p_low or "iaas" in p_low or "saas" in p_low) else "Computer Science"
     if "dbms" in p_low or "database" in p_low or "sql" in p_low:
         subject = "DBMS"
     elif "os" in p_low or "operating system" in p_low:
@@ -367,12 +367,14 @@ def _make_fallback_result(prompt: str, difficulty: str, language: str, count: in
         subject = "Computer Networks"
     elif "data structure" in p_low or "tree" in p_low or "graph" in p_low:
         subject = "Data Structures"
+    elif "cloud" in p_low or "paas" in p_low or "iaas" in p_low or "saas" in p_low:
+        subject = "Cloud Computing"
 
     questions = get_bank_questions(subject, n=count)
     return {
         "title": f"{subject} Oral Exam",
         "subject": subject,
-        "topic": prompt[:30],
+        "topic": prompt[:40],
         "difficulty": difficulty,
         "language": language,
         "questions": questions,
