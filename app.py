@@ -1,21 +1,27 @@
-"""Oralyze Flask application.
+"""Oralyze Flask application: Live Room Architecture.
 
-Routes:
-- GET  /                  -> Serves frontend static/index.html
-- GET  /api/health        -> System health, mock mode flag, missing credentials
-- POST /api/start         -> Start viva session, generate questions, return first question + audio
-- GET  /api/question      -> Retrieve question by index with base64 audio
-- POST /api/answer        -> Transcribe audio blob, grade content & fluency, calculate total
-- GET  /api/scorecard/<id>-> Retrieve completed session scorecard
-- POST /api/reset/<id>    -> Reset / terminate session
+Flow:
+- Teacher creates viva room -> 6-character code (e.g. A7K2QX) + question generation.
+- Teacher opens live monitor -> polls /api/viva/<code>/live every 2s.
+- Student joins on phone/tab with 6-character code -> receives questions + audio.
+- Student speaks answer -> browser live speech preview + Watson STT word timings.
+- Answer evaluated (Granite content + fluency analytics) -> teacher's live monitor updates in real time.
+- Final scorecard archived to Cloudant / local JSON store.
 
-Data flow:
-Browser mic -> POST /api/answer -> STT -> Transcript + Word Timings ->
-Fluency Engine + Granite Grader -> Combined score (70% Content + 30% Fluency) -> Session cache.
+API endpoints:
+POST /api/viva                 {subject, topic, level, language, count}
+GET  /api/viva/<code>          -> viva info + questions
+POST /api/viva/<code>/answer   multipart: qid, audio, language, live_transcript
+GET  /api/viva/<code>/live     -> live state for teacher polling
+GET  /api/viva/<code>/scorecard-> completed scorecard
+GET  /api/dashboard            -> past sessions list
+GET  /api/health               -> system status
 """
 import base64
+import datetime
 import logging
-import os
+import random
+import string
 import uuid
 from flask import Flask, jsonify, request, send_from_directory
 from config import Config
@@ -32,50 +38,45 @@ logger = logging.getLogger("oralyze")
 
 app = Flask(__name__, static_folder="static")
 
-# In-memory viva sessions
-# session_id -> {
-#   "session_id": str,
-#   "subject": str,
-#   "level": str,
-#   "language": str,
-#   "total": int,
-#   "questions": list[dict],
-#   "answers": list[dict],
-#   "audio_cache": dict[int, str]  # index -> b64 mp3
-# }
-SESSIONS: dict[str, dict] = {}
+# In-memory room store: code -> room dict
+# code: 6 uppercase alphanumeric chars
+VIVAS: dict[str, dict] = {}
 
 
-def _get_public_question(q: dict) -> dict:
-    """Strip private/grading keys from question object before sending to client."""
-    return {
-        "text": q.get("text", ""),
-        "level": q.get("level", "understand")
-    }
+def _generate_code() -> str:
+    """Generate a clean 6-character alphanumeric code avoiding ambiguous chars."""
+    chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    for _ in range(20):
+        code = "".join(random.choices(chars, k=6))
+        if code not in VIVAS:
+            return code
+    return uuid.uuid4().hex[:6].upper()
 
 
-def _get_or_synthesize_audio(q_text: str, language: str) -> tuple[str, str]:
+def _get_or_synthesize_audio(text: str, language: str) -> tuple[str, str]:
     """Synthesize question text to base64 MP3."""
-    mp3_bytes = synthesize(q_text, language=language)
+    mp3_bytes = synthesize(text, language=language)
     b64 = base64.b64encode(mp3_bytes).decode("ascii")
     return b64, "audio/mp3"
 
 
 @app.route("/")
 def index():
-    """Serve single-page application."""
+    return send_from_directory("static", "index.html")
+
+
+@app.route("/join")
+def join_redirect():
     return send_from_directory("static", "index.html")
 
 
 @app.route("/dashboard")
 def dashboard_view():
-    """Serve teacher dashboard page."""
     return send_from_directory("static", "index.html")
 
 
 @app.route("/api/health", methods=["GET"])
 def health_check():
-    """System health check and configuration status."""
     missing = Config.missing_keys()
     cloudant_active = store.cloudant_enabled()
     return jsonify({
@@ -86,133 +87,195 @@ def health_check():
     })
 
 
-@app.route("/api/start", methods=["POST"])
-def start_session():
-    """Start viva session and return question 0 with synthesized audio."""
+@app.route("/api/viva", methods=["POST"])
+def create_viva():
+    """Teacher creates a viva room with subject/topic."""
     data = request.get_json(silent=True) or {}
     subject = (data.get("subject") or "DBMS").strip()
+    topic = (data.get("topic") or "").strip()
     level = (data.get("level") or "undergraduate").strip().lower()
     language = (data.get("language") or "en").strip().lower()
+    try:
+        count = int(data.get("count", 5))
+    except (ValueError, TypeError):
+        count = 5
 
-    if language not in ("en", "hi"):
-        language = "en"
+    count = max(1, min(count, 10))
+    code = _generate_code()
 
-    session_id = uuid.uuid4().hex[:8]
-    n_questions = min(Config.MAX_QUESTIONS, 5)
+    # Query term combines subject and specific topic
+    query = f"{subject}: {topic}" if topic else subject
 
     try:
-        questions = generate_questions(subject=subject, level=level, n=n_questions)
+        raw_questions = generate_questions(subject=query, level=level, n=count)
     except Exception as e:
-        logger.error("[app] Failed to generate questions: %s", e)
+        logger.error("[viva] Error generating questions: %s", e)
         return jsonify({"error": "Failed to generate viva questions"}), 500
 
-    if not questions:
-        return jsonify({"error": "No questions available for this subject"}), 400
+    questions = []
+    audio_cache = {}
+    for idx, q in enumerate(raw_questions):
+        qid = f"q_{idx}"
+        q_item = {
+            "id": qid,
+            "index": idx,
+            "text": q.get("text", ""),
+            "level": q.get("level", "understand"),
+            "key_points": q.get("key_points", [])
+        }
+        questions.append(q_item)
 
-    q0 = questions[0]
-    b64_audio, mime = _get_or_synthesize_audio(q0["text"], language=language)
+    # Pre-synthesize question 0 so student hears it immediately on join
+    if questions:
+        b64, _ = _get_or_synthesize_audio(questions[0]["text"], language)
+        audio_cache[0] = b64
 
-    SESSIONS[session_id] = {
-        "session_id": session_id,
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    room = {
+        "code": code,
         "subject": subject,
+        "topic": topic,
         "level": level,
         "language": language,
         "total": len(questions),
         "questions": questions,
+        "audio_cache": audio_cache,
+        "status": "waiting",  # waiting -> answering -> done
+        "current_index": 0,
+        "student_name": "Student",
         "answers": [],
-        "audio_cache": {0: b64_audio}
+        "created_at": now_iso
     }
+    VIVAS[code] = room
+
+    # Client-safe question representations
+    client_questions = [{
+        "id": q["id"],
+        "index": q["index"],
+        "text": q["text"],
+        "level": q["level"]
+    } for q in questions]
 
     return jsonify({
-        "session_id": session_id,
-        "total": len(questions),
-        "index": 0,
-        "question": _get_public_question(q0),
-        "audio_b64": b64_audio,
-        "audio_mime": mime
+        "code": code,
+        "subject": subject,
+        "topic": topic,
+        "level": level,
+        "language": language,
+        "questions": client_questions,
+        "total": len(questions)
     })
 
 
-@app.route("/api/question", methods=["GET"])
-def get_question():
-    """Retrieve specific question by index for an ongoing session."""
-    session_id = request.args.get("session_id", "").strip()
-    raw_index = request.args.get("index", "0").strip()
+@app.route("/api/viva/<code>", methods=["GET"])
+def get_viva(code: str):
+    """Student joins and fetches viva details by 6-char code."""
+    code = code.strip().upper()
+    room = VIVAS.get(code)
+    if not room:
+        return jsonify({"error": "Viva room not found. Check the code."}), 404
 
-    if not session_id or session_id not in SESSIONS:
-        return jsonify({"error": "Invalid or expired session_id"}), 400
+    # If student is joining, update status if waiting
+    if room["status"] == "waiting":
+        room["status"] = "answering"
 
-    sess = SESSIONS[session_id]
-    try:
-        index = int(raw_index)
-    except ValueError:
-        return jsonify({"error": "Invalid question index"}), 400
+    curr_idx = room["current_index"]
+    q_curr = room["questions"][curr_idx] if curr_idx < len(room["questions"]) else None
 
-    if index < 0 or index >= len(sess["questions"]):
-        return jsonify({"error": "Question index out of range"}), 400
-
-    q = sess["questions"][index]
-    if index in sess["audio_cache"]:
-        b64_audio = sess["audio_cache"][index]
-    else:
-        b64_audio, _ = _get_or_synthesize_audio(q["text"], language=sess["language"])
-        sess["audio_cache"][index] = b64_audio
+    # Fetch/cache audio for current question
+    audio_b64 = ""
+    if q_curr:
+        if curr_idx in room["audio_cache"]:
+            audio_b64 = room["audio_cache"][curr_idx]
+        else:
+            audio_b64, _ = _get_or_synthesize_audio(q_curr["text"], room["language"])
+            room["audio_cache"][curr_idx] = audio_b64
 
     return jsonify({
-        "session_id": session_id,
-        "total": len(sess["questions"]),
-        "index": index,
-        "question": _get_public_question(q),
-        "audio_b64": b64_audio,
-        "audio_mime": "audio/mp3"
+        "code": room["code"],
+        "subject": room["subject"],
+        "topic": room["topic"],
+        "level": room["level"],
+        "language": room["language"],
+        "total": room["total"],
+        "current_index": curr_idx,
+        "question": {
+            "id": q_curr["id"],
+            "index": q_curr["index"],
+            "text": q_curr["text"],
+            "level": q_curr["level"]
+        } if q_curr else None,
+        "audio_b64": audio_b64,
+        "created_at": room["created_at"]
     })
 
 
-@app.route("/api/answer", methods=["POST"])
-def submit_answer():
-    """Accept spoken audio blob, evaluate STT, content correctness and delivery fluency."""
-    session_id = request.form.get("session_id", "").strip()
-    raw_index = request.form.get("index", "0").strip()
-    language = request.form.get("language", "").strip().lower()
+@app.route("/api/viva/<code>/answer", methods=["POST"])
+def submit_viva_answer(code: str):
+    """Student submits an answer. Evaluates STT + Granite + Fluency. Updates room live state."""
+    code = code.strip().upper()
+    room = VIVAS.get(code)
+    if not room:
+        return jsonify({"error": "Viva room not found"}), 404
 
-    if not session_id or session_id not in SESSIONS:
-        return jsonify({"error": "Invalid or expired session_id"}), 400
+    qid = request.form.get("qid", "").strip()
+    language = request.form.get("language", "").strip().lower() or room["language"]
+    live_transcript = request.form.get("live_transcript", "").strip()
 
-    sess = SESSIONS[session_id]
-    try:
-        index = int(raw_index)
-    except ValueError:
-        return jsonify({"error": "Invalid index"}), 400
+    # Find corresponding question
+    matched_q = None
+    for q in room["questions"]:
+        if q["id"] == qid or str(q["index"]) == qid:
+            matched_q = q
+            break
 
-    if index < 0 or index >= len(sess["questions"]):
-        return jsonify({"error": "Question index out of range"}), 400
+    if not matched_q:
+        curr_idx = room["current_index"]
+        if curr_idx < len(room["questions"]):
+            matched_q = room["questions"][curr_idx]
+        else:
+            return jsonify({"error": "Question not found"}), 400
 
-    lang = language or sess["language"]
+    q_idx = matched_q["index"]
+
     audio_file = request.files.get("audio")
     audio_bytes = b""
     content_type = "audio/webm"
-
     if audio_file:
         audio_bytes = audio_file.read()
         content_type = audio_file.content_type or "audio/webm"
 
-    current_q = sess["questions"][index]
-
-    # 1. Watson STT
+    # 1. Watson STT (with fallback)
     try:
-        stt_result = transcribe(audio_bytes=audio_bytes, content_type=content_type, language=lang)
+        stt_result = transcribe(audio_bytes=audio_bytes, content_type=content_type, language=language)
     except Exception as e:
-        logger.error("[app] STT processing error: %s", e)
+        logger.error("[viva] STT error: %s", e)
         stt_result = {"transcript": "", "words": []}
 
     transcript = stt_result.get("transcript", "").strip()
     words = stt_result.get("words", [])
 
-    # 2. Content Grading (Granite / Keyword fallback)
+    # If STT transcript was empty but browser gave a live transcript, use browser transcript as text fallback
+    if not transcript and live_transcript:
+        transcript = live_transcript
+        if not words:
+            # Construct simulated word timestamps from live transcript
+            t_words = live_transcript.split()
+            cur_t = 0.5
+            for w in t_words:
+                words.append({
+                    "word": w,
+                    "start": round(cur_t, 2),
+                    "end": round(cur_t + 0.3, 2),
+                    "confidence": 0.90
+                })
+                cur_t += 0.38
+
+    # 2. Content Evaluation (Granite / Keyword fallback)
     try:
-        content_eval = grade_answer(question=current_q, transcript=transcript, language=lang)
+        content_eval = grade_answer(question=matched_q, transcript=transcript, language=language)
     except Exception as e:
-        logger.error("[app] Grading error: %s", e)
+        logger.error("[viva] Grading error: %s", e)
         content_eval = {
             "score": 5.0,
             "verdict": "partially correct",
@@ -223,131 +286,181 @@ def submit_answer():
         }
 
     # 3. Delivery Fluency Analytics
-    fluency_eval = analyze_fluency(words=words, transcript=transcript, language=lang)
+    fluency_eval = analyze_fluency(words=words, transcript=transcript, language=language)
 
-    # 4. Total Combined Score Calculation
-    # Content score is 0-10 -> content_pct = content_score * 10
-    # Delivery fluency_score is 0-100
-    # total = round(0.70 * content_pct + 0.30 * fluency_score, 1)
+    # 4. Total Combined Score
+    # Content: 0-10 -> content_pct = score * 10
+    # Delivery: 0-100
+    # Total: 70% content + 30% delivery
     content_score = float(content_eval.get("score", 0.0))
     content_pct = round(content_score * 10.0, 1)
     fluency_score = float(fluency_eval.get("fluency_score", 0.0))
     total = round((0.70 * content_pct) + (0.30 * fluency_score), 1)
 
-    has_next = (index + 1) < len(sess["questions"])
+    next_index = q_idx + 1
+    is_done = next_index >= room["total"]
 
     answer_record = {
-        "index": index,
-        "question_text": current_q.get("text", ""),
+        "qid": matched_q["id"],
+        "index": q_idx,
+        "question_text": matched_q["text"],
         "transcript": transcript,
         "content": content_eval,
-        "fluency": fluency_eval,
+        "delivery": fluency_eval,
         "content_pct": content_pct,
         "total": total
     }
 
-    # Replace or append answer record
-    existing_idx = None
-    for i, a in enumerate(sess["answers"]):
-        if a["index"] == index:
-            existing_idx = i
+    # Update room answers
+    replaced = False
+    for i, a in enumerate(room["answers"]):
+        if a["qid"] == matched_q["id"]:
+            room["answers"][i] = answer_record
+            replaced = True
             break
-    if existing_idx is not None:
-        sess["answers"][existing_idx] = answer_record
-    else:
-        sess["answers"].append(answer_record)
+    if not replaced:
+        room["answers"].append(answer_record)
 
-    # Auto-save when finishing last question
-    if not has_next:
-        _persist_session(sess)
+    room["current_index"] = next_index
+    if is_done:
+        room["status"] = "done"
+        _persist_viva_room(room)
+    else:
+        room["status"] = "answering"
 
     return jsonify({
+        "qid": matched_q["id"],
+        "index": q_idx,
         "transcript": transcript,
         "content": content_eval,
-        "fluency": fluency_eval,
+        "delivery": fluency_eval,
         "total": total,
-        "has_next": has_next,
-        "index": index
+        "next_index": next_index,
+        "done": is_done
     })
 
 
-def _persist_session(sess: dict) -> None:
-    """Save finalized session to Cloudant / local JSON store."""
-    answers = sess.get("answers", [])
-    if not answers:
-        return
+@app.route("/api/viva/<code>/live", methods=["GET"])
+def get_viva_live(code: str):
+    """Teacher's Live Monitor polls this every 2 seconds."""
+    code = code.strip().upper()
+    room = VIVAS.get(code)
+    if not room:
+        return jsonify({"error": "Viva room not found"}), 404
 
-    n = len(answers)
-    avg_content = round(sum(a["content_pct"] for a in answers) / n, 1)
-    avg_fluency = round(sum(a["fluency"]["fluency_score"] for a in answers) / n, 1)
-    avg_total = round(sum(a["total"] for a in answers) / n, 1)
-
-    doc = {
-        "_id": sess["session_id"],
-        "session_id": sess["session_id"],
-        "subject": sess["subject"],
-        "level": sess["level"],
-        "language": sess["language"],
-        "average_content": avg_content,
-        "average_fluency": avg_fluency,
-        "average_total": avg_total,
-        "answers": answers,
-        "questions_count": len(sess["questions"])
-    }
-    store.save(doc)
-
-
-@app.route("/api/scorecard/<session_id>", methods=["GET"])
-def get_scorecard(session_id: str):
-    """Retrieve full scorecard for a session."""
-    session_id = session_id.strip()
-    sess = SESSIONS.get(session_id)
-
-    if sess and sess.get("answers"):
-        answers = sess["answers"]
-        n = len(answers)
-        avg_content = round(sum(a["content_pct"] for a in answers) / n, 1)
-        avg_fluency = round(sum(a["fluency"]["fluency_score"] for a in answers) / n, 1)
-        avg_total = round(sum(a["total"] for a in answers) / n, 1)
-
-        return jsonify({
-            "session_id": session_id,
-            "subject": sess["subject"],
-            "level": sess["level"],
-            "language": sess["language"],
-            "questions": [_get_public_question(q) for q in sess["questions"]],
-            "average_total": avg_total,
-            "average_content": avg_content,
-            "average_fluency": avg_fluency,
-            "answers": answers,
-            "saved": True
+    # Extract clean list of answers for live feed
+    clean_answers = []
+    for a in room.get("answers", []):
+        clean_answers.append({
+            "qid": a["qid"],
+            "index": a["index"],
+            "question_text": a.get("question_text", ""),
+            "content": a["content"],
+            "delivery": a["delivery"],
+            "total": a["total"]
         })
 
-    # If not in memory, check storage
-    doc = store.get(session_id)
+    return jsonify({
+        "code": room["code"],
+        "subject": room["subject"],
+        "topic": room["topic"],
+        "status": room["status"],  # "waiting", "answering", "done"
+        "current_index": room["current_index"],
+        "total": room["total"],
+        "answers": clean_answers,
+        "student": room.get("student_name", "Student")
+    })
+
+
+@app.route("/api/viva/<code>/scorecard", methods=["GET"])
+def get_viva_scorecard(code: str):
+    """Retrieve full scorecard for completed viva."""
+    code = code.strip().upper()
+    room = VIVAS.get(code)
+
+    if room and room.get("answers"):
+        answers = room["answers"]
+        n = len(answers)
+        avg_content = round(sum(a["content_pct"] for a in answers) / n, 1)
+        avg_delivery = round(sum(a["delivery"]["fluency_score"] for a in answers) / n, 1)
+        avg_total = round(sum(a["total"] for a in answers) / n, 1)
+
+        band = "Excellent" if avg_total >= 85 else ("Good" if avg_total >= 70 else ("Average" if avg_total >= 55 else "Needs work"))
+
+        return jsonify({
+            "code": room["code"],
+            "subject": room["subject"],
+            "topic": room.get("topic", ""),
+            "level": room.get("level", "undergraduate"),
+            "language": room.get("language", "en"),
+            "average_total": avg_total,
+            "average_content": avg_content,
+            "average_delivery": avg_delivery,
+            "band": band,
+            "answers": answers,
+            "created_at": room["created_at"]
+        })
+
+    # Fallback to store
+    doc = store.get(code)
     if doc:
         return jsonify(doc)
 
     return jsonify({"error": "Scorecard not found"}), 404
 
 
-@app.route("/api/sessions", methods=["GET"])
-def list_sessions():
-    """Retrieve recent viva sessions for dashboard."""
+def _persist_viva_room(room: dict) -> None:
+    """Save finalized viva room to Cloudant or local fallback."""
+    answers = room.get("answers", [])
+    if not answers:
+        return
+
+    n = len(answers)
+    avg_content = round(sum(a["content_pct"] for a in answers) / n, 1)
+    avg_delivery = round(sum(a["delivery"]["fluency_score"] for a in answers) / n, 1)
+    avg_total = round(sum(a["total"] for a in answers) / n, 1)
+
+    doc = {
+        "_id": room["code"],
+        "code": room["code"],
+        "session_id": room["code"],
+        "subject": room["subject"],
+        "topic": room.get("topic", ""),
+        "level": room.get("level", "undergraduate"),
+        "language": room.get("language", "en"),
+        "average_content": avg_content,
+        "average_delivery": avg_delivery,
+        "average_total": avg_total,
+        "answers": answers,
+        "questions_count": room["total"],
+        "created_at": room["created_at"]
+    }
+    store.save(doc)
+
+
+@app.route("/api/dashboard", methods=["GET"])
+def get_dashboard():
+    """Retrieve sessions for teacher dashboard."""
     limit = int(request.args.get("limit", 25))
     sessions = store.recent(limit=limit)
-    return jsonify({"sessions": sessions})
 
+    clean_sessions = []
+    for s in sessions:
+        clean_sessions.append({
+            "code": s.get("code") or s.get("_id") or s.get("session_id", ""),
+            "subject": s.get("subject", "Viva"),
+            "topic": s.get("topic", ""),
+            "level": s.get("level", "undergraduate"),
+            "date": s.get("created_at", ""),
+            "avg_content": s.get("average_content", 0),
+            "avg_delivery": s.get("average_delivery") or s.get("average_fluency", 0),
+            "avg_total": s.get("average_total", 0),
+            "count": s.get("questions_count") or len(s.get("answers", []))
+        })
 
-@app.route("/api/reset/<session_id>", methods=["POST"])
-def reset_session(session_id: str):
-    """Clear session from memory."""
-    session_id = session_id.strip()
-    if session_id in SESSIONS:
-        del SESSIONS[session_id]
-    return jsonify({"ok": True})
+    return jsonify({"sessions": clean_sessions})
 
 
 if __name__ == "__main__":
-    logger.info("Starting Oralyze on port %s (Mock Mode: %s)", Config.PORT, Config.MOCK_MODE)
+    logger.info("Starting Oralyze Live Viva on http://localhost:%s (Mock Mode: %s)", Config.PORT, Config.MOCK_MODE)
     app.run(host="0.0.0.0", port=Config.PORT, debug=False)

@@ -1,51 +1,65 @@
-# Oralyze — 3-Minute Live Demo Script
+# Oralyze — 90-Second "Aura Farming" Live Demo Choreography
 
-**Project:** Oralyze (AI Voice Viva Examiner)  
-**Team:** Catylitic Coders (Mohit Raj + teammates)  
-**Target Submission:** IBM Cloud / watsonx.ai College Showcase
+**Project:** Oralyze (Live AI Voice Viva Examination Room)  
+**Team:** Catylitic Coders (Mohit Raj + teammates)
 
 ---
 
-## ⏱️ Timeline & Stage Directions
+## ⏱️ Step-by-Step Stage Script
 
-### 0:00 – 0:30 | The Hook: "Sab CRUD app hain"
-- **Speaker:** "Good morning judges / professors. Look at every other minor project submitted this semester: an attendance tracker, an expense manager, an online grocery store. *Sab CRUD apps hain* — simple forms that save rows to a database.
-- We built **Oralyze**: an AI voice viva examiner powered by IBM Cloud. It speaks questions out loud, listens to student speech, evaluates deep conceptual understanding using **IBM Granite**, and scores speaking delivery — pace, filler words, hesitation pauses — in real time."
+### 0:00 – 0:15 | The Contrast Setup
+- **On Screen:** Laptop displaying `http://localhost:5000` (Oralyze landing page).
+- **You Say:**
+  > *"Class ke baaki saare projects CRUD apps hain — attendance, expenses, e-commerce. Humne banaya hai **Oralyze**: ek real-time AI voice viva room. Teacher yahan topic daalega, student phone se viva dega, aur live marks aayenge."*
 
-### 0:30 – 1:15 | Question 1: The Strong Technical Answer
-- Open `http://localhost:5000` (or the deployed live URL).
-- Point to the **Offline Mock / IBM Cloud** status badge in the header.
-- Select `DBMS`, click **Start Viva Exam**.
-- Hit **🔊 Replay Question** so the examiner hears Watson TTS articulate the viva question.
-- Click the **Microphone** button and deliver a confident answer:
-  > *"ACID stands for Atomicity, Consistency, Isolation, and Durability. Atomicity ensures all operations succeed or rollback. Isolation separates concurrent transactions, and durability guarantees committed data survives crashes."*
-- Click **Submit Answer**.
-- **Point to the Result:**
-  - Content Score: **9.0 - 10 / 10** (*Correct*)
-  - Delivery Fluency: **85 - 95 / 100** (*Excellent*, ~140 wpm, 0 fillers)
-  - Show the examiner feedback and word timing chips.
+### 0:15 – 0:35 | Teacher Creates Room
+- Click **I'm a teacher**.
+- Enter Subject: `DBMS`, Topic: `Indexing & B+ Trees`, select `3 Questions`.
+- Click **Create viva**.
+- Point to the generated 6-character room code (e.g. `HWXAUQ`) on screen.
+- **You Say:**
+  > *"Teacher ka kaam khatam — do field, ek button. Room code generate ho gaya."*
 
-### 1:15 – 2:00 | Question 2: The Hesitant / Flawed Answer
-- Click **Next Question**.
-- On Question 2, click **Microphone** and intentionally give a hesitant, filler-heavy answer:
+### 0:35 – 1:00 | Student Joins Live
+- Turn slightly or hold up your phone (or a narrow side-by-side browser tab).
+- Open `http://localhost:5000` -> Click **I'm a student**.
+- Type the 6-character code into the boxes.
+- Click **Join viva**.
+- The laptop/phone audio articulates the question aloud.
+- Click the **Microphone** and answer confidently:
+  > *"Indexing in relational databases uses balanced trees like B+ trees to keep lookups logarithmic as records grow. Internal nodes store search keys while leaf nodes store data pointers."*
+- **Key Moment:** Point to the screen while talking — the live words appear **in real time** as you speak. Let the room watch for 4-5 seconds.
+- Click **Submit answer**.
+
+### 1:00 – 1:20 | Real-Time Live Monitor Update
+- Point back at the teacher's screen:
+  > *"Teacher ko page refresh nahi karna pada. Question 1 turant mark ho gaya: Content 7.5, Delivery 88, Total 78%."*
+- Click **Next question** on student tab.
+- Deliberately give a hesitant, filler-heavy second answer:
   > *"Umm... like... indexing is basically... uhh... sorting pointers in B-trees... matlab... you know, to make search faster."*
-- Click **Submit Answer**.
-- **Highlight the Contrast:**
-  - Notice the **Content vs Delivery split**:
-  - The student gets partial credit for technical concepts (~5.0/10), but **delivery drops** to ~60/100 due to detected filler words (*umm, uhh, matlab, you know*) and hesitation gaps.
-  - Show the actionable hint generated: *"4 filler words detected. Try pausing silently instead of vocalizing fillers."*
+- Submit and show: Content dropped to ~5.0, but **Delivery dropped** to ~60 due to detected fillers (*umm, uhh, matlab, you know*).
+- **You Say:**
+  > *"Marks do cheez se aate hain — kya bola, aur kaise bola. Hum dono ko alag score karte hain."*
 
-### 2:00 – 2:30 | Scorecard & Teacher Review Dashboard
-- Complete or skip to the **Final Scorecard**.
-- Show the **Content Average vs Delivery Average** banner and per-question breakdown.
-- Click **🖨️ Print / Save PDF** to demonstrate instant university-grade report generation.
-- Click the **Teacher Dashboard** tab.
-- Show past student examination records retrieved from **IBM Cloudant** with side-by-side progress bars comparing technical competence vs verbal delivery.
+### 1:20 – 1:30 | The Closer
+- Switch teacher tab to the **Dashboard**:
+  > *"Ek student nahi — poora batch. Granite ne padha, Watson ne suna aur bola, Cloudant ne yaad rakha. Chaar IBM Cloud services, zero rupaye."*
 
-### 2:30 – 3:00 | The Closer
-- **Speaker:**
-  > *"Traditional viva exams take hours of faculty time and are prone to subjective bias. Oralyze standardizes oral testing across the entire department.*
-  > 
-  > ***IBM Granite ne padha, Watson ne suna aur bola, aur Cloudant ne yaad rakha.***
-  > 
-  > *Thank you. We are ready for your questions!"*
+---
+
+## 💡 Five Questions Judges Will Ask (Quick Answers)
+
+1. **"Is this just a ChatGPT wrapper?"**  
+   *Answer:* "No. We use three independent IBM services: Granite for reasoning/grading, Watson STT for speech timings, and Watson TTS for speech synthesis. The fluency analytics engine is our own pure mathematical algorithm calculated from word timestamps, with zero LLM involvement."
+
+2. **"What if the student reads from notes or lies?"**  
+   *Answer:* "Granite evaluates rubric coverage. Reading from notes also significantly alters pause and filler rhythm, penalizing the delivery score. Full visual proctoring is out of scope and we state that upfront."
+
+3. **"What are the cost and limits?"**  
+   *Answer:* "100% on IBM Cloud Lite (free forever): 300k Granite tokens, 500 STT minutes, 10k TTS characters, and 1 GB Cloudant. At 2 inference requests/second and 10 Cloudant writes/second it caps out, which is why we enforce request pacing."
+
+4. **"Why not OpenAI Whisper?"**  
+   *Answer:* "This submission is dedicated to IBM Cloud services. Furthermore, Watson STT returns native word-level timestamps and confidence intervals out-of-the-box, which are essential for our fluency analytics."
+
+5. **"How accurate is the grading?"**  
+   *Answer:* "We don't claim arbitrary accuracy percentages. We show the exact rubric, missing points, and verbatim transcripts so the examiner has full audit transparency."
