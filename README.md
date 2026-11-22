@@ -256,8 +256,6 @@ Open **`http://localhost:5000`** in Google Chrome or modern Chromium browser.
 
 ```text
 Oralyze/
-├── .github/workflows/
-│   └── static.yml              # Verified single GitHub Pages CI deployment
 ├── app.py                      # Flask REST backend and room coordinator
 ├── config.py                   # Environment configuration & credential validation
 ├── CHANGELOG.md                # Conventional Commits changelog
