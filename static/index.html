@@ -894,9 +894,19 @@
             <td>${dt}</td>
             <td><strong>${s.subject || "N/A"}</strong></td>
             <td>${s.level || "UG"}</td>
-            <td>${s.average_content || 0}%</td>
-            <td>${s.average_fluency || 0}/100</td>
-            <td style="color: #38bdf8; font-weight:700;">${s.average_total || 0}%</td>
+            <td>
+              <div style="font-weight:600; color:#38bdf8;">${s.average_content || 0}%</div>
+              <div style="width:100%; height:6px; background:#1e293b; border-radius:3px; margin-top:4px;">
+                <div style="width:${Math.min(s.average_content || 0, 100)}%; height:100%; background:#38bdf8; border-radius:3px;"></div>
+              </div>
+            </td>
+            <td>
+              <div style="font-weight:600; color:#a78bfa;">${s.average_fluency || 0}/100</div>
+              <div style="width:100%; height:6px; background:#1e293b; border-radius:3px; margin-top:4px;">
+                <div style="width:${Math.min(s.average_fluency || 0, 100)}%; height:100%; background:#a78bfa; border-radius:3px;"></div>
+              </div>
+            </td>
+            <td style="color: #34d399; font-weight:700; font-size:15px;">${s.average_total || 0}%</td>
           `;
           tbody.appendChild(row);
         });
