@@ -2,592 +2,1201 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Oralyze — AI Voice Viva Examiner</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: #111726;
-      --card-border: #1e293b;
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --accent-start: #6366f1;
-      --accent-end: #06b6d4;
-      --gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --radius: 14px;
+      /* canvas + surfaces */
+      --bg:            #F6F7F9;   /* page canvas, warm off-white */
+      --surface:       #FFFFFF;   /* cards */
+      --surface-2:     #FBFCFD;   /* inset areas, transcript block */
+      --line:          #E6E9EF;   /* hairline borders */
+      --line-strong:   #D3D9E3;
+
+      /* ink */
+      --ink:           #0E1726;   /* headings, big numbers */
+      --ink-2:         #3D4A5C;   /* body copy */
+      --ink-3:         #7A8798;   /* labels, meta, captions */
+
+      /* accent - used sparingly, ONE element per screen */
+      --accent:        #3B5BFF;
+      --accent-ink:    #2A45D6;
+      --accent-soft:   #EDF1FF;
+      --accent-grad:   linear-gradient(135deg, #3B5BFF 0%, #6E5BFF 100%);
+
+      /* semantic */
+      --good:          #0F9D6E;  --good-soft: #E7F7F1;
+      --warn:          #C77A0A;  --warn-soft: #FDF4E5;
+      --bad:           #D64545;  --bad-soft:  #FDECEC;
+
+      /* radii */
+      --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+
+      /* elevation - soft, low-contrast, never harsh */
+      --sh-1: 0 1px 2px rgba(14,23,38,.05);
+      --sh-2: 0 2px 6px rgba(14,23,38,.05), 0 12px 28px rgba(14,23,38,.06);
+      --sh-3: 0 24px 60px rgba(14,23,38,.10);
+
+      /* spacing scale - only these values */
+      --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+      --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px;
+
+      /* motion */
+      --ease: cubic-bezier(.2,.8,.2,1);
+      --t-fast: 140ms; --t-mid: 220ms; --t-slow: 380ms;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background-color: var(--bg);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink-2);
+      font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 18px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 24px 16px;
     }
-    .header {
+
+    /* Focus visible standard */
+    :focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      outline-offset: 2px;
+    }
+
+    /* Typography */
+    h1, h2, h3 {
+      color: var(--ink);
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    .display-h1 {
+      font-size: clamp(40px, 5.2vw, 64px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+
+    .question-h2 {
+      font-size: clamp(26px, 3.2vw, 42px);
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-wrap: balance;
+    }
+
+    .section-h2 {
+      font-size: clamp(22px, 2.4vw, 30px);
+      font-weight: 650;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+    .meta-label {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    .big-score {
+      font-size: clamp(44px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    /* Containers */
+    .top-nav {
       width: 100%;
-      max-width: 720px;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: var(--s5) clamp(20px, 5vw, 40px) 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
     }
-    .logo-group { display: flex; align-items: center; gap: 10px; }
-    .logo-icon { font-size: 28px; }
-    .logo-title {
-      font-size: 24px;
-      font-weight: 700;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .tagline { font-size: 13px; color: var(--text-muted); }
-    .badge {
+
+    .wordmark {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      background: #1e293b;
-      color: #cbd5e1;
-      border: 1px solid #334155;
-    }
-    .badge.demo { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
-    .badge.live { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
-
-    .nav-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 720px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      background: var(--card-bg);
-      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
       cursor: pointer;
-      font-size: 14px;
+    }
+
+    .wordmark-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .nav-link {
+      font-size: 15px;
       font-weight: 600;
-      transition: all 0.2s;
-    }
-    .tab-btn.active {
-      background: #1e293b;
-      color: #fff;
-      border-color: var(--accent-start);
-    }
-
-    .container {
-      width: 100%;
-      max-width: 720px;
-    }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-      margin-bottom: 20px;
-    }
-    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
-    .section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
-
-    .form-group { margin-bottom: 18px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
-    input[type="text"], select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #0b1120;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type="text"]:focus, select:focus { border-color: var(--accent-start); }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
+      color: var(--ink-3);
+      text-decoration: none;
+      background: none;
       border: none;
-      border-radius: 8px;
-      background: var(--gradient);
-      color: #fff;
+      cursor: pointer;
+      padding: var(--s2) var(--s3);
+      border-radius: var(--r-sm);
+      transition: color var(--t-fast) var(--ease);
+    }
+    .nav-link:hover { color: var(--ink); }
+
+    .main-wrap {
+      flex: 1;
+      width: 100%;
+      padding-inline: clamp(20px, 5vw, 40px);
+      padding-block: var(--s5) var(--s8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .content-container {
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .wide-container {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--sh-2);
+      padding: var(--s6);
+      margin-bottom: var(--s7);
+      animation: cardFadeUp var(--t-slow) var(--ease);
+    }
+
+    @keyframes cardFadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      height: 56px;
+      border: none;
+      border-radius: var(--r-md);
+      background: var(--accent);
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2);
+      box-shadow: var(--sh-1);
+      transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+      text-decoration: none;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: var(--sh-2);
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.985);
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--ink-2);
+      height: 48px;
+      padding: 0 var(--s5);
+      border-radius: var(--r-md);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2);
+      transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    }
+    .btn-ghost:hover {
+      background: var(--surface-2);
+    }
+    .btn-ghost:active {
+      transform: scale(0.985);
+    }
+
+    .btn-text {
+      background: transparent;
+      border: none;
+      color: var(--ink-3);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: var(--s2) var(--s4);
+      transition: color var(--t-fast) var(--ease);
+    }
+    .btn-text:hover { color: var(--ink); }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: var(--s5);
+    }
+    .form-label {
+      display: block;
+      margin-bottom: var(--s2);
+    }
+    .text-input {
+      width: 100%;
+      height: 52px;
+      padding: 0 var(--s4);
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-sm);
+      font-size: 18px;
+      color: var(--ink);
+      font-family: inherit;
+      transition: border-color var(--t-fast) var(--ease);
+    }
+    .text-input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    .text-input::placeholder { color: var(--ink-3); }
+
+    .select-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .select-wrap::after {
+      content: "";
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 6px;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%237A8798' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      pointer-events: none;
+    }
+    .select-input {
+      width: 100%;
+      height: 52px;
+      padding: 0 40px 0 var(--s4);
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-sm);
+      font-size: 18px;
+      color: var(--ink);
+      font-family: inherit;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color var(--t-fast) var(--ease);
+    }
+    .select-input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s4);
+      margin-bottom: var(--s5);
+    }
+
+    /* Suggested Chips */
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s2);
+      margin-top: var(--s3);
+    }
+    .chip-suggest {
+      height: 40px;
+      padding: 0 var(--s4);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-pill);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-2);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+    }
+    .chip-suggest:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    /* Proof Points */
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s5);
+      margin-top: var(--s6);
+      padding-top: var(--s5);
+      border-top: 1px solid var(--line);
+      text-align: center;
+    }
+    .proof-lbl { font-size: 13px; color: var(--ink-3); text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+    .proof-val { font-size: 15px; color: var(--ink); font-weight: 600; }
+
+    /* Pill Badges */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pill-bloom {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+    .pill-good {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+    .pill-warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+    .pill-bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+    .pill-demo {
+      background: var(--surface-2);
+      color: var(--ink-3);
+      border: 1px solid var(--line);
+    }
+
+    /* Question Screen Components */
+    .q-progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--line);
+      border-radius: var(--r-pill);
+      overflow: hidden;
+      margin-block: var(--s3) var(--s6);
+    }
+    .q-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width var(--t-mid) var(--ease);
+    }
+
+    .q-header-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .speaker-btn {
+      background: transparent;
+      border: none;
+      color: var(--ink-3);
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
-      transition: opacity 0.2s, transform 0.1s;
+      padding: var(--s2) 0;
+      margin-top: var(--s4);
+      transition: color var(--t-fast) var(--ease);
     }
-    .btn:hover { opacity: 0.95; }
-    .btn:active { transform: scale(0.99); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary {
-      background: #1e293b;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-    }
-    .btn-secondary:hover { background: #273549; }
+    .speaker-btn:hover { color: var(--accent); }
+    .speaker-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
-    .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .pill {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .pill.bloom { background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.3); }
-    .q-text { font-size: 22px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; color: #f8fafc; }
-
-    .audio-control { display: flex; gap: 10px; margin-bottom: 24px; }
-    .audio-btn {
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #1e293b;
-      color: #cbd5e1;
-      border: 1px solid #334155;
-    }
-
-    .record-area {
+    /* Recording Card */
+    .record-card {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: var(--s7) var(--s5);
+      margin: var(--s6) 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 0;
-      margin-bottom: 20px;
-      background: #0b1120;
-      border-radius: 12px;
-      border: 1px dashed #334155;
+      position: relative;
+      overflow: hidden;
     }
-    .timer { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 12px; }
-    .record-btn-circle {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: #ef4444;
-      border: 4px solid #7f1d1d;
-      color: #fff;
+
+    .mic-button-wrap {
+      position: relative;
+      width: 104px;
+      height: 104px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      margin-bottom: var(--s4);
+    }
+
+    .mic-pulse-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mic-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--sh-2);
       cursor: pointer;
-      transition: all 0.2s;
-    }
-    .record-btn-circle.recording {
-      animation: pulse 1.5s infinite;
-      border-color: #fca5a5;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-    .record-label { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
-
-    /* Results */
-    .score-split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .score-box {
-      background: #0b1120;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-    }
-    .score-num {
-      font-size: 38px;
-      font-weight: 800;
-      margin: 6px 0;
-    }
-    .score-num.content { color: #38bdf8; }
-    .score-num.fluency { color: #a78bfa; }
-    .score-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-
-    .chips-grid {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+      position: relative;
+      z-index: 2;
     }
-    .chip {
-      background: #1e293b;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      color: #cbd5e1;
-      border: 1px solid #334155;
+    .mic-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
     }
-
-    .feedback-box {
-      background: #0b1120;
-      border-left: 4px solid var(--accent-start);
-      padding: 16px;
-      border-radius: 0 8px 8px 0;
-      margin-bottom: 20px;
-      font-size: 14px;
-      line-height: 1.6;
+    .mic-btn:hover {
+      transform: scale(1.02);
+      box-shadow: var(--sh-3);
+    }
+    .mic-btn:active {
+      transform: scale(0.96);
     }
 
-    .collapsible {
-      background: #0b1120;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      overflow: hidden;
+    /* Active Recording State */
+    .record-card.is-recording .mic-btn {
+      background: var(--accent-grad);
+      color: #FFFFFF;
+      border-color: transparent;
     }
-    .collapsible-header {
-      padding: 12px 16px;
-      font-size: 13px;
+    .record-card.is-recording .mic-pulse-ring {
+      animation: pulseOut 1.6s infinite var(--ease);
+    }
+
+    @keyframes pulseOut {
+      0% { transform: scale(1); opacity: 0.45; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .rec-status-line {
+      font-size: 17px;
       font-weight: 600;
-      color: #94a3b8;
-      cursor: pointer;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: var(--s3);
+    }
+    .rec-status-line.warning { color: var(--warn); }
+
+    /* Web Audio Visualizer (5 Live Bars) */
+    .meter-bars {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      margin-bottom: var(--s2);
+    }
+    .meter-bar {
+      width: 4px;
+      height: 6px;
+      background: var(--line-strong);
+      border-radius: 2px;
+      transition: height 60ms linear, background var(--t-fast) var(--ease);
+    }
+    .record-card.is-recording .meter-bar {
+      background: var(--accent);
+    }
+
+    .helper-text {
+      font-size: 14px;
+      color: var(--ink-3);
+    }
+
+    .q-action-row {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: var(--s4);
+      margin-top: var(--s6);
     }
-    .collapsible-content {
-      padding: 12px 16px;
-      font-size: 14px;
-      color: #cbd5e1;
-      border-top: 1px solid #1e293b;
-      display: none;
-    }
-    .collapsible.open .collapsible-content { display: block; }
 
-    /* Scorecard Table */
-    .table-container {
+    /* Result Screen Components */
+    .score-split-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--sh-2);
+      overflow: hidden;
+      margin-bottom: var(--s6);
+    }
+
+    .score-pane {
+      padding: var(--s6);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .score-pane:first-child {
+      border-right: 1px solid var(--line);
+    }
+
+    .score-denom {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink-3);
+      margin-left: 2px;
+    }
+
+    /* Metric Chips */
+    .metrics-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s3);
+      margin-bottom: var(--s6);
+    }
+    .metric-chip {
+      height: 38px;
+      padding: 0 var(--s4);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-pill);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      font-variant-numeric: tabular-nums;
+      opacity: 0;
+      animation: chipFadeIn var(--t-mid) var(--ease) forwards;
+    }
+    .metric-chip.warn {
+      background: var(--warn-soft);
+      border-color: var(--warn);
+      color: var(--warn);
+    }
+
+    @keyframes chipFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Collapsible Transcript */
+    details.transcript-details {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: var(--s4) var(--s5);
+      margin-bottom: var(--s6);
+      cursor: pointer;
+    }
+    details.transcript-details summary {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-3);
+      user-select: none;
+      outline: none;
+    }
+    details.transcript-details[open] summary {
+      margin-bottom: var(--s3);
+    }
+    .transcript-body {
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.6;
+      cursor: default;
+    }
+
+    .feedback-rule-box {
+      border-left: 3px solid var(--accent);
+      padding-left: var(--s4);
+      margin-bottom: var(--s6);
+    }
+    .feedback-p {
+      font-size: 18px;
+      color: var(--ink-2);
+      line-height: 1.65;
+      max-width: 60ch;
+    }
+
+    .missing-pts-list {
+      list-style: none;
+      margin-top: var(--s4);
+    }
+    .missing-pts-list li {
+      font-size: 16px;
+      color: var(--ink-2);
+      margin-bottom: var(--s1);
+    }
+    .missing-pts-list li::before {
+      content: "– ";
+      color: var(--ink-3);
+      font-weight: 700;
+    }
+
+    /* Scorecard Screen */
+    .scorecard-summary-band {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s5);
+      padding: var(--s5) 0;
+      margin: var(--s5) 0 var(--s6);
+      border-block: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .table-responsive {
       width: 100%;
       overflow-x: auto;
-      margin: 20px 0;
+      margin-bottom: var(--s7);
     }
-    table {
+
+    .data-table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 14px;
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
     }
-    th, td { padding: 12px 14px; border-bottom: 1px solid #1e293b; }
-    th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; }
-    .avg-banner {
+    .data-table th, .data-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .data-table th {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .data-table tr:nth-child(even) td {
+      background: var(--surface-2);
+    }
+    .text-right { text-align: right; }
+
+    /* Teacher Dashboard */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s5);
+      margin-bottom: var(--s7);
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: var(--s5);
+      box-shadow: var(--sh-1);
+    }
+
+    .sparkline-wrap {
       display: flex;
-      justify-content: space-around;
-      background: #0b1120;
-      padding: 18px;
-      border-radius: 12px;
-      border: 1px solid #334155;
-      margin: 20px 0;
+      gap: 4px;
+      height: 8px;
+      width: 80px;
+      background: var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
     }
-    .avg-item { text-align: center; }
-    .avg-val { font-size: 26px; font-weight: 700; color: #fff; }
-    .avg-lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .spark-content { background: var(--accent); height: 100%; }
+    .spark-fluency { background: var(--good); height: 100%; }
 
-    .hidden { display: none !important; }
-    .spinner {
-      border: 3px solid rgba(255,255,255,0.2);
-      border-top: 3px solid #fff;
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: var(--s8) var(--s5);
+    }
+    .empty-illustration {
+      display: inline-flex;
+      gap: 8px;
+      margin-bottom: var(--s4);
+    }
+    .empty-circle {
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 0.8s linear infinite;
-      display: inline-block;
+      border: 2px solid var(--line-strong);
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* Skeleton Loading Screen */
+    .skeleton-box {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--s3);
+      margin-block: var(--s4) var(--s6);
+    }
+    .skeleton-bar {
+      height: 28px;
+      background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      border-radius: var(--r-sm);
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+
+    /* Motion settings */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    /* Mobile Responsive <= 760px */
+    @media (max-width: 760px) {
+      body { font-size: 17px; }
+      .card { padding: var(--s5); margin-bottom: var(--s5); }
+      .form-row-2 { grid-template-columns: 1fr; }
+      .proof-grid { grid-template-columns: 1fr; gap: var(--s3); }
+      .score-split-card { grid-template-columns: 1fr; }
+      .score-pane:first-child { border-right: none; border-bottom: 1px solid var(--line); }
+      .scorecard-summary-band { grid-template-columns: 1fr; gap: var(--s4); }
+      .stats-grid { grid-template-columns: 1fr; }
+      .mic-btn { width: 96px; height: 96px; }
+
+      .sticky-mobile-bar {
+        position: sticky;
+        bottom: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--line);
+        padding: var(--s4) var(--s5) calc(var(--s4) + env(safe-area-inset-bottom));
+        width: 100%;
+        margin-top: auto;
+        z-index: 100;
+        box-shadow: 0 -4px 12px rgba(14,23,38,.03);
+      }
+    }
+
+    /* Print Stylesheet (Clean A4 Sheet) */
     @media print {
-      body { background: #fff; color: #000; padding: 0; }
-      .header, .nav-tabs, .btn, .badge { display: none !important; }
-      .card { border: none; box-shadow: none; padding: 0; }
-      .score-box, .avg-banner, table { border: 1px solid #ccc; color: #000; background: #fff; }
-      .score-num.content, .score-num.fluency, .avg-val { color: #000 !important; }
+      body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        font-size: 12pt;
+        padding: 16mm;
+      }
+      .top-nav, .btn-primary, .btn-ghost, .btn-text, .sticky-mobile-bar, #modeBadge {
+        display: none !important;
+      }
+      .card {
+        border: 1px solid #DDDDDD !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .data-table th, .data-table td {
+        border-bottom: 1px solid #DDDDDD !important;
+        padding: 8pt !important;
+      }
+      .scorecard-summary-band {
+        border-color: #DDDDDD !important;
+      }
+      .big-score, h1, h2 { color: #000000 !important; }
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="logo-group">
-      <span class="logo-icon">🎙️</span>
-      <div>
-        <div class="logo-title">Oralyze</div>
-        <div class="tagline">AI Voice Viva Examiner • IBM Cloud Lite</div>
-      </div>
+  <!-- Top Wordmark Row -->
+  <header class="top-nav">
+    <div class="wordmark" onclick="navTo('setup')">
+      <span>Oralyze</span>
+      <span class="wordmark-dot"></span>
     </div>
-    <div id="modeBadge" class="badge demo">● Demo Mode</div>
-  </div>
+    <div style="display: flex; align-items: center; gap: var(--s4);">
+      <span id="modeBadge" class="pill pill-demo">Demo Mode</span>
+      <button class="nav-link" id="navDashBtn" onclick="navTo('dashboard')">Dashboard</button>
+    </div>
+  </header>
 
-  <div class="nav-tabs">
-    <button id="tabViva" class="tab-btn active" onclick="switchTab('viva')">Student Viva</button>
-    <button id="tabDash" class="tab-btn" onclick="switchTab('dash')">Teacher Dashboard</button>
-  </div>
+  <main class="main-wrap">
 
-  <div class="container">
-
-    <!-- 1. SETUP SECTION -->
-    <div id="secSetup" class="card">
-      <div class="section-title">Start AI Viva Examination</div>
-      <div class="section-desc">Experience real-time oral assessment evaluated by IBM Granite for technical depth and speech analytics for delivery fluency.</div>
-      
-      <div class="form-group">
-        <label for="inpSubject">Subject / Topic</label>
-        <input type="text" id="inpSubject" value="DBMS" placeholder="DBMS, Operating Systems, Computer Networks, Data Structures">
+    <!-- SCREEN 1: SETUP -->
+    <section id="secSetup" class="content-container">
+      <div style="padding-block-start: clamp(24px, 4vw, 48px); margin-bottom: var(--s6);">
+        <h1 class="display-h1" style="max-width: 18ch; margin-bottom: var(--s3);">Practice the viva before the viva.</h1>
+        <p style="font-size: 18px; color: var(--ink-2); max-width: 46ch;">Speak your answer. Oralyze grades the content with IBM Granite and measures how confidently you said it.</p>
       </div>
 
-      <div class="form-group">
-        <label for="selLevel">Academic Level</label>
-        <select id="selLevel">
-          <option value="undergraduate" selected>Undergraduate (B.Tech / BCA)</option>
-          <option value="postgraduate">Postgraduate (M.Tech / MCA)</option>
-        </select>
+      <div class="card">
+        <form onsubmit="event.preventDefault(); startViva();">
+          <div class="form-group">
+            <label class="meta-label form-label" for="inpSubject">Subject or Topic</label>
+            <input type="text" id="inpSubject" class="text-input" value="DBMS" placeholder="DBMS, Operating Systems, Data Structures…">
+            <div class="chips-row">
+              <button type="button" class="chip-suggest" onclick="selectSubject('DBMS')">DBMS</button>
+              <button type="button" class="chip-suggest" onclick="selectSubject('Operating Systems')">OS</button>
+              <button type="button" class="chip-suggest" onclick="selectSubject('Computer Networks')">CN</button>
+              <button type="button" class="chip-suggest" onclick="selectSubject('Data Structures')">DSA</button>
+              <button type="button" class="chip-suggest" onclick="selectSubject('Python')">Python</button>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="meta-label form-label" for="selLevel">Academic Level</label>
+              <div class="select-wrap">
+                <select id="selLevel" class="select-input">
+                  <option value="undergraduate" selected>Undergraduate</option>
+                  <option value="postgraduate">Postgraduate</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="meta-label form-label" for="selLanguage">Language</label>
+              <div class="select-wrap">
+                <select id="selLanguage" class="select-input">
+                  <option value="en" selected>English</option>
+                  <option value="hi">Hindi / Hinglish</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: var(--s6);">
+            <button type="submit" id="btnStart" class="btn-primary">
+              <span>Start viva</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="proof-grid">
+          <div>
+            <div class="proof-lbl">Reasoning</div>
+            <div class="proof-val">IBM Granite 3-8B</div>
+          </div>
+          <div>
+            <div class="proof-lbl">Voice & Speech</div>
+            <div class="proof-val">Watson STT + TTS</div>
+          </div>
+          <div>
+            <div class="proof-lbl">Persistence</div>
+            <div class="proof-val">IBM Cloudant</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: QUESTION -->
+    <section id="secQuestion" class="content-container hidden">
+      <div class="q-header-meta">
+        <span class="meta-label" id="lblProgress">Question 1 of 5</span>
+        <span class="pill pill-bloom" id="lblBloom">Understand</span>
       </div>
 
-      <div class="form-group">
-        <label for="selLanguage">Language</label>
-        <select id="selLanguage">
-          <option value="en" selected>English</option>
-          <option value="hi">Hindi / Hinglish</option>
-        </select>
+      <div class="q-progress-bar">
+        <div id="progressFill" class="q-progress-fill" style="width: 20%;"></div>
       </div>
 
-      <button id="btnStart" class="btn" onclick="startViva()">
-        <span>Start Viva Exam</span>
+      <!-- Question Text (or Skeleton) -->
+      <div id="skeletonQuestion" class="skeleton-box hidden">
+        <div class="skeleton-bar" style="width: 85%;"></div>
+        <div class="skeleton-bar" style="width: 65%;"></div>
+      </div>
+      <h2 id="txtQuestion" class="question-h2" style="margin-bottom: var(--s4);">Loading viva question…</h2>
+
+      <button type="button" class="speaker-btn" onclick="replayAudio()">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        <span>Play question again</span>
       </button>
-      <div id="setupNote" style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 12px;"></div>
-    </div>
 
-    <!-- 2. QUESTION SECTION -->
-    <div id="secQuestion" class="card hidden">
-      <div class="q-meta">
-        <span id="lblQProgress" class="pill">Question 1 of 5</span>
-        <span id="lblQLevel" class="pill bloom">Understand</span>
+      <!-- Centered Recording Block -->
+      <div id="recCard" class="record-card">
+        <div class="mic-button-wrap">
+          <div class="mic-pulse-ring"></div>
+          <button type="button" id="btnMic" class="mic-btn" onclick="toggleRecording()" aria-label="Microphone">
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          </button>
+        </div>
+
+        <div id="recStatus" class="rec-status-line">Tap to answer</div>
+
+        <!-- 5-bar live Web Audio visualizer -->
+        <div class="meter-bars" id="meterBars">
+          <div class="meter-bar"></div>
+          <div class="meter-bar"></div>
+          <div class="meter-bar"></div>
+          <div class="meter-bar"></div>
+          <div class="meter-bar"></div>
+        </div>
+
+        <div id="recHelper" class="helper-text">Answers are capped at 90 seconds</div>
       </div>
 
-      <div id="txtQuestion" class="q-text">Loading question...</div>
-
-      <div class="audio-control">
-        <button id="btnReplayAudio" class="audio-btn" onclick="replayAudio()">
-          🔊 Replay Question
+      <div class="q-action-row">
+        <button type="button" class="btn-text" onclick="skipQuestion()">Skip this question</button>
+        <button type="button" id="btnSubmit" class="btn-primary" style="width: auto; padding: 0 var(--s6);" onclick="submitAnswer()" disabled>
+          <span>Submit answer</span>
         </button>
-        <audio id="audioPlayer" class="hidden"></audio>
       </div>
+    </section>
 
-      <div class="record-area">
-        <div id="recTimer" class="timer">00:00</div>
-        <div id="btnRecordToggle" class="record-btn-circle" onclick="toggleRecording()">🎤</div>
-        <div id="recStatusLabel" class="record-label">Click mic to start answering (max 90s)</div>
-      </div>
+    <!-- SCREEN 3: RESULT -->
+    <section id="secResult" class="content-container hidden">
+      <div class="meta-label" style="margin-bottom: var(--s3);">Evaluation</div>
+      <h2 class="section-h2" style="margin-bottom: var(--s6);">Your performance</h2>
 
-      <button id="btnSubmitAnswer" class="btn" onclick="submitAnswer()" disabled>
-        <span>Submit Answer</span>
-      </button>
-    </div>
-
-    <!-- 3. RESULT SECTION -->
-    <div id="secResult" class="card hidden">
-      <div class="section-title">Answer Evaluation</div>
-      
-      <div class="score-split">
-        <div class="score-box">
-          <div class="score-label">Technical Content</div>
-          <div id="valContentScore" class="score-num content">0.0<span style="font-size: 20px;">/10</span></div>
-          <div id="valVerdict" class="pill" style="margin-top: 6px;">Correct</div>
+      <!-- Content vs Delivery split card -->
+      <div class="score-split-card">
+        <div class="score-pane">
+          <div class="meta-label" style="margin-bottom: var(--s2);">Content</div>
+          <div class="big-score" id="valContent">0<span class="score-denom">/10</span></div>
+          <div style="margin-top: var(--s3);">
+            <span id="pillVerdict" class="pill pill-good">Correct</span>
+          </div>
         </div>
-        <div class="score-box">
-          <div class="score-label">Delivery Fluency</div>
-          <div id="valFluencyScore" class="score-num fluency">0<span style="font-size: 20px;">/100</span></div>
-          <div id="valBand" class="pill" style="margin-top: 6px;">Excellent</div>
+        <div class="score-pane">
+          <div class="meta-label" style="margin-bottom: var(--s2);">Delivery</div>
+          <div class="big-score" id="valDelivery">0<span class="score-denom">/100</span></div>
+          <div style="margin-top: var(--s3);">
+            <span id="pillBand" class="pill pill-good">Excellent</span>
+          </div>
         </div>
       </div>
 
-      <div class="chips-grid">
-        <div id="chipWpm" class="chip">⚡ 0 wpm</div>
-        <div id="chipFillers" class="chip">💬 0 fillers</div>
-        <div id="chipPauses" class="chip">⏸️ 0 pauses</div>
-        <div id="chipLongest" class="chip">⏱️ longest 0.0s</div>
-        <div id="chipConf" class="chip">🎯 confidence 0%</div>
+      <!-- Metric Chips -->
+      <div class="metrics-row" id="chipsContainer">
+        <!-- Rendered with stagger delay -->
       </div>
 
-      <div class="collapsible" id="colTranscript">
-        <div class="collapsible-header" onclick="toggleCollapse('colTranscript')">
-          <span>Spoken Transcript</span>
-          <span>▼</span>
-        </div>
-        <div id="txtTranscript" class="collapsible-content">...</div>
+      <!-- Collapsible Transcript -->
+      <details class="transcript-details">
+        <summary>Spoken transcript</summary>
+        <div id="txtTranscript" class="transcript-body">...</div>
+      </details>
+
+      <!-- Feedback Rule Box -->
+      <div class="feedback-rule-box">
+        <div class="meta-label" style="margin-bottom: var(--s1);">Examiner feedback</div>
+        <p id="txtFeedback" class="feedback-p">...</p>
+        <ul id="listMissing" class="missing-pts-list"></ul>
       </div>
 
-      <div class="feedback-box">
-        <strong>Examiner Feedback:</strong>
-        <p id="txtFeedback" style="margin-top: 6px;">...</p>
+      <div style="margin-top: var(--s7);">
+        <button type="button" id="btnNext" class="btn-primary" onclick="handleNextClick()">
+          <span>Next question →</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: SCORECARD -->
+    <section id="secScorecard" class="content-container hidden">
+      <div class="meta-label" style="margin-bottom: var(--s2);">Viva Assessment Report</div>
+      <h1 class="section-h2" id="scSubjectTitle">DBMS Viva Scorecard</h1>
+      <div style="font-size: 15px; color: var(--ink-3); margin-top: 4px;">
+        <span id="scDateStr">22 Nov 2026</span> • Session <code id="scSessionId" style="font-family: inherit;">--</code>
       </div>
 
-      <button id="btnNextQuestion" class="btn" onclick="nextQuestion()">
-        <span>Next Question →</span>
-      </button>
-    </div>
-
-    <!-- 4. SCORECARD SECTION -->
-    <div id="secScorecard" class="card hidden">
-      <div class="section-title">Viva Final Scorecard</div>
-      <div id="cardSubject" class="section-desc">Subject: DBMS • Date: Today</div>
-
-      <div class="avg-banner">
-        <div class="avg-item">
-          <div id="avgContent" class="avg-val">0%</div>
-          <div class="avg-lbl">Content Average</div>
+      <!-- Summary Band -->
+      <div class="scorecard-summary-band">
+        <div>
+          <div class="meta-label" style="margin-bottom: var(--s1);">Total Grade</div>
+          <div class="big-score" id="scTotal">0<span class="score-denom">%</span></div>
         </div>
-        <div class="avg-item">
-          <div id="avgFluency" class="avg-val">0/100</div>
-          <div class="avg-lbl">Fluency Average</div>
+        <div>
+          <div class="meta-label" style="margin-bottom: var(--s1);">Content Average</div>
+          <div class="big-score" id="scAvgContent">0<span class="score-denom">%</span></div>
         </div>
-        <div class="avg-item">
-          <div id="avgTotal" class="avg-val" style="color: #38bdf8;">0%</div>
-          <div class="avg-lbl">Total Final Grade</div>
+        <div>
+          <div class="meta-label" style="margin-bottom: var(--s1);">Delivery Average</div>
+          <div class="big-score" id="scAvgDelivery">0<span class="score-denom">/100</span></div>
         </div>
       </div>
 
-      <div class="table-container">
-        <table>
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="data-table">
           <thead>
             <tr>
               <th>#</th>
               <th>Question</th>
-              <th>Content</th>
-              <th>Fluency</th>
-              <th>Total</th>
+              <th class="text-right">Content</th>
+              <th class="text-right">Delivery</th>
+              <th class="text-right">Total</th>
             </tr>
           </thead>
-          <tbody id="scorecardTableBody">
+          <tbody id="scTableBody">
+            <!-- Rows populated dynamically -->
           </tbody>
         </table>
       </div>
 
-      <div style="display: flex; gap: 12px; margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
-        <button class="btn" onclick="restartViva()">Start New Viva</button>
+      <div style="display: flex; gap: var(--s4); justify-content: flex-end;">
+        <button type="button" class="btn-ghost" onclick="window.print()">Print scorecard</button>
+        <button type="button" class="btn-primary" style="width: auto; padding: 0 var(--s6);" onclick="navTo('setup')">New viva</button>
       </div>
-    </div>
+    </section>
 
-    <!-- 5. TEACHER DASHBOARD SECTION -->
-    <div id="secDashboard" class="card hidden">
-      <div class="section-title">Teacher Review Dashboard</div>
-      <div class="section-desc">Past student viva records synchronized with IBM Cloudant NoSQL DB.</div>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Subject</th>
-              <th>Level</th>
-              <th>Content</th>
-              <th>Fluency</th>
-              <th>Final Total</th>
-            </tr>
-          </thead>
-          <tbody id="dashboardTableBody">
-            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading records...</td></tr>
-          </tbody>
-        </table>
+    <!-- SCREEN 5: TEACHER DASHBOARD -->
+    <section id="secDashboard" class="wide-container hidden">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--s6);">
+        <div>
+          <div class="meta-label" style="margin-bottom: var(--s1);">Teacher Overview</div>
+          <h2 class="section-h2">Recent vivas</h2>
+        </div>
+        <button type="button" class="btn-ghost" style="height: 40px;" onclick="loadDashboard()">Refresh</button>
       </div>
-      <button class="btn btn-secondary" onclick="loadDashboard()">🔄 Refresh Records</button>
-    </div>
 
-  </div>
+      <!-- Stat Cards Row -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="meta-label" style="margin-bottom: var(--s2);">Completed Sessions</div>
+          <div class="big-score" id="dashTotalSessions">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="meta-label" style="margin-bottom: var(--s2);">Average Content</div>
+          <div class="big-score" id="dashAvgContent">0<span class="score-denom">%</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="meta-label" style="margin-bottom: var(--s2);">Average Delivery</div>
+          <div class="big-score" id="dashAvgDelivery">0<span class="score-denom">/100</span></div>
+        </div>
+      </div>
+
+      <!-- Sessions List Table -->
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive" style="margin: 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Level</th>
+                <th>Content vs Delivery</th>
+                <th class="text-right">Final Total</th>
+              </tr>
+            </thead>
+            <tbody id="dashTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <audio id="audioElement" class="hidden" preload="auto"></audio>
 
   <script>
-    // State
+    // State Machine
     let currentSessionId = null;
     let currentIndex = 0;
     let totalQuestions = 5;
     let isMockMode = true;
+    let currentAudioBase64 = null;
+    let cachedAnswers = [];
+
+    // Media & Audio Analyser
     let mediaRecorder = null;
     let audioChunks = [];
     let audioBlob = null;
+    let audioContext = null;
+    let analyserNode = null;
+    let animFrameId = null;
     let timerInterval = null;
     let secondsElapsed = 0;
-    let currentAudioBase64 = null;
 
-    // Health check on load
-    async function checkHealth() {
+    // Initialize & Health Check
+    async function init() {
       try {
-        const res = await fetch("/api/health");
-        const data = await res.json();
+        const resp = await fetch("/api/health");
+        const data = await resp.json();
         isMockMode = data.mock_mode;
         const badge = document.getElementById("modeBadge");
-        const setupNote = document.getElementById("setupNote");
         if (isMockMode) {
-          badge.className = "badge demo";
-          badge.textContent = "● Offline Mock Mode";
-          setupNote.textContent = "Offline mock mode active — no API keys required.";
+          badge.textContent = "Demo Mode";
+          badge.className = "pill pill-demo";
         } else {
-          badge.className = "badge live";
-          badge.textContent = "● IBM Cloud Live";
-          setupNote.textContent = "Connected to live IBM Watson & watsonx.ai runtime.";
+          badge.textContent = "IBM Live";
+          badge.className = "pill pill-good";
         }
       } catch (e) {
-        console.error("Health check error:", e);
+        console.warn("Health check error:", e);
       }
     }
-    checkHealth();
+    init();
 
-    // Tab Navigation
-    function switchTab(tab) {
-      document.getElementById("tabViva").classList.toggle("active", tab === "viva");
-      document.getElementById("tabDash").classList.toggle("active", tab === "dash");
-      
-      if (tab === "dash") {
-        hideAllSections();
-        document.getElementById("secDashboard").classList.remove("hidden");
-        loadDashboard();
-      } else {
-        hideAllSections();
-        if (currentSessionId) {
-          document.getElementById("secQuestion").classList.remove("hidden");
-        } else {
-          document.getElementById("secSetup").classList.remove("hidden");
-        }
-      }
-    }
-
-    function hideAllSections() {
+    // View Navigation
+    function navTo(screen) {
       ["secSetup", "secQuestion", "secResult", "secScorecard", "secDashboard"].forEach(id => {
         document.getElementById(id).classList.add("hidden");
       });
+      if (screen === "setup") {
+        document.getElementById("secSetup").classList.remove("hidden");
+      } else if (screen === "question") {
+        document.getElementById("secQuestion").classList.remove("hidden");
+      } else if (screen === "result") {
+        document.getElementById("secResult").classList.remove("hidden");
+      } else if (screen === "scorecard") {
+        document.getElementById("secScorecard").classList.remove("hidden");
+      } else if (screen === "dashboard") {
+        document.getElementById("secDashboard").classList.remove("hidden");
+        loadDashboard();
+      }
     }
 
-    function toggleCollapse(id) {
-      document.getElementById(id).classList.toggle("open");
+    function selectSubject(name) {
+      document.getElementById("inpSubject").value = name;
     }
 
-    // Viva Lifecycle
+    // Phase 1: Start Viva
     async function startViva() {
       const subject = document.getElementById("inpSubject").value.trim() || "DBMS";
       const level = document.getElementById("selLevel").value;
@@ -595,7 +1204,7 @@
       const btn = document.getElementById("btnStart");
 
       btn.disabled = true;
-      btn.innerHTML = `<span class="spinner"></span> Generating questions...`;
+      btn.innerHTML = `<span>Starting viva…</span>`;
 
       try {
         const resp = await fetch("/api/start", {
@@ -606,44 +1215,47 @@
         const data = await resp.json();
 
         if (resp.status !== 200 || data.error) {
-          alert("Error starting viva: " + (data.error || "Unknown error"));
+          alert("Error: " + (data.error || "Failed to start viva"));
           btn.disabled = false;
-          btn.innerHTML = `Start Viva Exam`;
+          btn.innerHTML = `<span>Start viva</span>`;
           return;
         }
 
         currentSessionId = data.session_id;
         currentIndex = data.index;
         totalQuestions = data.total;
-        
-        displayQuestion(data.question, data.audio_b64);
-        hideAllSections();
-        document.getElementById("secQuestion").classList.remove("hidden");
+        cachedAnswers = [];
+
+        renderQuestion(data.question, data.audio_b64);
+        navTo("question");
+
+        // The Machine Speaks First: immediately play question audio
+        if (data.audio_b64) {
+          playAudio(data.audio_b64);
+        }
       } catch (err) {
-        alert("Failed to connect to server: " + err);
+        alert("Network error: " + err);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `Start Viva Exam`;
+        btn.innerHTML = `<span>Start viva</span>`;
       }
     }
 
-    function displayQuestion(q, audioB64) {
-      document.getElementById("lblQProgress").textContent = `Question ${currentIndex + 1} of ${totalQuestions}`;
-      document.getElementById("lblQLevel").textContent = q.level || "Understand";
+    function renderQuestion(q, audioB64) {
+      document.getElementById("lblProgress").textContent = `Question ${currentIndex + 1} of ${totalQuestions}`;
+      document.getElementById("lblBloom").textContent = q.level || "Understand";
+      document.getElementById("progressFill").style.width = `${((currentIndex + 1) / totalQuestions) * 100}%`;
       document.getElementById("txtQuestion").textContent = q.text;
-      
-      currentAudioBase64 = audioB64;
-      resetRecordingUI();
 
-      if (audioB64 && audioB64.length > 50) {
-        playAudio(audioB64);
-      }
+      currentAudioBase64 = audioB64;
+      resetRecordingState();
     }
 
     function playAudio(b64) {
-      const player = document.getElementById("audioPlayer");
-      player.src = `data:audio/mp3;base64,${b64}`;
-      player.play().catch(e => console.log("Audio autoplay restricted by browser policy"));
+      if (!b64 || b64.length < 50) return;
+      const audio = document.getElementById("audioElement");
+      audio.src = `data:audio/mp3;base64,${b64}`;
+      audio.play().catch(e => console.log("Audio autoplay prevented"));
     }
 
     function replayAudio() {
@@ -652,9 +1264,8 @@
       }
     }
 
-    // Audio Recording via MediaRecorder
+    // Recording Controls with Live Web Audio Analyser
     async function toggleRecording() {
-      const circle = document.getElementById("btnRecordToggle");
       if (mediaRecorder && mediaRecorder.state === "recording") {
         stopRecording();
       } else {
@@ -674,28 +1285,30 @@
 
         mediaRecorder.onstop = () => {
           audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-          document.getElementById("btnSubmitAnswer").disabled = false;
-          stream.getTracks().forEach(track => track.stop());
+          document.getElementById("btnSubmit").disabled = false;
+          stream.getTracks().forEach(t => t.stop());
+          teardownAudioMeter();
         };
+
+        // Web Audio Analyser for 5 real volume bars
+        setupAudioMeter(stream);
 
         mediaRecorder.start();
         secondsElapsed = 0;
-        updateTimerDisplay();
+        updateRecordingTimer();
+
         timerInterval = setInterval(() => {
           secondsElapsed++;
-          updateTimerDisplay();
-          if (secondsElapsed >= 90) { // 90s cap constraint
+          updateRecordingTimer();
+          if (secondsElapsed >= 90) {
             stopRecording();
           }
         }, 1000);
 
-        const circle = document.getElementById("btnRecordToggle");
-        circle.classList.add("recording");
-        circle.textContent = "⏹️";
-        document.getElementById("recStatusLabel").textContent = "Recording answer... Click to finish.";
-        document.getElementById("btnSubmitAnswer").disabled = true;
+        document.getElementById("recCard").classList.add("is-recording");
+        document.getElementById("btnSubmit").disabled = true;
       } catch (err) {
-        alert("Allow microphone access, then try again: " + err.message);
+        alert("Please allow microphone access: " + err.message);
       }
     }
 
@@ -704,36 +1317,81 @@
         mediaRecorder.stop();
       }
       clearInterval(timerInterval);
-      const circle = document.getElementById("btnRecordToggle");
-      circle.classList.remove("recording");
-      circle.textContent = "🎤";
-      document.getElementById("recStatusLabel").textContent = "Recording complete. Ready to submit.";
+      document.getElementById("recCard").classList.remove("is-recording");
+      document.getElementById("recStatus").textContent = "Recording complete";
+      document.getElementById("recStatus").classList.remove("warning");
+      document.getElementById("recHelper").textContent = "Tap Submit answer to grade with IBM Granite";
     }
 
-    function resetRecordingUI() {
+    function resetRecordingState() {
       clearInterval(timerInterval);
+      teardownAudioMeter();
       secondsElapsed = 0;
-      updateTimerDisplay();
       audioBlob = null;
-      document.getElementById("btnSubmitAnswer").disabled = true;
-      const circle = document.getElementById("btnRecordToggle");
-      circle.classList.remove("recording");
-      circle.textContent = "🎤";
-      document.getElementById("recStatusLabel").textContent = "Click mic to start answering (max 90s)";
+      document.getElementById("btnSubmit").disabled = true;
+      document.getElementById("recCard").classList.remove("is-recording");
+      document.getElementById("recStatus").textContent = "Tap to answer";
+      document.getElementById("recStatus").classList.remove("warning");
+      document.getElementById("recHelper").textContent = "Answers are capped at 90 seconds";
     }
 
-    function updateTimerDisplay() {
+    function updateRecordingTimer() {
       const mins = Math.floor(secondsElapsed / 60);
       const secs = secondsElapsed % 60;
-      document.getElementById("recTimer").textContent = 
-        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      const str = `${mins}:${String(secs).padStart(2, '0')}`;
+      const statusEl = document.getElementById("recStatus");
+      statusEl.textContent = `Recording… ${str}`;
+
+      if (secondsElapsed >= 80) {
+        statusEl.classList.add("warning");
+        document.getElementById("recHelper").textContent = `Auto-stops in ${90 - secondsElapsed}s`;
+      }
     }
 
-    // Answer Submission
+    function setupAudioMeter(stream) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioCtx();
+        const source = audioContext.createMediaStreamSource(stream);
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 64;
+        source.connect(analyserNode);
+
+        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+        const bars = document.querySelectorAll("#meterBars .meter-bar");
+
+        function draw() {
+          if (!analyserNode) return;
+          analyserNode.getByteFrequencyData(dataArray);
+          // Sample 5 buckets
+          for (let i = 0; i < 5; i++) {
+            const val = dataArray[i * 2] || 0;
+            const h = Math.max(4, Math.round((val / 255) * 24));
+            if (bars[i]) bars[i].style.height = `${h}px`;
+          }
+          animFrameId = requestAnimationFrame(draw);
+        }
+        draw();
+      } catch (e) {
+        console.warn("Web Audio Analyser not available:", e);
+      }
+    }
+
+    function teardownAudioMeter() {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      if (audioContext && audioContext.state !== "closed") {
+        audioContext.close();
+      }
+      analyserNode = null;
+      audioContext = null;
+      document.querySelectorAll("#meterBars .meter-bar").forEach(b => b.style.height = "6px");
+    }
+
+    // Answer Submission & Evaluation
     async function submitAnswer() {
-      const btn = document.getElementById("btnSubmitAnswer");
+      const btn = document.getElementById("btnSubmit");
       btn.disabled = true;
-      btn.innerHTML = `<span class="spinner"></span> Evaluating answer...`;
+      btn.innerHTML = `<span>Transcribing…</span>`;
 
       const formData = new FormData();
       formData.append("session_id", currentSessionId);
@@ -753,63 +1411,124 @@
         if (resp.status !== 200 || data.error) {
           alert("Error: " + (data.error || "Submission failed"));
           btn.disabled = false;
-          btn.innerHTML = `Submit Answer`;
+          btn.innerHTML = `<span>Submit answer</span>`;
           return;
         }
 
-        displayResult(data);
+        renderResult(data);
+        navTo("result");
       } catch (err) {
-        alert("Network error: " + err);
+        alert("Evaluation network error: " + err);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `Submit Answer`;
+        btn.innerHTML = `<span>Submit answer</span>`;
       }
     }
 
-    function displayResult(res) {
-      hideAllSections();
-      document.getElementById("secResult").classList.remove("hidden");
-
-      // Content score
-      const content = res.content || {};
-      document.getElementById("valContentScore").innerHTML = 
-        `${(content.score || 0).toFixed(1)}<span style="font-size: 20px;">/10</span>`;
-      document.getElementById("valVerdict").textContent = (content.verdict || "Evaluated").toUpperCase();
-
-      // Delivery score
-      const fluency = res.fluency || {};
-      document.getElementById("valFluencyScore").innerHTML = 
-        `${fluency.fluency_score || 0}<span style="font-size: 20px;">/100</span>`;
-      document.getElementById("valBand").textContent = fluency.band || "Good";
-
-      // Chips
-      document.getElementById("chipWpm").textContent = `⚡ ${fluency.wpm || 0} wpm`;
-      document.getElementById("chipFillers").textContent = `💬 ${fluency.filler_count || 0} fillers`;
-      document.getElementById("chipPauses").textContent = `⏸️ ${fluency.pause_count || 0} pauses`;
-      document.getElementById("chipLongest").textContent = `⏱️ longest ${fluency.longest_pause || 0}s`;
-      document.getElementById("chipConf").textContent = `🎯 confidence ${(fluency.confidence || 90).toFixed(0)}%`;
-
-      // Transcript & feedback
-      document.getElementById("txtTranscript").textContent = res.transcript || "(No words recognized)";
-      document.getElementById("txtFeedback").textContent = content.feedback || "Answer recorded successfully.";
-
-      // Next button label
-      const nextBtn = document.getElementById("btnNextQuestion");
-      if (res.has_next) {
-        nextBtn.innerHTML = `<span>Next Question →</span>`;
-      } else {
-        nextBtn.innerHTML = `<span>View Final Scorecard 🏆</span>`;
-      }
+    function skipQuestion() {
+      submitAnswer(); // Submits empty audio blob for partial/zero score
     }
 
-    async function nextQuestion() {
-      currentIndex++;
-      if (currentIndex >= totalQuestions) {
-        showScorecard();
+    // 700ms easeOutCubic Number Count-Up
+    function animateCountUp(element, endVal, isDecimal = false, suffix = "") {
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReduced) {
+        element.innerHTML = `${isDecimal ? endVal.toFixed(1) : Math.round(endVal)}<span class="score-denom">${suffix}</span>`;
         return;
       }
 
-      const nextBtn = document.getElementById("btnNextQuestion");
+      const duration = 700;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // easeOutCubic: 1 - pow(1 - progress, 3)
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const currentVal = ease * endVal;
+
+        element.innerHTML = `${isDecimal ? currentVal.toFixed(1) : Math.round(currentVal)}<span class="score-denom">${suffix}</span>`;
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          element.innerHTML = `${isDecimal ? endVal.toFixed(1) : Math.round(endVal)}<span class="score-denom">${suffix}</span>`;
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    function renderResult(data) {
+      const content = data.content || {};
+      const fluency = data.fluency || {};
+
+      // Animated Big Scores
+      animateCountUp(document.getElementById("valContent"), content.score || 0, true, "/10");
+      animateCountUp(document.getElementById("valDelivery"), fluency.fluency_score || 0, false, "/100");
+
+      // Verdict and Band Pills
+      const verdictEl = document.getElementById("pillVerdict");
+      const verd = (content.verdict || "evaluated").toLowerCase();
+      verdictEl.textContent = verd.toUpperCase();
+      verdictEl.className = `pill ${verd === "correct" ? "pill-good" : (verd === "partially correct" ? "pill-warn" : "pill-bad")}`;
+
+      const bandEl = document.getElementById("pillBand");
+      const band = fluency.band || "Good";
+      bandEl.textContent = band;
+      bandEl.className = `pill ${band === "Excellent" || band === "Good" ? "pill-good" : (band === "Average" ? "pill-warn" : "pill-bad")}`;
+
+      // Staggered Metric Chips
+      const chips = [
+        { text: `${fluency.wpm || 0} wpm`, warn: (fluency.wpm < 110 || fluency.wpm > 165) },
+        { text: `${fluency.filler_count || 0} fillers`, warn: (fluency.filler_count > 3) },
+        { text: `${fluency.pause_count || 0} pauses`, warn: (fluency.pause_count > 2) },
+        { text: `longest ${fluency.longest_pause || 0}s`, warn: (fluency.longest_pause > 1.5) },
+        { text: `confidence ${Math.round(fluency.confidence || 90)}%`, warn: false }
+      ];
+
+      const chipsBox = document.getElementById("chipsContainer");
+      chipsBox.innerHTML = "";
+      chips.forEach((c, idx) => {
+        const div = document.createElement("div");
+        div.className = `metric-chip ${c.warn ? "warn" : ""}`;
+        div.textContent = c.text;
+        div.style.animationDelay = `${idx * 40}ms`;
+        chipsBox.appendChild(div);
+      });
+
+      // Transcript
+      document.getElementById("txtTranscript").textContent = data.transcript || "(No spoken words detected)";
+
+      // Feedback & Missing Points
+      document.getElementById("txtFeedback").textContent = content.feedback || "Answer evaluated.";
+      const listMissing = document.getElementById("listMissing");
+      listMissing.innerHTML = "";
+      if (content.missing_points && content.missing_points.length > 0) {
+        content.missing_points.slice(0, 3).forEach(pt => {
+          const li = document.createElement("li");
+          li.textContent = pt;
+          listMissing.appendChild(li);
+        });
+      }
+
+      // Next Action Label
+      const nextBtn = document.getElementById("btnNext");
+      if (data.has_next) {
+        nextBtn.innerHTML = `<span>Next question →</span>`;
+      } else {
+        nextBtn.innerHTML = `<span>View final scorecard</span>`;
+      }
+    }
+
+    async function handleNextClick() {
+      currentIndex++;
+      if (currentIndex >= totalQuestions) {
+        await loadScorecard();
+        navTo("scorecard");
+        return;
+      }
+
+      const nextBtn = document.getElementById("btnNext");
       nextBtn.disabled = true;
 
       try {
@@ -817,64 +1536,63 @@
         const data = await resp.json();
 
         if (resp.status !== 200 || data.error) {
-          showScorecard();
+          await loadScorecard();
+          navTo("scorecard");
           return;
         }
 
-        displayQuestion(data.question, data.audio_b64);
-        hideAllSections();
-        document.getElementById("secQuestion").classList.remove("hidden");
+        renderQuestion(data.question, data.audio_b64);
+        navTo("question");
+
+        if (data.audio_b64) {
+          playAudio(data.audio_b64);
+        }
       } catch (e) {
-        showScorecard();
+        await loadScorecard();
+        navTo("scorecard");
       } finally {
         nextBtn.disabled = false;
       }
     }
 
-    async function showScorecard() {
-      hideAllSections();
-      document.getElementById("secScorecard").classList.remove("hidden");
-
+    // Scorecard Presentation
+    async function loadScorecard() {
       try {
         const resp = await fetch(`/api/scorecard/${currentSessionId}`);
         const data = await resp.json();
 
-        document.getElementById("cardSubject").textContent = 
-          `Subject: ${data.subject || "Viva"} • Level: ${data.level || "undergraduate"}`;
+        document.getElementById("scSubjectTitle").textContent = `${data.subject || "Viva"} Scorecard`;
+        document.getElementById("scSessionId").textContent = data.session_id || currentSessionId;
+        document.getElementById("scDateStr").textContent = new Date().toLocaleDateString("en-GB", {
+          day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+        });
 
-        document.getElementById("avgContent").textContent = `${data.average_content || 0}%`;
-        document.getElementById("avgFluency").textContent = `${data.average_fluency || 0}/100`;
-        document.getElementById("avgTotal").textContent = `${data.average_total || 0}%`;
+        animateCountUp(document.getElementById("scTotal"), data.average_total || 0, false, "%");
+        animateCountUp(document.getElementById("scAvgContent"), data.average_content || 0, false, "%");
+        animateCountUp(document.getElementById("scAvgDelivery"), data.average_fluency || 0, false, "/100");
 
-        const tbody = document.getElementById("scorecardTableBody");
+        const tbody = document.getElementById("scTableBody");
         tbody.innerHTML = "";
-        (data.answers || []).forEach(a => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>Q${a.index + 1}</td>
-            <td style="max-width: 320px;">${a.question_text || "Viva Question"}</td>
-            <td><strong>${a.content_pct}%</strong> (${a.content.score}/10)</td>
-            <td><strong>${a.fluency.fluency_score}</strong> (${a.fluency.wpm} wpm)</td>
-            <td style="color: #38bdf8; font-weight:700;">${a.total}%</td>
+        (data.answers || []).forEach((a, i) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td style="max-width: 380px;">${a.question_text || "Question"}</td>
+            <td class="text-right">${a.content_pct}%</td>
+            <td class="text-right">${a.fluency.fluency_score}</td>
+            <td class="text-right" style="font-weight: 700;">${a.total}%</td>
           `;
-          tbody.appendChild(row);
+          tbody.appendChild(tr);
         });
       } catch (err) {
-        console.error("Scorecard render error:", err);
+        console.error("Scorecard loading error:", err);
       }
-    }
-
-    function restartViva() {
-      currentSessionId = null;
-      currentIndex = 0;
-      hideAllSections();
-      document.getElementById("secSetup").classList.remove("hidden");
     }
 
     // Teacher Dashboard
     async function loadDashboard() {
-      const tbody = document.getElementById("dashboardTableBody");
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading records...</td></tr>`;
+      const tbody = document.getElementById("dashTableBody");
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 32px; color: var(--ink-3);">Loading past sessions…</td></tr>`;
 
       try {
         const resp = await fetch("/api/sessions?limit=25");
@@ -882,36 +1600,65 @@
         const sessions = data.sessions || [];
 
         if (sessions.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No viva sessions recorded yet.</td></tr>`;
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-illustration">
+                    <div class="empty-circle"></div>
+                    <div class="empty-circle"></div>
+                    <div class="empty-circle"></div>
+                  </div>
+                  <div style="font-weight: 600; color: var(--ink); margin-bottom: var(--s1);">No vivas recorded yet</div>
+                  <div style="font-size: 15px; color: var(--ink-3); margin-bottom: var(--s5);">Run a viva session to see class analytics here.</div>
+                  <button type="button" class="btn-primary" style="width: auto; padding: 0 var(--s5); height: 44px; font-size: 15px;" onclick="navTo('setup')">Start a viva</button>
+                </div>
+              </td>
+            </tr>
+          `;
+          document.getElementById("dashTotalSessions").textContent = "0";
+          document.getElementById("dashAvgContent").innerHTML = `0<span class="score-denom">%</span>`;
+          document.getElementById("dashAvgDelivery").innerHTML = `0<span class="score-denom">/100</span>`;
           return;
         }
 
+        let totalContent = 0;
+        let totalFluency = 0;
+
         tbody.innerHTML = "";
         sessions.forEach(s => {
-          const dt = s.created_at ? new Date(s.created_at).toLocaleDateString() : "Recent";
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${dt}</td>
-            <td><strong>${s.subject || "N/A"}</strong></td>
-            <td>${s.level || "UG"}</td>
+          totalContent += (s.average_content || 0);
+          totalFluency += (s.average_fluency || 0);
+
+          const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "Recent";
+          const cPct = Math.min(s.average_content || 0, 100);
+          const fPct = Math.min(s.average_fluency || 0, 100);
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${dateStr}</td>
+            <td style="font-weight: 600; color: var(--ink);">${s.subject || "N/A"}</td>
+            <td style="color: var(--ink-3); text-transform: capitalize;">${s.level || "undergraduate"}</td>
             <td>
-              <div style="font-weight:600; color:#38bdf8;">${s.average_content || 0}%</div>
-              <div style="width:100%; height:6px; background:#1e293b; border-radius:3px; margin-top:4px;">
-                <div style="width:${Math.min(s.average_content || 0, 100)}%; height:100%; background:#38bdf8; border-radius:3px;"></div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="sparkline-wrap">
+                  <div class="spark-content" style="width: ${cPct}%;"></div>
+                  <div class="spark-fluency" style="width: ${fPct}%;"></div>
+                </div>
+                <span style="font-size: 14px; color: var(--ink-3);">${s.average_content}% / ${s.average_fluency}</span>
               </div>
             </td>
-            <td>
-              <div style="font-weight:600; color:#a78bfa;">${s.average_fluency || 0}/100</div>
-              <div style="width:100%; height:6px; background:#1e293b; border-radius:3px; margin-top:4px;">
-                <div style="width:${Math.min(s.average_fluency || 0, 100)}%; height:100%; background:#a78bfa; border-radius:3px;"></div>
-              </div>
-            </td>
-            <td style="color: #34d399; font-weight:700; font-size:15px;">${s.average_total || 0}%</td>
+            <td class="text-right" style="font-weight: 700; color: var(--ink);">${s.average_total || 0}%</td>
           `;
-          tbody.appendChild(row);
+          tbody.appendChild(tr);
         });
+
+        const n = sessions.length;
+        document.getElementById("dashTotalSessions").textContent = String(n);
+        document.getElementById("dashAvgContent").innerHTML = `${Math.round(totalContent / n)}<span class="score-denom">%</span>`;
+        document.getElementById("dashAvgDelivery").innerHTML = `${Math.round(totalFluency / n)}<span class="score-denom">/100</span>`;
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger);">Failed to load dashboard records.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--bad);">Failed to load dashboard records.</td></tr>`;
       }
     }
   </script>
