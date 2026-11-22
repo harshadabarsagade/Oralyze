@@ -1093,26 +1093,28 @@
       <!-- 9. ABOUT US & CREATOR SHOWCASE (viewAbout)                 -->
       <!-- ========================================================== -->
       <section id="viewAbout" class="hidden-view flex flex-col w-full pb-16">
+        <!-- Section Header: Meet the Developer -->
+        <header class="mb-6 pb-2">
+          <span class="text-[12px] font-bold uppercase tracking-wider text-secondary block mb-1">Meet the Developer</span>
+          <h1 class="text-[28px] sm:text-[34px] font-bold text-on-surface tracking-tight">Meet the Developer</h1>
+        </header>
+
         <!-- Profile Hero Card -->
         <div class="bg-surface-container-lowest rounded-[28px] p-6 sm:p-8 shadow-sm border border-line/60 mb-8 relative overflow-hidden">
           <div class="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/10 via-primary-container/5 to-transparent rounded-full -mr-16 -mt-16 pointer-events-none"></div>
 
           <div class="flex flex-col md:flex-row items-start md:items-center gap-6 relative z-10">
-            <!-- Profile Avatar with Open To Work Ring -->
+            <!-- Profile Avatar (Clean, no badge overlay) -->
             <div class="relative shrink-0">
               <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-white shadow-lg bg-surface-container">
                 <img src="./assets/mohit-avatar.jpg" onerror="this.onerror=null; this.src='https://avatars.githubusercontent.com/u/212524134?v=4';" alt="Mohit Raj" class="w-full h-full object-cover">
               </div>
-              <span class="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-[#0E9F6E] border-2 border-white flex items-center justify-center text-white text-[14px] shadow-sm" title="Active & Open to Work">
-                ✓
-              </span>
             </div>
 
             <!-- Profile Details -->
             <div class="flex-1">
               <div class="flex flex-wrap items-center gap-2.5 mb-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#DEF7EC] text-[#0E9F6E] border border-[#0E9F6E]/30 shadow-xs">
-                  <span class="w-2 h-2 rounded-full bg-[#0E9F6E] animate-ping"></span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#DEF7EC] text-[#0E9F6E] border border-[#0E9F6E]/30 shadow-xs">
                   Open to Work • Full-Stack & AI Roles
                 </span>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-secondary border border-outline-variant/30">
@@ -1120,7 +1122,7 @@
                 </span>
               </div>
 
-              <h1 class="text-[28px] sm:text-[34px] font-bold text-on-surface tracking-tight leading-tight">Mohit Raj</h1>
+              <h2 class="text-[28px] sm:text-[34px] font-bold text-on-surface tracking-tight leading-tight">Mohit Raj</h2>
               <p class="text-[15px] sm:text-[16px] text-primary font-semibold mb-2">Technical Team Lead & Full-Stack Developer | AI Systems & Technical Leadership</p>
               
               <p class="text-[14px] sm:text-[15px] text-secondary leading-relaxed max-w-[680px] mb-4">
@@ -1489,6 +1491,28 @@
                 Repo ko clone karein: <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">git clone https://github.com/mohitraj8503/Oralyze.git</code>. Uske baad <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">pip install -r requirements.txt</code> chalayein. <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">.env.example</code> ko <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">.env</code> copy karke apna <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">IBM_API_KEY</code> aur <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">WATSONX_PROJECT_ID</code> enter karein, aur <code class="bg-white px-1.5 py-0.5 rounded text-xs font-mono">python app.py</code> se start karein.
               </div>
             </details>
+
+            <!-- FAQ 8 -->
+            <details class="group bg-surface-container-low rounded-2xl p-4 sm:p-5 border border-line/40 transition-all cursor-pointer">
+              <summary class="flex items-center justify-between font-bold text-[15px] sm:text-[16px] text-on-surface select-none list-none">
+                <span>Kya student Hindi ya Hinglish mein viva answer de sakta hai?</span>
+                <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-secondary text-sm group-open:rotate-180 transition-transform duration-200 shrink-0 ml-3">▼</span>
+              </summary>
+              <div class="mt-3 pt-3 border-t border-surface-container-highest/50 text-[14px] text-secondary leading-relaxed">
+                Haan! Oralyze multi-language speech recognition aur Watson STT models ko seamlessly support karta hai. Teacher viva create karte waqt preferred language (English / Hindi / Mixed) select kar sakte hain, aur evaluation engine student ke spoken dialect aur technical vocabulary ko accurately process karta hai.
+              </div>
+            </details>
+
+            <!-- FAQ 9 -->
+            <details class="group bg-surface-container-low rounded-2xl p-4 sm:p-5 border border-line/40 transition-all cursor-pointer">
+              <summary class="flex items-center justify-between font-bold text-[15px] sm:text-[16px] text-on-surface select-none list-none">
+                <span>Examination ke dauran anti-cheating aur tab-switch proctoring kaise kaam karti hai?</span>
+                <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-secondary text-sm group-open:rotate-180 transition-transform duration-200 shrink-0 ml-3">▼</span>
+              </summary>
+              <div class="mt-3 pt-3 border-t border-surface-container-highest/50 text-[14px] text-secondary leading-relaxed">
+                Student examination screen par Page Visibility API ke through tab switching monitor hoti hai. Agar student viva ke dauran dusre browser tab ya external app par switch karta hai, toh system audit event record karta hai jo teacher ke live monitor aur final evaluation report me highlight hota hai.
+              </div>
+            </details>
           </div>
         </div>
       </section>
@@ -1496,8 +1520,8 @@
       <!-- ========================================================== -->
       <!-- RESUME INTERACTIVE MODAL VIEWER (No leaving site)         -->
       <!-- ========================================================== -->
-      <div id="resumeModal" class="hidden fixed inset-0 z-50 items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-sm overflow-y-auto" onclick="if(event.target===this) closeResumeModal()">
-        <div class="bg-surface-container-lowest w-full max-w-[840px] max-h-[92vh] rounded-[24px] shadow-2xl border border-line/60 flex flex-col overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+      <div id="resumeModal" class="hidden fixed inset-0 z-50 items-center justify-center p-2 sm:p-6 bg-black/80 backdrop-blur-sm overflow-hidden" onclick="if(event.target===this) closeResumeModal()">
+        <div class="bg-surface-container-lowest w-full max-w-[860px] h-[92vh] max-h-[92vh] rounded-[24px] shadow-2xl border border-line/60 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           <!-- Modal Header -->
           <div class="px-5 py-4 border-b border-surface-container-highest/60 flex items-center justify-between bg-white shrink-0">
             <div class="flex items-center gap-3">
@@ -1506,8 +1530,7 @@
               </div>
               <div>
                 <h3 class="text-[17px] font-bold text-on-surface leading-tight">Mohit Raj — Resume</h3>
-                <span class="text-xs text-[#0E9F6E] font-semibold flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#0E9F6E]"></span>
+                <span class="text-xs text-[#0E9F6E] font-semibold">
                   Open to Work • Full-Stack & AI Roles
                 </span>
               </div>
@@ -1524,10 +1547,10 @@
             </div>
           </div>
 
-          <!-- Modal Scrollable Body with High-Res Image -->
-          <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-surface-container-low flex flex-col items-center">
-            <div class="w-full max-w-[700px] bg-white rounded-xl shadow-md border border-line/60 overflow-hidden">
-              <img src="./assets/resume-preview.png" alt="Mohit Raj Resume" class="w-full h-auto object-contain">
+          <!-- Modal Scrollable Body with High-Res Image (Fully Scrollable) -->
+          <div class="p-3 sm:p-6 flex-1 min-h-0 overflow-y-auto overscroll-contain bg-surface-container-low flex flex-col items-center">
+            <div class="w-full max-w-[740px] bg-white rounded-xl shadow-md border border-line/60 overflow-hidden my-auto">
+              <img src="./assets/resume-preview.png" alt="Mohit Raj Resume" class="w-full h-auto object-contain block">
             </div>
           </div>
 
