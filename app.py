@@ -20,6 +20,7 @@ GET  /api/health               -> system status
 import base64
 import datetime
 import logging
+import os
 import random
 import string
 import uuid
@@ -111,8 +112,12 @@ def dashboard_view():
 def health_check():
     missing = Config.missing_keys()
     cloudant_active = store.cloudant_enabled()
+    mode = "demo" if Config.MOCK_MODE else "live"
+    provider = os.getenv("LLM_PROVIDER", "ibm")
     return jsonify({
         "ok": True,
+        "mode": mode,
+        "provider": provider,
         "mock_mode": Config.MOCK_MODE,
         "cloudant": cloudant_active,
         "missing_keys": missing

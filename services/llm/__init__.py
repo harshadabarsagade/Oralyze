@@ -9,6 +9,8 @@ from services.llm.gemini import GeminiProvider
 
 logger = logging.getLogger("oralyze.llm")
 
+DEFAULT_FALLBACK_ORDER = ["ibm", "openrouter", "groq", "gemini"]
+
 PROVIDERS: dict[str, type[LLMProvider]] = {
     "ibm": IBMGraniteProvider,
     "openrouter": OpenRouterProvider,
