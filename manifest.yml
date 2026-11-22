@@ -1,0 +1,9 @@
+---
+applications:
+- name: oralyze
+  memory: 256M
+  instances: 1
+  buildpack: python_buildpack
+  command: python app.py
+  env:
+    FLASK_ENV: production
