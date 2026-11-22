@@ -1,39 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 130" width="600" height="130" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 140" width="620" height="140" fill="none">
   <defs>
-    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#3B5BFF"/>
       <stop offset="100%" stop-color="#705CF6"/>
     </linearGradient>
-    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#EDF1FF"/>
-    </linearGradient>
-    <filter id="badgeGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#3B5BFF" flood-opacity="0.45"/>
-    </filter>
   </defs>
 
-  <!-- Glowing Emblem Badge -->
-  <g transform="translate(24, 20)">
-    <rect width="90" height="90" rx="26" fill="url(#primaryGrad)" filter="url(#badgeGlow)"/>
-    <circle cx="45" cy="45" r="30" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2" stroke-dasharray="4 4"/>
-    <circle cx="45" cy="45" r="16" fill="#FFFFFF" fill-opacity="0.15"/>
-    <!-- Center Audio Equalizer Waveform -->
-    <path d="M35 45v-9M45 45v-18M55 45v-9" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
-    <path d="M35 45v9M45 45v18M55 45v9" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Icon Emblem -->
+  <g transform="translate(15, 20)">
+    <rect width="100" height="100" rx="28" fill="url(#iconBg)"/>
+    <circle cx="50" cy="50" r="32" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2.5" stroke-dasharray="5 4"/>
+    <circle cx="50" cy="50" r="18" fill="#FFFFFF" fill-opacity="0.2"/>
+    <path d="M40 50v-10M50 50v-20M60 50v-10" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+    <path d="M40 50v10M50 50v20M60 50v10" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
   </g>
 
-  <!-- Brand Title: Bright Solid White with subtle gradient -->
-  <text x="142" y="74" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'SF Pro Display', Roboto, sans-serif" font-size="52" font-weight="800" letter-spacing="-0.03em" fill="#FFFFFF">
+  <!-- Large Brand Name - Pure White 100% -->
+  <text x="140" y="82" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-0.03em" fill="#FFFFFF">
     Oralyze
   </text>
-  <!-- Accent Electric Blue Dot -->
-  <circle cx="348" cy="68" r="6.5" fill="#3B5BFF"/>
+  <circle cx="365" cy="74" r="7" fill="#3B5BFF"/>
 
-  <!-- Subtitle Pill / Tagline (Bright, Crisp White on Dark GitHub) -->
-  <g transform="translate(144, 88)">
-    <rect width="254" height="24" rx="12" fill="#3B5BFF" fill-opacity="0.2" stroke="#3B5BFF" stroke-opacity="0.4" stroke-width="1"/>
-    <text x="127" y="16" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="11" font-weight="700" letter-spacing="0.16em" fill="#38BDF8">
+  <!-- Subtitle Pill -->
+  <g transform="translate(142, 98)">
+    <rect width="258" height="24" rx="12" fill="#3B5BFF" fill-opacity="0.25" stroke="#3B5BFF" stroke-opacity="0.6" stroke-width="1.2"/>
+    <text x="129" y="16.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" letter-spacing="0.14em" fill="#38BDF8">
       AI VOICE VIVA VOCE EXAMINER
     </text>
   </g>

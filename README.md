@@ -1,7 +1,7 @@
 <div align="center">
 
   <br />
-  <img src="assets/logo.svg" alt="Oralyze Wordmark" width="520" />
+  <img src="assets/logo.png" alt="Oralyze Wordmark" width="520" />
   <br />
 
   <h3>Autonomous AI Voice Viva Voce Examiner & Acoustic Fluency Evaluator</h3>
