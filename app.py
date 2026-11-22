@@ -93,6 +93,31 @@ def _get_or_synthesize_audio(text: str, language: str) -> tuple[str, str]:
     return b64, "audio/mp3"
 
 
+@app.route("/config.js")
+def config_js():
+    return send_from_directory("static", "config.js")
+
+
+@app.route("/manifest.webmanifest")
+def manifest():
+    return send_from_directory("static", "manifest.webmanifest")
+
+
+@app.route("/js/<path:filename>")
+def js_files(filename):
+    return send_from_directory("static/js", filename)
+
+
+@app.route("/assets/<path:filename>")
+def assets(filename):
+    return send_from_directory("static/assets", filename)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory("static", "favicon.ico")
+
+
 @app.route("/")
 def index():
     return send_from_directory("static", "index.html")
@@ -101,6 +126,11 @@ def index():
 @app.route("/join")
 def join_redirect():
     return send_from_directory("static", "index.html")
+
+
+@app.route("/data/<path:filename>")
+def data_files(filename):
+    return send_from_directory("data", filename)
 
 
 @app.route("/dashboard")
@@ -277,6 +307,16 @@ def get_viva(code: str):
             audio_b64, _ = _get_or_synthesize_audio(q_curr["text"], room["language"])
             room["audio_cache"][curr_idx] = audio_b64
 
+    client_questions = [{
+        "id": q["id"],
+        "index": q["index"],
+        "text": q["text"],
+        "bloom": q.get("bloom", q.get("level", "understand")),
+        "level": q.get("bloom", q.get("level", "understand")),
+        "key_points": q.get("key_points", []),
+        "ideal_seconds": q.get("ideal_seconds", 40)
+    } for q in room["questions"]]
+
     return jsonify({
         "code": room["code"],
         "subject": room["subject"],
@@ -285,13 +325,16 @@ def get_viva(code: str):
         "difficulty": room.get("difficulty") or room.get("level") or "medium",
         "language": room["language"],
         "total": room["total"],
+        "total_questions": room["total"],
         "current_index": curr_idx,
         "question": {
             "id": q_curr["id"],
             "index": q_curr["index"],
             "text": q_curr["text"],
-            "level": q_curr["level"]
+            "bloom": q_curr.get("bloom", q_curr.get("level", "understand")),
+            "level": q_curr.get("bloom", q_curr.get("level", "understand"))
         } if q_curr else None,
+        "questions": client_questions,
         "audio_b64": audio_b64,
         "created_at": room["created_at"]
     })
@@ -332,22 +375,25 @@ def submit_viva_answer(code: str):
         audio_bytes = audio_file.read()
         content_type = audio_file.content_type or "audio/webm"
 
-    # 1. Watson STT (with fallback)
-    try:
-        stt_result = transcribe(audio_bytes=audio_bytes, content_type=content_type, language=language)
-    except Exception as e:
-        logger.error("[viva] STT error: %s", e)
-        stt_result = {"transcript": "", "words": []}
+    # 1. Speech Transcription & Text Handling
+    transcript = ""
+    words = []
 
-    transcript = stt_result.get("transcript", "").strip()
-    words = stt_result.get("words", [])
+    # Only call remote Watson STT if live service is configured and audio was sent
+    if not Config.MOCK_MODE and Config.STT_URL and Config.IBM_API_KEY and audio_bytes and len(audio_bytes) > 200:
+        try:
+            stt_result = transcribe(audio_bytes=audio_bytes, content_type=content_type, language=language)
+            transcript = stt_result.get("transcript", "").strip()
+            words = stt_result.get("words", [])
+        except Exception as e:
+            logger.error("[viva] STT error: %s", e)
 
-    # If STT transcript was empty but browser gave a live transcript, use browser transcript as text fallback
+    # Use live_transcript if Watson STT did not produce a real live transcript
     if not transcript and live_transcript:
-        transcript = live_transcript
+        transcript = live_transcript.strip()
         if not words:
-            # Construct simulated word timestamps from live transcript
-            t_words = live_transcript.split()
+            # Construct word timestamps from live transcript for delivery scoring
+            t_words = transcript.split()
             cur_t = 0.5
             for w in t_words:
                 words.append({
@@ -357,20 +403,33 @@ def submit_viva_answer(code: str):
                     "confidence": 0.90
                 })
                 cur_t += 0.38
+    elif not transcript:
+        # Fallback to transcribe if neither was provided
+        try:
+            stt_result = transcribe(audio_bytes=audio_bytes, content_type=content_type, language=language)
+            transcript = stt_result.get("transcript", "").strip()
+            words = stt_result.get("words", [])
+        except Exception:
+            transcript = ""
+            words = []
 
     # 2. Content Evaluation (Granite / Keyword fallback)
     try:
         content_eval = grade_answer(question=matched_q, transcript=transcript, language=language)
     except Exception as e:
         logger.error("[viva] Grading error: %s", e)
-        content_eval = {
-            "score": 5.0,
-            "verdict": "partially correct",
-            "correct_points": [],
-            "missing_points": [],
-            "feedback": "Answer recorded.",
-            "ideal_answer": ""
-        }
+        try:
+            from services.granite import _keyword_grade
+            content_eval = _keyword_grade(matched_q, transcript)
+        except Exception:
+            content_eval = {
+                "score": 0.0,
+                "verdict": "incorrect",
+                "correct_points": [],
+                "missing_points": matched_q.get("key_concepts", []),
+                "feedback": "Unable to evaluate answer due to an internal error.",
+                "ideal_answer": matched_q.get("ideal_answer", "")
+            }
 
     # 3. Delivery Fluency Analytics
     fluency_eval = analyze_fluency(words=words, transcript=transcript, language=language)
@@ -468,7 +527,8 @@ def get_viva_scorecard(code: str):
     if room and room.get("answers"):
         answers = room["answers"]
         n = len(answers)
-        avg_content = round(sum(a["content_pct"] for a in answers) / n, 1)
+        avg_content_score = round(sum(float(a.get("content", {}).get("score", a.get("content_pct", 0) / 10.0)) for a in answers) / n, 1)
+        avg_content_pct = round(avg_content_score * 10.0, 1)
         avg_delivery = round(sum(a["delivery"]["fluency_score"] for a in answers) / n, 1)
         avg_total = round(sum(a["total"] for a in answers) / n, 1)
 
@@ -481,8 +541,12 @@ def get_viva_scorecard(code: str):
             "level": room.get("level", "undergraduate"),
             "language": room.get("language", "en"),
             "average_total": avg_total,
-            "average_content": avg_content,
+            "overall_score": avg_total,
+            "average_content": avg_content_score,
+            "content_score": avg_content_score,
+            "average_content_pct": avg_content_pct,
             "average_delivery": avg_delivery,
+            "delivery_score": avg_delivery,
             "band": band,
             "answers": answers,
             "created_at": room["created_at"]
@@ -503,7 +567,7 @@ def _persist_viva_room(room: dict) -> None:
         return
 
     n = len(answers)
-    avg_content = round(sum(a["content_pct"] for a in answers) / n, 1)
+    avg_content_score = round(sum(float(a.get("content", {}).get("score", a.get("content_pct", 0) / 10.0)) for a in answers) / n, 1)
     avg_delivery = round(sum(a["delivery"]["fluency_score"] for a in answers) / n, 1)
     avg_total = round(sum(a["total"] for a in answers) / n, 1)
 
@@ -515,9 +579,12 @@ def _persist_viva_room(room: dict) -> None:
         "topic": room.get("topic", ""),
         "level": room.get("level", "undergraduate"),
         "language": room.get("language", "en"),
-        "average_content": avg_content,
+        "average_content": avg_content_score,
+        "content_score": avg_content_score,
         "average_delivery": avg_delivery,
+        "delivery_score": avg_delivery,
         "average_total": avg_total,
+        "overall_score": avg_total,
         "answers": answers,
         "questions_count": room["total"],
         "created_at": room["created_at"]

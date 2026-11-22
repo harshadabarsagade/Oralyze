@@ -1,3 +1,4 @@
+sed -n '2508,2520p' static/index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,12 +12,12 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#3B5BFF">
 
-  
+
   <!-- Fonts & Design Tokens from stitch_oralyze_ai_viva_platform -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-  
+
     <!-- Oralyze Client Config & Offline Engine -->
   <script src="./config.js"></script>
   <script src="./js/grader.js"></script>
@@ -75,7 +76,7 @@
       }
     };
   </script>
-  
+
   <style>
     @layer base {
       html, body { margin: 0; padding: 0; }
@@ -93,9 +94,9 @@
       }
     }
     ::-webkit-scrollbar { display: none; }
-    
+
     .hidden-view { display: none !important; }
-    
+
     /* Code inputs */
     .code-box-input {
       width: 54px;
@@ -116,7 +117,7 @@
       border-color: #3b5bff;
       box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.15);
     }
-    
+
     @media (max-width: 640px) {
       .code-box-input {
         width: 44px;
@@ -124,14 +125,14 @@
         font-size: 24px;
       }
     }
-    
+
     /* Print Styles */
     @media print {
       body { background: #fff !important; font-size: 11pt; padding: 12mm; }
       header, .no-print { display: none !important; }
       .print-border { border: 1px solid #dbe2fa !important; box-shadow: none !important; }
     }
-  
+
     /* Premium Smooth UI Transitions & Keyframe Animations */
     @keyframes fadeInScale {
       from {
@@ -234,7 +235,7 @@
       animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-  
+
     /* Green Tick Success Modal Animation */
     @keyframes checkmarkCircle {
       0% { stroke-dashoffset: 166; }
@@ -270,7 +271,7 @@
       animation: checkmarkPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-  
+
     /* ============================================================
        ORALYZE 128PX MIC COMPONENT & IN-MIC VERDICTS
        States: idle, recording, checking, correct, partial, wrong
@@ -500,7 +501,7 @@
         <button type="button" id="navBtn_studentJoin" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('studentJoin')">Join Viva</button>
         <button type="button" id="navBtn_dashboard" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('dashboard')">Dashboard</button>
       </nav>
-      
+
       <!-- Right Action Items -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
         <button type="button" onclick="startMathDemo()" class="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-[12.5px] sm:text-[13px] font-semibold text-secondary hover:text-primary bg-surface-container-low/80 hover:bg-white border border-line/60 backdrop-blur-md shadow-xs transition-all cursor-pointer">
@@ -684,7 +685,7 @@
               <span>Advanced settings</span>
               <svg id="advancedChevron" class="w-4 h-4 text-[#7A8798] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
-            
+
             <div id="advancedSettingsPanel" class="hidden flex-col gap-4 pt-4">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <!-- Difficulty -->
@@ -924,7 +925,7 @@
 
         <!-- 5. White card (22px radius, 32px padding, shadow, 128px mic) -->
         <div class="w-full bg-white rounded-[22px] p-6 sm:p-8 shadow-[0_4px_24px_rgba(13,21,38,0.06)] border border-[#E7EAF0] flex flex-col items-center text-center relative" id="sRecCard">
-          
+
           <!-- Static/Pulsing Mic Rings Container -->
           <div class="relative w-[176px] h-[176px] flex items-center justify-center my-3">
             <div id="micRing1" class="mic-ring-static-1"></div>
@@ -977,6 +978,37 @@
             </button>
           </div>
 
+          <!-- Microphone Error & Fallback Banner -->
+          <div id="micErrorBanner" class="hidden w-full mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-left transition-all">
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-amber-600 text-[22px] shrink-0 mt-0.5">mic_off</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-[14px] text-amber-950 mb-0.5" id="micErrorTitle">Microphone Unavailable</h4>
+                <p class="text-[13px] text-amber-800 leading-relaxed mb-3" id="micErrorMsg">
+                  Microphone access was denied or device not detected. You can type your answer below or retry recording.
+                </p>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="retryMicrophone()" class="px-3.5 py-1.5 rounded-lg bg-primary text-white text-[13px] font-semibold hover:bg-primary-container transition-all cursor-pointer">
+                    Retry Microphone
+                  </button>
+                  <button type="button" onclick="toggleManualAnswer(true)" class="px-3.5 py-1.5 rounded-lg bg-white border border-line text-on-surface text-[13px] font-semibold hover:bg-surface-container transition-all cursor-pointer">
+                    Type Answer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Answer Fallback Container -->
+          <div id="manualAnswerContainer" class="hidden w-full mb-4 text-left">
+            <div class="flex items-center justify-between mb-1.5 px-1">
+              <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary">Manual Answer Input</span>
+              <button type="button" onclick="toggleManualAnswer(false)" class="text-[12px] font-medium text-primary hover:underline cursor-pointer">Use voice</button>
+            </div>
+            <textarea id="manualAnswerInput" placeholder="Type your academic response here if voice input is unavailable..." rows="3" class="w-full p-3.5 rounded-xl border border-line bg-surface-container-lowest text-on-surface text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition-all"></textarea>
+            <p class="text-[12px] text-secondary mt-1 px-1">Submit Answer button activates when text is typed.</p>
+          </div>
+
           <!-- Transcript Card inside the main card (max 168px, faded top edge) -->
           <div class="w-full bg-[#FBFCFD] rounded-[16px] p-5 border border-[#E7EAF0] text-left relative overflow-hidden" id="sLiveTranscriptBox">
             <div class="transcript-scroll-box" id="transcriptScrollArea">
@@ -987,10 +1019,13 @@
           </div>
         </div>
 
-        <!-- 6. Bottom bar: Skip question (left) & Submit answer (right, disabled until audio exists) -->
+        <!-- 6. Bottom bar: Skip question (left), Text toggle (center) & Submit answer (right) -->
         <div class="flex items-center justify-between mt-6 px-1">
           <button type="button" onclick="skipStudentQuestion()" class="text-[15px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer py-2 px-3">
             Skip question
+          </button>
+          <button type="button" onclick="toggleManualAnswer()" class="text-[14px] font-medium text-primary hover:underline cursor-pointer py-2 px-3">
+            Type answer instead
           </button>
           <button type="button" id="btnSubmitAnswer" onclick="submitStudentAnswer()" disabled class="h-12 px-6 rounded-xl bg-primary text-white text-[15px] font-semibold flex items-center gap-2 hover:bg-primary-container transition-all active:scale-[0.98] shadow-sm disabled:opacity-40 disabled:pointer-events-none cursor-pointer">
             <span>Submit answer</span>
@@ -1094,12 +1129,12 @@
             <div class="text-[40px] md:text-[52px] font-bold text-on-surface leading-tight font-mono" id="scTotalVal">0%</div>
           </div>
           <div class="bg-surface-container-lowest p-6 rounded-[20px] shadow-sm text-center">
-            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Content Avg</span>
-            <div class="text-[40px] md:text-[52px] font-bold text-primary leading-tight font-mono" id="scContentAvg">0%</div>
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Content Avg (/10)</span>
+            <div class="text-[40px] md:text-[52px] font-bold text-primary leading-tight font-mono" id="scContentAvg">0.0/10</div>
           </div>
           <div class="bg-surface-container-lowest p-6 rounded-[20px] shadow-sm text-center">
-            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Fluency Avg</span>
-            <div class="text-[40px] md:text-[52px] font-bold text-tertiary leading-tight font-mono" id="scDeliveryAvg">0</div>
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-secondary block mb-1">Fluency Avg (/100)</span>
+            <div class="text-[40px] md:text-[52px] font-bold text-tertiary leading-tight font-mono" id="scDeliveryAvg">0/100</div>
           </div>
         </div>
 
@@ -1111,9 +1146,9 @@
                 <tr class="border-b border-surface-container-highest/60 text-secondary text-[12px] uppercase font-bold tracking-wider">
                   <th class="py-3 px-4">#</th>
                   <th class="py-3 px-4">Question</th>
-                  <th class="py-3 px-4 text-right">Content</th>
-                  <th class="py-3 px-4 text-right">Delivery</th>
-                  <th class="py-3 px-4 text-right">Total</th>
+                  <th class="py-3 px-4 text-right">Content (/10)</th>
+                  <th class="py-3 px-4 text-right">Delivery (/100)</th>
+                  <th class="py-3 px-4 text-right">Total (%)</th>
                 </tr>
               </thead>
               <tbody id="scTableRows" class="divide-y divide-surface-container-highest/40">
@@ -1222,7 +1257,7 @@
     }
     updateBuildBadge();
 
-    
+
     // -------------------------------------------------------------
     // SECTION 4: MATH DEMO MODE (100% Offline & Instant)
     // -------------------------------------------------------------
@@ -1358,22 +1393,92 @@
       });
     }
 
+    // Universal clipboard helper with navigator.clipboard and execCommand fallback
+    async function copyTextToClipboard(text) {
+      if (!text) return false;
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (e) {
+          console.warn("navigator.clipboard failed, attempting fallback:", e);
+        }
+      }
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "-9999px";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        return ok;
+      } catch (err) {
+        console.error("execCommand copy fallback failed:", err);
+        return false;
+      }
+    }
+
+    // Stop currently playing TTS audio and cancel speech synthesis
+    function stopCurrentQuestionAudio() {
+      const audio = document.getElementById("audioPlayer");
+      if (audio) {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch (e) {}
+      }
+      if ("speechSynthesis" in window) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {}
+      }
+      questionAudioPlaying = false;
+    }
+
     // Hash-based router: #/teacher, #/join, #/viva/A7K2QX, #/result, #/dashboard
     function handleHashRouting() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let queryCode = urlParams.get("code") || urlParams.get("room") || "";
+
       const hash = window.location.hash || "#/";
-      const clean = hash.replace(/^#\/?/, "");
-      
+      let clean = hash.replace(/^#\/?/, "");
+
+      if (clean.includes("?")) {
+        const [pathPart, queryPart] = clean.split("?");
+        clean = pathPart;
+        const hashParams = new URLSearchParams(queryPart);
+        if (!queryCode) queryCode = hashParams.get("code") || hashParams.get("room") || "";
+      }
+
       if (!clean || clean === "home" || clean === "landing") {
-        navTo("landing", false);
+        if (queryCode) {
+          activeCode = queryCode.toUpperCase().trim();
+          navTo("studentQuestion", false);
+          loadVivaRoom(activeCode);
+        } else {
+          navTo("landing", false);
+        }
       } else if (clean === "teacher" || clean === "create") {
         navTo("teacherSetup", false);
       } else if (clean === "join") {
         navTo("studentJoin", false);
+        if (queryCode) {
+          const codeInputs = document.querySelectorAll(".code-box-input");
+          if (codeInputs.length === 6) {
+            queryCode.toUpperCase().slice(0, 6).split("").forEach((c, i) => {
+              codeInputs[i].value = c;
+            });
+          }
+        }
       } else if (clean.startsWith("viva/")) {
         const parts = clean.split("/");
-        const code = parts[1];
+        const code = parts[1] || queryCode;
         if (code) {
-          activeCode = code.toUpperCase();
+          activeCode = code.toUpperCase().trim();
           navTo("studentQuestion", false);
           loadVivaRoom(activeCode);
         } else {
@@ -1386,7 +1491,6 @@
         renderScorecard(activeCode);
       } else if (clean === "dashboard") {
         navTo("dashboard", false);
-        navTo("about", false);
       } else {
         navTo("landing", false);
       }
@@ -1394,7 +1498,7 @@
 
     window.addEventListener("hashchange", handleHashRouting);
 
-    
+
     function toggleMobileMenu() {
       const menu = document.getElementById("mobileNavMenu");
       const iconOpen = document.getElementById("iconMenuOpen");
@@ -1436,7 +1540,7 @@
         else if (screen === "studentQuestion" || screen === "studentResult") activeBtn = document.getElementById("navBtn_studentJoin");
         else if (screen === "scorecard") activeBtn = document.getElementById("navBtn_dashboard");
       }
-      
+
       const allBtns = document.querySelectorAll("[id^='navBtn_']");
       allBtns.forEach(b => {
         b.classList.remove("text-primary", "font-semibold");
@@ -1483,6 +1587,7 @@
 
     // Screen Router
     function navTo(screen, updateHash = true) {
+      stopCurrentQuestionAudio();
       closeMobileMenu();
       if (monitorTimer) {
         clearInterval(monitorTimer);
@@ -1532,10 +1637,830 @@
       updateNavSlider(screen);
     }
 
+    async function generateQuestionPreview() {
+      const prompt = (promptInput ? promptInput.value : "").trim();
+      if (!prompt || prompt.length < 5) {
+        alert("Please enter a subject or topic for the viva questions.");
+        return;
+      }
+
+      const diff = document.getElementById("tAdvDifficulty").value || "medium";
+      const lang = document.getElementById("tAdvLanguage").value || "English";
+
+      const f1 = document.getElementById("tSetupFrame1");
+      const f2 = document.getElementById("tSetupFrame2");
+      const f3 = document.getElementById("tSetupFrame3");
+
+      f1.classList.add("hidden");
+      f3.classList.add("hidden");
+      f2.classList.remove("hidden");
+      f2.classList.add("flex");
+
+      try {
+        const preview = await window.OralyzeApi.previewViva(prompt, diff, lang, selectedQCount);
+        generatedVivaData = preview;
+
+        // Render Frame 3
+        renderGeneratedQuestionsFrame(preview);
+
+        f2.classList.remove("flex");
+        f2.classList.add("hidden");
+        f3.classList.remove("hidden");
+        f3.classList.add("flex");
+      } catch (err) {
+        alert("Generation error: " + err.message);
+        f2.classList.remove("flex");
+        f2.classList.add("hidden");
+        f1.classList.remove("hidden");
+      }
+    }
+
+    function returnToInputFrame() {
+      const f1 = document.getElementById("tSetupFrame1");
+      const f2 = document.getElementById("tSetupFrame2");
+      const f3 = document.getElementById("tSetupFrame3");
+      f3.classList.remove("flex");
+      f3.classList.add("hidden");
+      f2.classList.remove("flex");
+      f2.classList.add("hidden");
+      f1.classList.remove("hidden");
+    }
+
+    function renderGeneratedQuestionsFrame(data) {
+      const count = data.questions ? data.questions.length : 0;
+      document.getElementById("tGenHeaderTitle").textContent = `${count} questions ready`;
+      document.getElementById("tGenMetaSubtitle").textContent = `${data.subject || 'Engineering'} • ${data.topic || 'Viva Voce'}`;
+
+      const listContainer = document.getElementById("tGenQuestionsList");
+      listContainer.innerHTML = "";
+
+      data.questions.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.className = "w-full bg-white rounded-[18px] p-5 border border-[#E7EAF0] shadow-xs flex flex-col gap-3 relative transition-all";
+        card.id = `qCard_${idx}`;
+
+        const bloomTag = (q.bloom || q.level || "understand").toUpperCase();
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-[#F1F3F8] text-[#505F7A] text-[12px] font-bold flex items-center justify-center">${idx + 1}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#EDF1FF] text-[#2A45D6] border border-[#3B5BFF]/20">${bloomTag}</span>
+              <span class="text-[12px] text-[#7A8798]">~${q.ideal_seconds || 40}s answer</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="editQuestionText(${idx})" class="p-1.5 rounded-lg text-[#7A8798] hover:text-[#3B5BFF] hover:bg-[#F6F7F9] transition-colors" title="Edit question">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </button>
+              <button type="button" onclick="deleteQuestion(${idx})" class="p-1.5 rounded-lg text-[#7A8798] hover:text-[#D64545] hover:bg-[#FDECEC] transition-colors" title="Delete question">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="text-[16px] font-medium text-on-surface leading-snug" id="qText_${idx}">${q.text}</p>
+          <div class="flex flex-col gap-1.5 pt-1 border-t border-[#F1F3F8]">
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-[#7A8798]">Key Rubric Points:</span>
+            <div class="flex flex-wrap gap-1.5">
+              ${(q.key_points || []).map(kp => `<span class="px-2.5 py-1 rounded-md bg-[#FBFCFD] border border-[#E7EAF0] text-[12px] text-[#41506A]">${kp}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    function editQuestionText(idx) {
+      if (!generatedVivaData || !generatedVivaData.questions[idx]) return;
+      const current = generatedVivaData.questions[idx].text;
+      const updated = prompt("Edit viva question text:", current);
+      if (updated && updated.trim()) {
+        generatedVivaData.questions[idx].text = updated.trim();
+        const el = document.getElementById(`qText_${idx}`);
+        if (el) el.textContent = updated.trim();
+      }
+    }
+
+    function deleteQuestion(idx) {
+      if (!generatedVivaData || !generatedVivaData.questions) return;
+      if (generatedVivaData.questions.length <= 1) {
+        alert("A viva must have at least one question.");
+        return;
+      }
+      generatedVivaData.questions.splice(idx, 1);
+      renderGeneratedQuestionsFrame(generatedVivaData);
+    }
+
+    async function commitAndCreateViva() {
+      if (!generatedVivaData || !generatedVivaData.questions || !generatedVivaData.questions.length) {
+        alert("Please generate questions first.");
+        return;
+      }
+
+      const btn = document.getElementById("btnCommitCreateViva");
+      btn.disabled = true;
+      btn.innerHTML = `<span>Creating room…</span>`;
+
+      try {
+        const payload = {
+          title: generatedVivaData.title || "Viva Examination",
+          subject: generatedVivaData.subject || "Engineering",
+          topic: generatedVivaData.topic || "Viva Voce",
+          difficulty: generatedVivaData.difficulty || "medium",
+          language: generatedVivaData.language || "English",
+          count: generatedVivaData.questions.length,
+          questions: generatedVivaData.questions
+        };
+
+        const created = await window.OralyzeApi.createViva(payload);
+        activeCode = created.code;
+
+        document.getElementById("tLiveRoomCode").textContent = activeCode;
+        document.getElementById("tLiveSubjectMeta").textContent = `${created.subject} • ${created.difficulty || 'Medium'}`;
+        document.getElementById("tLiveTopicTitle").textContent = created.topic || created.subject;
+
+        // Render teacher live feed
+        const feed = document.getElementById("tLiveFeed");
+        feed.innerHTML = "";
+        created.questions.forEach((q, idx) => {
+          const item = document.createElement("div");
+          item.className = "flex items-center justify-between p-4 bg-surface-container-low rounded-[14px]";
+          item.id = `monitor_q_${idx}`;
+          item.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-outline-variant" id="dot_q_${idx}"></span>
+              <div>
+                <span class="text-[13px] font-semibold text-secondary">Question ${idx + 1}</span>
+                <p class="text-[15px] font-medium text-on-surface">${q.text}</p>
+              </div>
+            </div>
+            <div id="score_q_${idx}" class="text-[13px] font-semibold text-secondary">Waiting</div>
+          `;
+          feed.appendChild(item);
+        });
+
+        navTo("teacherLive");
+      } catch (err) {
+        alert("Room creation failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Create viva</span>`;
+      }
+    }
+
+
+    async function shareVivaLink() {
+      if (!activeCode) return;
+      const base = window.location.origin + window.location.pathname.replace(/\/+$/, "");
+      const shareUrl = `${base}/#/viva/${activeCode}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Oralyze AI Viva Examination',
+            text: `Join the live oral viva examination session. Room Code: ${activeCode}`,
+            url: shareUrl
+          });
+          return;
+        } catch (err) {
+          // If share was cancelled or denied, fall through to clipboard copy
+        }
+      }
+      await copyShareLink(shareUrl);
+    }
+
+    async function copyShareLink(url) {
+      const base = window.location.origin + window.location.pathname.replace(/\/+$/, "");
+      const shareUrl = url || `${base}/#/viva/${activeCode}`;
+      const btnText = document.getElementById("share-btn-text");
+      const ok = await copyTextToClipboard(shareUrl);
+      if (ok) {
+        if (btnText) {
+          btnText.textContent = "Link Copied!";
+          setTimeout(() => btnText.textContent = "Share Link", 2000);
+        }
+      } else {
+        if (btnText) {
+          btnText.textContent = "Copy Failed";
+          setTimeout(() => btnText.textContent = "Share Link", 2000);
+        }
+        window.prompt("Copy this link to join the viva:", shareUrl);
+      }
+    }
+
+    async function copyCode() {
+      if (!activeCode) return;
+      const el = document.getElementById('copy-text');
+      const ok = await copyTextToClipboard(activeCode);
+      if (ok) {
+        if (el) {
+          el.innerText = 'Copied!';
+          setTimeout(() => el.innerText = 'Copy Code', 2000);
+        }
+      } else {
+        if (el) {
+          el.innerText = 'Copy Failed';
+          setTimeout(() => el.innerText = 'Copy Code', 2000);
+        }
+        window.prompt("Room code:", activeCode);
+      }
+    }
+
+    // Teacher Flow: Live Monitor Polling
+    function startLiveMonitor() {
+      if (!activeCode) return;
+      pollLiveMonitor();
+      monitorTimer = setInterval(pollLiveMonitor, 2000);
+    }
+
+    async function pollLiveMonitor() {
+      if (!activeCode) return;
+      try {
+        const data = await window.OralyzeApi.getLive(activeCode);
+        const statusEl = document.getElementById("tLiveStatusText");
+
+        if (data.status === "waiting") {
+          statusEl.textContent = "Awaiting student entry…";
+        } else if (data.status === "in_progress" || data.status === "answering") {
+          statusEl.textContent = `Aarav Sharma (2024-CS-082) (Aarav Sharma) answering question ${(data.current_question || 0) + 1} of ${data.total_questions}…`;
+        } else if (data.status === "completed" || data.status === "done") {
+          statusEl.textContent = "Viva completed!";
+          statusEl.className = "text-[13px] font-semibold text-tertiary";
+        }
+
+        // Update answers in list
+        (data.answers || []).forEach((a, idx) => {
+          const dot = document.getElementById(`dot_q_${idx}`);
+          const scoreEl = document.getElementById(`score_q_${idx}`);
+          if (dot) {
+            dot.className = "w-2.5 h-2.5 rounded-full bg-tertiary";
+          }
+          if (scoreEl) {
+            scoreEl.innerHTML = `
+              <span class="text-primary font-semibold">Content: ${a.content_score || a.content?.score || 0}</span> ·
+              <span class="text-tertiary font-semibold">Delivery: ${a.delivery_score || a.delivery?.fluency_score || 0}</span> ·
+              <strong class="text-on-surface">${a.overall_score || a.total || 0}%</strong>
+            `;
+          }
+        });
+      } catch (e) {
+        console.warn("[monitor] poll note:", e);
+      }
+    }
+
+    async function viewScorecardFromTeacher() {
+      if (!activeCode) return;
+      await renderScorecard(activeCode);
+      navTo("scorecard");
+    }
+
+    // Student Flow: 6-Box Code Input
+    function setupCodeInputs() {
+      const boxes = document.querySelectorAll(".code-box-input");
+      boxes.forEach((box, idx) => {
+        if (!box.value) box.value = "";
+        box.oninput = e => {
+          const val = e.target.value.toUpperCase();
+          e.target.value = val;
+          if (val && idx < boxes.length - 1) {
+            boxes[idx + 1].focus();
+          }
+        };
+        box.onkeydown = e => {
+          if (e.key === "Backspace" && !e.target.value && idx > 0) {
+            boxes[idx - 1].focus();
+          }
+        };
+        box.onpaste = e => {
+          e.preventDefault();
+          const paste = (e.clipboardData || window.clipboardData).getData("text").trim().toUpperCase();
+          if (paste.length === 6) {
+            paste.split("").forEach((char, i) => {
+              if (boxes[i]) boxes[i].value = char;
+            });
+            boxes[5].focus();
+          }
+        };
+      });
+      if (boxes[0]) boxes[0].focus();
+    }
+
+    async function submitJoinCode() {
+      const boxes = document.querySelectorAll(".code-box-input");
+      let code = "";
+      boxes.forEach(b => code += b.value.trim().toUpperCase());
+
+      if (code.length !== 6) {
+        alert("Please enter the complete 6-character room code.");
+        return;
+      }
+
+      const btn = document.getElementById("btnStudentJoin");
+      btn.disabled = true;
+      btn.innerHTML = `<span>Joining viva…</span>`;
+
+      try {
+        await loadVivaRoom(code);
+      } catch (err) {
+        alert("Error joining viva: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Enter Viva Room</span>`;
+      }
+    }
+
+    async function loadVivaRoom(code) {
+      const data = await window.OralyzeApi.getViva(code);
+      activeCode = data.code;
+      currentQIndex = (data.current_index !== undefined) ? data.current_index : 0;
+      totalQuestions = data.total || data.total_questions || (data.questions ? data.questions.length : 5);
+      const q = data.question || (data.questions ? data.questions[currentQIndex] : null);
+      if (!q || !q.text) throw new Error("Viva question data is missing.");
+      renderStudentQuestion(q, data.audio_b64 || null);
+      navTo("studentQuestion");
+    }
+
+    let micState = 'idle';
+    let questionAudioPlaying = false;
+    let studentAudioBuffer = null;
+
+    function setMicState(state, verdictData) {
+      micState = state;
+      const btn = document.getElementById("btnStudentMic");
+      const micIcon = document.getElementById("micIconSvg");
+      const checkingSvg = document.getElementById("micCheckingSvg");
+      const verdictSvg = document.getElementById("micVerdictSvg");
+      const instructionText = document.getElementById("micInstructionText");
+      const pulseRing = document.getElementById("micPulseRing");
+      const burstRing = document.getElementById("micBurstRing");
+      const feedbackBox = document.getElementById("verdictFeedbackBox");
+      const submitBtn = document.getElementById("btnSubmitAnswer");
+
+      if (!btn) return;
+
+      btn.className = "mic-circle-btn relative z-10";
+      micIcon.classList.add("hidden");
+      checkingSvg.classList.add("hidden");
+      verdictSvg.classList.add("hidden");
+      if (pulseRing) pulseRing.classList.add("hidden");
+      if (burstRing) burstRing.className = "hidden";
+
+      if (state === 'idle') {
+        btn.classList.add("mic-state-idle");
+        btn.disabled = false;
+        micIcon.classList.remove("hidden");
+        instructionText.textContent = "Tap the mic and answer out loud";
+        instructionText.className = "text-[17px] font-semibold text-on-surface";
+        if (feedbackBox) feedbackBox.classList.add("hidden");
+      } else if (state === 'speaking') {
+        btn.classList.add("mic-state-idle");
+        btn.disabled = true;
+        micIcon.classList.remove("hidden");
+        instructionText.textContent = "Listen to the question…";
+        instructionText.className = "text-[17px] font-semibold text-primary";
+      } else if (state === 'recording') {
+        btn.classList.add("mic-state-recording");
+        btn.disabled = false;
+        micIcon.classList.remove("hidden");
+        if (pulseRing) pulseRing.classList.remove("hidden");
+        instructionText.textContent = "Listening… speak naturally";
+        instructionText.className = "text-[17px] font-semibold text-primary";
+        if (feedbackBox) feedbackBox.classList.add("hidden");
+      } else if (state === 'checking') {
+        btn.classList.add("mic-state-checking");
+        btn.disabled = true;
+        checkingSvg.classList.remove("hidden");
+        instructionText.textContent = "Checking your answer…";
+        instructionText.className = "text-[17px] font-semibold text-secondary";
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = "<span>Checking…</span>";
+        }
+      } else if (state === 'correct') {
+        btn.classList.add("mic-state-correct");
+        btn.disabled = true;
+        verdictSvg.classList.remove("hidden");
+        verdictSvg.innerHTML = '<path d="M14 30 L24 40 L42 18" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="anim-draw-tick"/>';
+        if (burstRing) burstRing.className = "mic-burst-active";
+        instructionText.textContent = "Correct";
+        instructionText.className = "text-[20px] font-[650] text-[#0E9F6E]";
+        setTimeout(() => showVerdictFeedback(verdictData, true), 600);
+      } else if (state === 'partial') {
+        btn.classList.add("mic-state-partial");
+        btn.disabled = true;
+        verdictSvg.classList.remove("hidden");
+        verdictSvg.innerHTML = '<path d="M14 30 L24 40 L42 18 M20 28 H36" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="anim-draw-tick"/>';
+        if (burstRing) burstRing.className = "mic-burst-partial";
+        instructionText.textContent = "Partly correct";
+        instructionText.className = "text-[20px] font-[650] text-[#C2760A]";
+        setTimeout(() => showVerdictFeedback(verdictData, false), 600);
+      } else if (state === 'wrong') {
+        btn.classList.add("mic-state-wrong");
+        btn.disabled = true;
+        verdictSvg.classList.remove("hidden");
+        verdictSvg.innerHTML = '<path d="M16 16 L40 40 M40 16 L16 40" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" class="anim-draw-cross"/>';
+        instructionText.textContent = "Not quite";
+        instructionText.className = "text-[20px] font-[650] text-[#D64545]";
+        setTimeout(() => showVerdictFeedback(verdictData, false), 600);
+      }
+    }
+
+    function showVerdictFeedback(verdictData, isCorrect) {
+      const feedbackBox = document.getElementById("verdictFeedbackBox");
+      const list = document.getElementById("verdictMissingList");
+      if (!feedbackBox || !list) return;
+
+      list.innerHTML = "";
+      const missing = verdictData ? (verdictData.missing_points || []) : [];
+      if (missing.length > 0 && !isCorrect) {
+        missing.slice(0, 3).forEach(m => {
+          const li = document.createElement("li");
+          li.textContent = m;
+          list.appendChild(li);
+        });
+      } else if (verdictData && verdictData.feedback) {
+        const li = document.createElement("li");
+        li.textContent = verdictData.feedback;
+        list.appendChild(li);
+      }
+
+      const nextBtn = document.getElementById("btnNextAfterVerdict");
+      if (nextBtn) {
+        if (currentQIndex + 1 >= totalQuestions) {
+          nextBtn.innerHTML = `<span>View Final Scorecard</span><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+        } else {
+          nextBtn.innerHTML = `<span>Next question</span><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+        }
+      }
+
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.add("flex");
+    }
+
+
+    // 5-Bar Live Level Meter via Web Audio AnalyserNode
+    function setupVisualizer(stream) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 64;
+        source.connect(analyserNode);
+
+        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+        const bars = document.querySelectorAll("#sMeterBars div");
+
+        function draw() {
+          if (!analyserNode) return;
+          analyserNode.getByteFrequencyData(dataArray);
+          for (let i = 0; i < 5; i++) {
+            const val = dataArray[i * 2] || 0;
+            const h = Math.max(6, Math.round((val / 255) * 24));
+            if (bars[i]) {
+              bars[i].style.height = `${h}px`;
+              bars[i].className = "w-[3px] rounded-full bg-primary transition-all duration-75";
+            }
+          }
+          animFrame = requestAnimationFrame(draw);
+        }
+        draw();
+      } catch (e) {
+        console.warn("Visualizer context warning:", e);
+      }
+    }
+
+    function teardownVisualizer() {
+      if (animFrame) cancelAnimationFrame(animFrame);
+      if (audioCtx && audioCtx.state !== "closed") {
+        try { audioCtx.close(); } catch(e) {}
+      }
+      analyserNode = null;
+      audioCtx = null;
+      document.querySelectorAll("#sMeterBars div").forEach(b => {
+        b.style.height = "8px";
+        b.className = "w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75";
+      });
+    }
+
+    // Microphone error and manual text answer handling
+    function showMicError(msg) {
+      const banner = document.getElementById("micErrorBanner");
+      const msgEl = document.getElementById("micErrorMsg");
+      if (banner) {
+        if (msgEl && msg) msgEl.textContent = msg;
+        banner.classList.remove("hidden");
+      }
+      toggleManualAnswer(true);
+    }
+
+    function hideMicError() {
+      const banner = document.getElementById("micErrorBanner");
+      if (banner) banner.classList.add("hidden");
+    }
+
+    function retryMicrophone() {
+      hideMicError();
+      startStudentRecording();
+    }
+
+    function toggleManualAnswer(show) {
+      const container = document.getElementById("manualAnswerContainer");
+      if (!container) return;
+      if (show === undefined) {
+        container.classList.toggle("hidden");
+      } else if (show) {
+        container.classList.remove("hidden");
+      } else {
+        container.classList.add("hidden");
+      }
+      const input = document.getElementById("manualAnswerInput");
+      if (input && !container.classList.contains("hidden")) {
+        input.focus();
+      }
+    }
+
+    // MediaRecorder & Real-Time Acoustic Capture
+    async function startStudentRecording() {
+      stopCurrentQuestionAudio();
+      hideMicError();
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        recordedWordTimings = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const submitBtn = document.getElementById("btnSubmitAnswer");
+          if (submitBtn) submitBtn.disabled = false;
+          stream.getTracks().forEach(t => t.stop());
+          teardownVisualizer();
+        };
+
+        setupVisualizer(stream);
+        setupLiveSpeechPreview();
+
+        mediaRecorder.start();
+        secondsElapsed = 0;
+        updateStudentTimer();
+        timerInterval = setInterval(() => {
+          secondsElapsed++;
+          updateStudentTimer();
+          if (secondsElapsed >= 90) {
+            handleMicClick();
+          }
+        }, 1000);
+
+        const submitBtn = document.getElementById("btnSubmitAnswer");
+        if (submitBtn) submitBtn.disabled = false;
+      } catch (err) {
+        console.warn("Microphone access error:", err);
+        showMicError("Microphone permission was denied or device not detected (" + (err.message || "access denied") + "). You can type your answer below or click Retry.");
+        setMicState('idle');
+      }
+    }
+
+    function stopStudentRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+      if (speechRecognizer) {
+        try { speechRecognizer.stop(); } catch (e) {}
+      }
+      clearInterval(timerInterval);
+    }
+
+    function handleMicClick() {
+      if (micState === 'speaking' || micState === 'checking' || micState === 'correct' || micState === 'partial' || micState === 'wrong') {
+        return;
+      }
+      if (micState === 'recording') {
+        stopStudentRecording();
+        setMicState('checking');
+        submitStudentAnswer();
+      } else {
+        startStudentRecording();
+        setMicState('recording');
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      const studentQView = document.getElementById("viewStudentQuestion");
+      if (!studentQView || studentQView.classList.contains("hidden-view")) return;
+      if (e.code === "Space" && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        handleMicClick();
+      }
+    });
+
+    function renderStudentQuestion(q, audioB64) {
+      stopCurrentQuestionAudio();
+      const skeleton = document.getElementById("sQuestionSkeleton");
+      const qText = document.getElementById("sQText");
+      const bloomPill = document.getElementById("sBloomPill");
+
+      if (skeleton) skeleton.classList.remove("hidden");
+      if (qText) {
+        qText.classList.add("hidden");
+        qText.style.opacity = "0";
+      }
+
+      document.getElementById("sQProgress").textContent = "Question " + (currentQIndex + 1) + " of " + totalQuestions;
+      if (bloomPill) {
+        bloomPill.textContent = (q.bloom || q.level || "understand").toUpperCase();
+      }
+
+      const barContainer = document.getElementById("sProgressBar");
+      if (barContainer) {
+        barContainer.innerHTML = "";
+        for (let i = 0; i < totalQuestions; i++) {
+          const bar = document.createElement("div");
+          bar.className = i <= currentQIndex ? "h-1.5 w-7 rounded-full bg-primary transition-all" : "h-1.5 w-7 rounded-full bg-surface-container-high transition-all";
+          barContainer.appendChild(bar);
+        }
+      }
+
+      resetStudentRecordingUI();
+      setMicState('speaking');
+
+      setTimeout(() => {
+        if (skeleton) skeleton.classList.add("hidden");
+        if (qText) {
+          qText.textContent = q.text;
+          qText.classList.remove("hidden");
+          qText.style.opacity = "1";
+        }
+      }, 180);
+
+      currentAudioB64 = audioB64;
+      speakQuestionWithEndListener(q.text, audioB64);
+    }
+
+    function speakQuestionWithEndListener(text, audioB64) {
+      stopCurrentQuestionAudio();
+      if (audioB64 && audioB64.length > 50) {
+        const audio = document.getElementById("audioPlayer");
+        audio.src = "data:audio/mp3;base64," + audioB64;
+        audio.onended = () => {
+          questionAudioPlaying = false;
+          setMicState('idle');
+        };
+        audio.onerror = () => fallbackSpeechSynthesis(text);
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            questionAudioPlaying = true;
+          }).catch(err => {
+            fallbackSpeechSynthesis(text);
+          });
+        }
+      } else {
+        fallbackSpeechSynthesis(text);
+      }
+    }
+
+    function fallbackSpeechSynthesis(text) {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.lang = "en-IN";
+        const voices = window.speechSynthesis.getVoices();
+        const matched = voices.find(v => v.lang.includes("en-IN") || v.lang.includes("en-GB"));
+        if (matched) utterance.voice = matched;
+
+        utterance.onend = () => {
+          questionAudioPlaying = false;
+          setMicState('idle');
+        };
+        utterance.onerror = () => {
+          questionAudioPlaying = false;
+          setMicState('idle');
+        };
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setMicState('idle');
+      }
+    }
+
+    function replayAudio() {
+      const qText = (document.getElementById("sQText")?.textContent || "").trim();
+      if (!qText) return;
+      setMicState('speaking');
+      speakQuestionWithEndListener(qText, currentAudioB64);
+    }
+
+    function setupLiveSpeechPreview() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const interimEl = document.getElementById("sInterimSpoken");
+      const finalEl = document.getElementById("sFinalSpoken");
+      const caret = document.getElementById("typingCaret");
+
+      if (!SpeechRec) {
+        if (interimEl) interimEl.textContent = "Listening… (Browser live transcription preview not supported; audio will be processed on submit)";
+        return;
+      }
+
+      liveFinalTranscript = "";
+      liveInterimTranscript = "";
+      if (finalEl) finalEl.textContent = "";
+      if (interimEl) interimEl.textContent = "";
+      if (caret) caret.classList.remove("hidden");
+
+      try {
+        speechRecognizer = new SpeechRec();
+        speechRecognizer.continuous = true;
+        speechRecognizer.interimResults = true;
+        speechRecognizer.lang = "en-IN";
+
+        speechRecognizer.onresult = event => {
+          liveInterimTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              const finalStr = event.results[i][0].transcript;
+              liveFinalTranscript += finalStr + " ";
+              const words = finalStr.trim().split(/\s+/);
+              const nowSec = secondsElapsed;
+              words.forEach(w => recordedWordTimings.push({ word: w, end: nowSec, start: Math.max(0, nowSec - 0.3) }));
+            } else {
+              liveInterimTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalEl) finalEl.textContent = liveFinalTranscript;
+          if (interimEl) interimEl.textContent = liveInterimTranscript;
+
+          const scrollArea = document.getElementById("transcriptScrollArea");
+          if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
+        };
+
+        speechRecognizer.onend = () => {
+          // Restart if still in recording state to prevent dropping words on pauses
+          if (micState === 'recording') {
+            try { speechRecognizer.start(); } catch (e) {}
+          }
+        };
+
+        speechRecognizer.onerror = err => {
+          console.warn("Live stream preview note:", err);
+          if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
+            showMicError("Microphone permission was denied. You can type your answer below.");
+          }
+        };
+
+        speechRecognizer.start();
+      } catch (e) {
+        console.warn("Could not start live speech recognizer:", e);
+      }
+    }
+
+    function resetStudentRecordingUI() {
+      clearInterval(timerInterval);
+      if (speechRecognizer) {
+        try { speechRecognizer.stop(); } catch (e) {}
+      }
+      teardownVisualizer();
+      secondsElapsed = 0;
+      audioBlob = null;
+      liveFinalTranscript = "";
+      liveInterimTranscript = "";
+      recordedWordTimings = [];
+      const finalEl = document.getElementById("sFinalSpoken");
+      const interimEl = document.getElementById("sInterimSpoken");
+      const caret = document.getElementById("typingCaret");
+      const timerEl = document.getElementById("sRecTimerWords");
+      const submitBtn = document.getElementById("btnSubmitAnswer");
+      const manualInput = document.getElementById("manualAnswerInput");
+
+      if (manualInput) manualInput.value = "";
+      hideMicError();
+      if (finalEl) finalEl.textContent = "";
+      if (interimEl) interimEl.textContent = "Your words will appear here as you speak.";
+      if (caret) caret.classList.add("hidden");
+      if (timerEl) timerEl.textContent = "0:00 · 0 words";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Submit answer</span><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
+      }
+    }
+
+    function updateStudentTimer() {
+      const mins = Math.floor(secondsElapsed / 60);
+      const secs = secondsElapsed % 60;
+      const wordCount = (liveFinalTranscript + " " + liveInterimTranscript).trim().split(/\s+/).filter(Boolean).length;
+      const timerEl = document.getElementById("sRecTimerWords");
+      if (timerEl) {
+        timerEl.textContent = mins + ":" + String(secs).padStart(2, '0') + " · " + wordCount + " words";
+      }
+    }
+
     function checkMathAnswer(expectedVal, expectedWords, transcript) {
       if (!transcript || typeof transcript !== "string") return false;
       const clean = transcript.trim().toLowerCase();
-      
+
       // Extract isolated numeric digit sequences (e.g. "55", "5", "10")
       const numbersFound = clean.match(/\b\d+\b/g) || [];
       const expectedNumStr = String(expectedVal).trim();
@@ -1573,11 +2498,21 @@
     }
 
     async function submitStudentAnswer() {
+      stopCurrentQuestionAudio();
       if (micState === 'recording') {
         stopStudentRecording();
       }
       setMicState('checking');
-      const transcript = (liveFinalTranscript + " " + liveInterimTranscript).trim();
+
+      const manualVal = (document.getElementById("manualAnswerInput")?.value || "").trim();
+      const spokenVal = (liveFinalTranscript + " " + liveInterimTranscript).trim();
+      const transcript = manualVal || spokenVal;
+
+      if (!transcript) {
+        alert("Please provide an answer by speaking or typing before submitting.");
+        setMicState('idle');
+        return;
+      }
 
       if (isMathDemoActive) {
         const q = MATH_QUESTIONS[currentQIndex];
@@ -1662,13 +2597,14 @@
           Math.max(secondsElapsed, 5)
         );
 
-        const ev = result.evaluation || result;
-        const score = ev.content_score || 0;
-        let verdict = 'wrong';
-        if (score >= 7.0 || ev.verdict === 'correct') {
-          verdict = 'correct';
-        } else if (score >= 4.0 || ev.verdict === 'partially correct') {
-          verdict = 'partial';
+        const ev = result.content || result.evaluation || result;
+        const score = ev.score ?? ev.content_score ?? 0;
+        let verdict = "wrong";
+
+        if (score >= 7.0 || ev.verdict === "correct") {
+          verdict = "correct";
+        } else if (score >= 4.0 || ev.verdict === "partially correct" || ev.verdict === "partiallycorrect") {
+          verdict = "partial";
         }
 
         setMicState(verdict, {
@@ -1677,17 +2613,34 @@
         });
 
       } catch (err) {
-        setMicState('partial', {
-          feedback: "Evaluation completed based on spoken keywords.",
-          missing_points: []
-        });
+        console.error("Submission or grading error:", err);
+        try {
+          const qText = (document.getElementById("sQText")?.textContent || "").trim();
+          const fallbackGrade = window.OralyzeGrader.gradeAnswer(
+            { text: qText, key_concepts: [] },
+            transcript,
+            "English"
+          );
+          let verd = "wrong";
+          if (fallbackGrade.score >= 7.0) verd = "correct";
+          else if (fallbackGrade.score >= 4.0) verd = "partial";
+          setMicState(verd, {
+            feedback: fallbackGrade.feedback || "Answer evaluated offline.",
+            missing_points: fallbackGrade.missing_points || []
+          });
+        } catch (e) {
+          setMicState('wrong', {
+            feedback: "Evaluation failed: " + (err.message || "Network error"),
+            missing_points: ["Submission failed"]
+          });
+        }
       }
     }
 
     function skipStudentQuestion() {
       setMicState('wrong', { feedback: "Question skipped by candidate.", missing_points: ["No answer submitted"] });
     }
-    
+
     function renderStudentResult(data) {
       const ev = data.evaluation || data;
       const contentScore = ev.content_score || 0;
@@ -1699,7 +2652,7 @@
       const verd = (ev.verdict || "evaluated").toLowerCase();
       const verdPill = document.getElementById("resVerdictPill");
       verdPill.textContent = verd.toUpperCase();
-      verdPill.className = verd === "correct" 
+      verdPill.className = verd === "correct"
         ? "px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant"
         : "px-3 py-1 rounded-full text-xs font-semibold bg-error-container text-on-error-container";
 
@@ -1716,7 +2669,7 @@
       ];
       metrics.forEach(m => {
         const span = document.createElement("span");
-        span.className = m.warn 
+        span.className = m.warn
           ? "px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200"
           : "px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30";
         span.textContent = m.text;
@@ -1749,23 +2702,66 @@
       requestAnimationFrame(update);
     }
 
+    let isNavigatingQuestion = false;
+
     async function proceedToNextQuestion() {
-      currentQIndex++;
-      if (currentQIndex >= totalQuestions) {
-        await renderScorecard(activeCode);
-        navTo("scorecard");
-        return;
-      }
+      stopCurrentQuestionAudio();
+      if (isNavigatingQuestion) return;
+      isNavigatingQuestion = true;
 
       try {
+        currentQIndex++;
+        if (currentQIndex >= totalQuestions) {
+          await renderScorecard(activeCode);
+          navTo("scorecard");
+          return;
+        }
+
+        if (isMathDemoActive) {
+          const q = MATH_QUESTIONS[currentQIndex];
+          if (q) {
+            renderStudentQuestion(q, null);
+            navTo("studentQuestion");
+          } else {
+            await renderScorecard(activeCode);
+            navTo("scorecard");
+          }
+          return;
+        }
+
         const data = await window.OralyzeApi.getViva(activeCode);
-        const q = data.questions[currentQIndex];
-        renderStudentQuestion(q, null);
+        if (data.total) totalQuestions = data.total;
+        else if (data.total_questions) totalQuestions = data.total_questions;
+
+        let nextQ = null;
+        if (data.questions && data.questions[currentQIndex]) {
+          nextQ = data.questions[currentQIndex];
+        } else if (data.question) {
+          nextQ = data.question;
+        }
+
+        if (!nextQ || !nextQ.text) {
+          await renderScorecard(activeCode);
+          navTo("scorecard");
+          return;
+        }
+
+        if (typeof nextQ.index === 'number') {
+          currentQIndex = nextQ.index;
+        }
+
+        renderStudentQuestion(nextQ, data.audio_b64 || null);
         navTo("studentQuestion");
-        speakQuestion(q.text, data.language || "en");
       } catch (e) {
-        await renderScorecard(activeCode);
-        navTo("scorecard");
+        console.error("Error proceeding to next question:", e);
+        if (currentQIndex >= totalQuestions) {
+          await renderScorecard(activeCode);
+          navTo("scorecard");
+        } else {
+          alert("Unable to load next question. Please try again.");
+        }
+      } finally {
+        isNavigatingQuestion = false;
       }
     }
 
@@ -1818,7 +2814,7 @@
           tr.innerHTML = `
             <td class="py-3 px-4 font-semibold text-secondary">${idx + 1}</td>
             <td class="py-3 px-4 font-medium text-on-surface max-w-[340px]">${a.question_text || "Question"}</td>
-            <td class="py-3 px-4 text-right font-semibold text-primary">${a.content_score !== undefined ? a.content_score : (a.content_pct || 0)}/10</td>
+            <td class="py-3 px-4 text-right font-semibold text-primary">${a.content_score !== undefined ? a.content_score : (a.content_pct !== undefined ? (a.content_pct / 10).toFixed(1) : 0)}/10</td>
             <td class="py-3 px-4 text-right font-semibold text-tertiary">${a.delivery_score !== undefined ? a.delivery_score : (a.delivery?.fluency_score || 0)}</td>
             <td class="py-3 px-4 text-right font-bold text-on-surface">${a.overall_score !== undefined ? a.overall_score : (a.total || 0)}%</td>
           `;
@@ -1876,7 +2872,7 @@
       }
     }
 
-    
+
     // AI Viva Proctoring & Anti-Cheating System
     let tabSwitchCount = 0;
     document.addEventListener("visibilitychange", () => {

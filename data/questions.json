@@ -443,5 +443,187 @@
       ],
       "ideal_seconds": 35
     }
+  ],
+  "javascript": [
+    {
+      "text": "What is the difference between var, let, and const in JavaScript regarding scope and hoisting?",
+      "level": "understand",
+      "bloom": "understand",
+      "key_points": [
+        "block scope for let and const",
+        "function scope for var",
+        "hoisting with temporal dead zone",
+        "const cannot be reassigned"
+      ],
+      "ideal_seconds": 45
+    },
+    {
+      "text": "How do primitive data types differ from object reference types in JavaScript?",
+      "level": "understand",
+      "bloom": "understand",
+      "key_points": [
+        "passed by value vs passed by reference",
+        "stored on stack vs stored on heap",
+        "mutability of objects",
+        "primitives like number string boolean"
+      ],
+      "ideal_seconds": 40
+    },
+    {
+      "text": "What are arrow functions in JavaScript and how do they handle the this keyword compared to regular functions?",
+      "level": "apply",
+      "bloom": "apply",
+      "key_points": [
+        "lexical scoping of this",
+        "no own this binding",
+        "concise syntax",
+        "cannot be used as constructors"
+      ],
+      "ideal_seconds": 40
+    },
+    {
+      "text": "Explain how the map and filter methods work on JavaScript arrays and how they differ from a forEach loop.",
+      "level": "apply",
+      "bloom": "apply",
+      "key_points": [
+        "map transforms each element into new array",
+        "filter returns elements matching condition",
+        "pure functions without modifying original array",
+        "forEach returns undefined"
+      ],
+      "ideal_seconds": 45
+    },
+    {
+      "text": "How does the JavaScript event loop handle asynchronous operations such as Promises and async/await?",
+      "level": "analyze",
+      "bloom": "analyze",
+      "key_points": [
+        "single-threaded execution",
+        "call stack",
+        "microtask queue for promises",
+        "macrotask or callback queue",
+        "non-blocking event loop"
+      ],
+      "ideal_seconds": 50
+    }
+  ],
+  "html and css": [
+    {
+      "text": "Explain the basic structure of an HTML5 document including the DOCTYPE declaration and semantic tags.",
+      "level": "understand",
+      "bloom": "understand",
+      "key_points": [
+        "DOCTYPE declaration for HTML5 standards",
+        "html head and body tags",
+        "semantic elements like header nav main article",
+        "accessibility and SEO benefits"
+      ],
+      "ideal_seconds": 40
+    },
+    {
+      "text": "What are semantic HTML tags and why should developers prefer them over generic div tags?",
+      "level": "understand",
+      "bloom": "understand",
+      "key_points": [
+        "clear meaning to browser and developer",
+        "better accessibility for screen readers",
+        "improved SEO indexing",
+        "structured document outline"
+      ],
+      "ideal_seconds": 40
+    },
+    {
+      "text": "How do CSS selectors work, and how does selector specificity determine which styles are applied?",
+      "level": "understand",
+      "bloom": "understand",
+      "key_points": [
+        "element class id and inline specificity hierarchy",
+        "cascade and inheritance",
+        "id has higher weight than class",
+        "important rule override"
+      ],
+      "ideal_seconds": 45
+    },
+    {
+      "text": "Describe the CSS Box Model and differentiate between margin, border, padding, and content.",
+      "level": "apply",
+      "bloom": "apply",
+      "key_points": [
+        "content is the actual element",
+        "padding is inner space inside border",
+        "border surrounds padding and content",
+        "margin is external spacing between elements"
+      ],
+      "ideal_seconds": 45
+    },
+    {
+      "text": "What is the difference between standard content-box and border-box in CSS sizing?",
+      "level": "analyze",
+      "bloom": "analyze",
+      "key_points": [
+        "box-sizing property",
+        "content-box adds padding and border to specified width",
+        "border-box includes padding and border within width",
+        "easier responsive layout calculations"
+      ],
+      "ideal_seconds": 40
+    }
+  ],
+  "mathematics": [
+    {
+      "text": "What is 7 plus 8, and how do you calculate it?",
+      "level": "remember",
+      "bloom": "remember",
+      "key_points": [
+        "15",
+        "fifteen",
+        "addition of 7 and 8"
+      ],
+      "ideal_seconds": 20
+    },
+    {
+      "text": "What is 25 minus 9, and what is your mental calculation approach?",
+      "level": "remember",
+      "bloom": "remember",
+      "key_points": [
+        "16",
+        "sixteen",
+        "subtraction of 9 from 25"
+      ],
+      "ideal_seconds": 20
+    },
+    {
+      "text": "What is 6 multiplied by 7?",
+      "level": "remember",
+      "bloom": "remember",
+      "key_points": [
+        "42",
+        "forty-two",
+        "multiplication of 6 and 7"
+      ],
+      "ideal_seconds": 20
+    },
+    {
+      "text": "What is 36 divided by 4?",
+      "level": "apply",
+      "bloom": "apply",
+      "key_points": [
+        "9",
+        "nine",
+        "division of 36 by 4"
+      ],
+      "ideal_seconds": 20
+    },
+    {
+      "text": "What is 15 plus 27?",
+      "level": "apply",
+      "bloom": "apply",
+      "key_points": [
+        "42",
+        "forty-two",
+        "addition of 15 and 27"
+      ],
+      "ideal_seconds": 25
+    }
   ]
 }

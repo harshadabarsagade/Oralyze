@@ -161,6 +161,10 @@
   }
 
   const TOPIC_KEYWORDS = {
+    'javascript': ['javascript', 'js', 'es6', 'ecmascript', 'variable', 'function', 'array', 'async', 'promise', 'callback', 'event loop'],
+    'html and css': ['html', 'css', 'box model', 'selector', 'semantic', 'web', 'dom', 'margin', 'padding', 'border'],
+    'mathematics': ['math', 'mathematics', 'arithmetic', 'addition', 'subtraction', 'multiplication', 'division', 'calculate', 'algebra', 'plus', 'minus'],
+    'python': ['python', 'py', 'list', 'dict', 'tuple', 'generator', 'decorator', 'gil'],
     'dbms': ['dbms', 'database', 'sql', 'acid', 'indexing', 'b+ tree', 'b tree', 'normalization', 'relational', 'transaction', 'superkey', '3nf', 'bcnf'],
     'os': ['os', 'operating system', 'process', 'thread', 'scheduling', 'deadlock', 'semaphore', 'virtual memory', 'paging', 'kernel', 'context switch'],
     'computer networks': ['network', 'networking', 'osi', 'tcp', 'udp', 'ip', 'dns', 'http', 'socket', 'subnet', 'router', 'switch', 'packet'],
@@ -232,7 +236,11 @@
 
       // Determine clean human subject title
       let subjectTitle = 'Computer Science';
-      if (bestCat === 'os') subjectTitle = 'Operating Systems';
+      if (bestCat === 'javascript') subjectTitle = 'JavaScript';
+      else if (bestCat === 'html and css') subjectTitle = 'HTML & CSS';
+      else if (bestCat === 'mathematics') subjectTitle = 'Mathematics';
+      else if (bestCat === 'python') subjectTitle = 'Python';
+      else if (bestCat === 'os') subjectTitle = 'Operating Systems';
       else if (bestCat === 'dbms') subjectTitle = 'Database Systems';
       else if (bestCat === 'computer networks') subjectTitle = 'Computer Networks';
       else if (bestCat === 'data structures') subjectTitle = 'Data Structures & Algorithms';
@@ -343,7 +351,15 @@
       if (!viva) {
         throw new Error('Viva not found. Please verify the code.');
       }
-      return viva;
+      const cIdx = viva.current_index !== undefined ? viva.current_index : (viva.current_question || 0);
+      const qCurr = (viva.questions && cIdx < viva.questions.length) ? viva.questions[cIdx] : null;
+      return {
+        ...viva,
+        total: viva.total || viva.total_questions || (viva.questions ? viva.questions.length : 5),
+        total_questions: viva.total_questions || viva.total || (viva.questions ? viva.questions.length : 5),
+        current_index: cIdx,
+        question: qCurr
+      };
     }
 
     const res = await fetch(`${getApiBase()}/api/viva/${cleanCode}`);
@@ -367,7 +383,7 @@
       const contentResult = window.OralyzeGrader.gradeAnswer(question, liveTranscript, viva.language);
       
       // Compute delivery score
-      const deliveryResult = window.OralyzeGrader.calculateDeliveryScore(wordTimestamps || liveTranscript.split(' '), durationSeconds);
+      const deliveryResult = liveTranscript.trim() ? window.OralyzeGrader.calculateDeliveryScore(wordTimestamps || liveTranscript.trim().split(/\s+/), durationSeconds) : { delivery_score: 0, wpm: 0, filler_ratio: 0, filler_count: 0, pause_count: 0, pace_label: "no_response" };
 
       const overall = Math.round(((contentResult.score * 10) * 0.7) + (deliveryResult.delivery_score * 0.3));
 
@@ -393,6 +409,7 @@
       viva.answers = viva.answers || [];
       viva.answers.push(evaluation);
       viva.current_question = questionIndex + 1;
+      viva.current_index = questionIndex + 1;
       viva.last_score = {
         content: contentResult.score,
         delivery: deliveryResult.delivery_score,
@@ -441,11 +458,11 @@
     if (audioBlob) {
       formData.append('audio', audioBlob, 'answer.wav');
     }
-    formData.append('code', cleanCode);
-    formData.append('question_index', questionIndex);
-    formData.append('transcript', liveTranscript || '');
+    formData.append('qid', String(questionIndex));
 
-    const res = await fetch(`${getApiBase()}/api/answer`, {
+    formData.append('live_transcript', liveTranscript || '');
+
+    const res = await fetch(`${getApiBase()}/api/viva/${cleanCode}/answer`, {
       method: 'POST',
       body: formData
     });
@@ -515,7 +532,7 @@
       throw new Error('Scorecard not found');
     }
 
-    const res = await fetch(`${getApiBase()}/api/scorecard/${key}`);
+    const res = await fetch(`${getApiBase()}/api/viva/${key}/scorecard`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Scorecard not found');

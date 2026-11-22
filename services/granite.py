@@ -96,13 +96,16 @@ def _extract_json(text: str) -> dict | list | None:
 
 
 def chat(messages: list[dict], max_tokens: int = 1200, temperature: float = 0.4, top_p: float = 0.9) -> str:
-    """Call IBM watsonx.ai text chat API for Granite.
-    
-    API Contract:
-    POST {WATSONX_URL}/ml/v1/text/chat?version=2023-05-29
-    Authorization: Bearer <token>
-    {"model_id": "ibm/granite-3-3-8b-instruct", "project_id": "<PROJECT_ID>", ...}
-    """
+    """Call LLM dispatcher or fallback to IBM watsonx.ai text chat API for Granite."""
+    # First attempt dispatcher across configured providers (IBM, OpenRouter, Groq, Gemini)
+    try:
+        output, provider_name = call_llm(messages, max_tokens=max_tokens, temperature=temperature)
+        if output and output.strip():
+            logger.info("[granite] Chat response successfully received from provider=%s", provider_name)
+            return output
+    except Exception as e:
+        logger.warning("[granite] LLM dispatcher call failed: %s; trying direct watsonx if configured", e)
+
     _rate_limit_granite()
     token = get_token()
     url = f"{Config.WATSONX_URL}/ml/v1/text/chat?version=2023-05-29"
@@ -169,7 +172,7 @@ def get_bank_questions(subject: str, n: int = 5) -> list[dict]:
 
 def sanitize_prompt(raw_prompt: str) -> str:
     """Sanitize teacher prompt before sending to model.
-    
+
     Collapse whitespace, strip backticks, {{ }}, control chars, and system:/assistant: prefixes.
     Truncate at 500 chars.
     """
@@ -202,7 +205,7 @@ def preview_viva_from_prompt(
     count: int = 5
 ) -> tuple[dict, int]:
     """Generate or retrieve cached viva questions from teacher prompt.
-    
+
     Returns (result_dict, status_code).
     """
     cleaned = sanitize_prompt(prompt)
@@ -225,7 +228,13 @@ def preview_viva_from_prompt(
             logger.info("[granite] Returning cached preview for prompt: %s...", cleaned[:30])
             return cached_val, 200
 
-    if Config.MOCK_MODE or not Config.IBM_API_KEY:
+    has_llm_key = bool(
+        (Config.IBM_API_KEY and not Config.MOCK_MODE) or
+        os.getenv("GROQ_API_KEY") or
+        os.getenv("GEMINI_API_KEY") or
+        os.getenv("OPENROUTER_API_KEY")
+    )
+    if not has_llm_key:
         fallback_res = _make_fallback_result(cleaned, difficulty, language, target_count)
         fallback_res["source"] = "fallback"
         _prompt_cache[cache_key] = (now, fallback_res)
@@ -356,19 +365,28 @@ Return only the JSON object."""
 
 
 def _make_fallback_result(prompt: str, difficulty: str, language: str, count: int) -> dict:
-    """Create structured viva result from offline question bank."""
+    """Create structured viva result from offline question bank tailored to the exact topic."""
     p_low = prompt.lower()
-    subject = "Cloud Computing" if ("cloud" in p_low or "paas" in p_low or "iaas" in p_low or "saas" in p_low) else "Computer Science"
-    if "dbms" in p_low or "database" in p_low or "sql" in p_low:
+    subject = "Computer Science"
+
+    if "javascript" in p_low or "js" in p_low or "ecmascript" in p_low:
+        subject = "JavaScript"
+    elif "html" in p_low or "css" in p_low or "web" in p_low or "frontend" in p_low:
+        subject = "HTML and CSS"
+    elif "math" in p_low or "arithmetic" in p_low or "algebra" in p_low or "addition" in p_low:
+        subject = "Mathematics"
+    elif "dbms" in p_low or "database" in p_low or "sql" in p_low or "rdbms" in p_low:
         subject = "DBMS"
-    elif "os" in p_low or "operating system" in p_low:
+    elif "operating system" in p_low or re.search(r"\bos\b", p_low):
         subject = "Operating Systems"
-    elif "network" in p_low or "tcp" in p_low or "udp" in p_low:
+    elif "network" in p_low or "tcp" in p_low or "udp" in p_low or "osi" in p_low:
         subject = "Computer Networks"
-    elif "data structure" in p_low or "tree" in p_low or "graph" in p_low:
+    elif "data structure" in p_low or "dsa" in p_low or "algorithm" in p_low or "graph" in p_low:
         subject = "Data Structures"
     elif "cloud" in p_low or "paas" in p_low or "iaas" in p_low or "saas" in p_low:
         subject = "Cloud Computing"
+    elif "python" in p_low:
+        subject = "Python"
 
     questions = get_bank_questions(subject, n=count)
     return {
@@ -388,82 +406,234 @@ def generate_questions(subject: str, level: str = "undergraduate", n: int = 5) -
     return res.get("questions", get_bank_questions(subject, n))
 
 
-def _keyword_grade(question: dict, transcript: str) -> dict:
-    """Deterministic keyword-based grading fallback when offline or on API failure."""
-    key_points = [kp.lower().strip() for kp in question.get("key_points", []) if kp]
-    text_clean = (transcript or "").lower()
-    words = text_clean.split()
+def _words_match(w1: str, w2: str) -> bool:
+    """Fuzzy/prefix match two words allowing for plural, tense, and form variations."""
+    import difflib
+    if w1 == w2:
+        return True
+    if len(w1) >= 4 and len(w2) >= 4:
+        if w1.startswith(w2[:4]) or w2.startswith(w1[:4]):
+            ratio = difflib.SequenceMatcher(None, w1, w2).ratio()
+            return ratio >= 0.70
+    return False
 
+
+def _keyword_grade(question: dict, transcript: str) -> dict:
+    """Deterministic strict keyword-based grading fallback adhering to academic viva rubrics.
+
+    Rules:
+    - Max score: 10.0, Min score: 0.0
+    - Wrong, irrelevant, nonsense, or empty answers receive 0.0 marks and verdict 'incorrect'
+    - NO leniency bonus (speaking length does not award points)
+    - NO minimum score floor
+    - Key points evaluated individually for genuine conceptual understanding
+    - Exact arithmetic questions checked for correct numerical value
+    """
+    stop_words = {
+        'a', 'an', 'the', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+        'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+        'do', 'does', 'did', 'can', 'could', 'shall', 'should', 'will', 'would', 'may',
+        'might', 'must', 'it', 'its', 'that', 'this', 'these', 'those', 'what', 'which',
+        'who', 'whom', 'why', 'how', 'from', 'up', 'about', 'into', 'over', 'after',
+        'each', 'other', 'allows', 'using', 'means', 'used', 'between', 'like', 'also'
+    }
+
+    key_points = [str(kp).strip() for kp in question.get("key_points", []) if str(kp).strip()]
+    text_clean = (transcript or "").strip()
+    words = re.findall(r"[a-zA-Z0-9]+", text_clean.lower())
+    q_text = question.get("text", "")
+
+    # 1. Exact arithmetic check (e.g. "What is 2 + 2?", "What is 7 + 8?")
+    math_match = re.search(r"(\d+)\s*([\+\-\*\/×÷])\s*(\d+)", q_text)
+    if math_match:
+        a, op, b = int(math_match.group(1)), math_match.group(2), int(math_match.group(3))
+        if op == '+':
+            expected_val = a + b
+        elif op in ('-', '−'):
+            expected_val = a - b
+        elif op in ('*', '×'):
+            expected_val = a * b
+        else:
+            expected_val = a // b if b != 0 else 0
+
+        expected_str = str(expected_val)
+        num_word_map = {
+            0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+            6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven",
+            12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen",
+            17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty", 42: "forty-two"
+        }
+        expected_words = {expected_str, num_word_map.get(expected_val, "")}
+        has_correct = any(w in expected_words for w in words)
+        nums_in_transcript = [w for w in words if w.isdigit()]
+
+        if has_correct and (not nums_in_transcript or expected_str in nums_in_transcript):
+            return {
+                "score": 10.0,
+                "verdict": "correct",
+                "correct_points": [expected_str],
+                "missing_points": [],
+                "incorrect_statements": [],
+                "irrelevant_content": [],
+                "feedback": f"Correct numerical calculation: {expected_str}.",
+                "ideal_answer": f"The exact answer is {expected_str}."
+            }
+        else:
+            incorrect_st = [f"Provided '{text_clean}' instead of '{expected_str}'"] if text_clean else []
+            return {
+                "score": 0.0,
+                "verdict": "incorrect",
+                "correct_points": [],
+                "missing_points": [expected_str],
+                "incorrect_statements": incorrect_st,
+                "irrelevant_content": [],
+                "feedback": f"Incorrect answer. Expected {expected_str}.",
+                "ideal_answer": f"The correct answer is {expected_str}."
+            }
+
+    # 2. Empty / very short response
     if not words or len(words) < 2:
         return {
-            "score": 1.5,
+            "score": 0.0,
             "verdict": "incorrect",
             "correct_points": [],
-            "missing_points": key_points[:3],
+            "missing_points": key_points,
+            "incorrect_statements": [],
+            "irrelevant_content": [],
             "feedback": "Answer was too brief or inaudible to demonstrate understanding.",
-            "ideal_answer": f"A comprehensive answer should cover: {', '.join(key_points)}."
+            "ideal_answer": f"Key concepts that should be explained: {', '.join(key_points)}."
         }
 
+    content_words = [w for w in words if w not in stop_words]
+    if not content_words:
+        return {
+            "score": 0.0,
+            "verdict": "incorrect",
+            "correct_points": [],
+            "missing_points": key_points,
+            "incorrect_statements": [],
+            "irrelevant_content": [text_clean],
+            "feedback": "Answer contained no substantive technical content.",
+            "ideal_answer": f"Expected key concepts: {', '.join(key_points)}."
+        }
+
+    # 3. Off-topic & Relevance Filter
+    q_content = [w for w in re.findall(r"[a-zA-Z0-9]+", q_text.lower()) if w not in stop_words]
+    kp_content = [w for kp in key_points for w in re.findall(r"[a-zA-Z0-9]+", kp.lower()) if w not in stop_words]
+    domain_words = set(q_content + kp_content)
+
+    has_domain_overlap = any(any(_words_match(cw, dw) for dw in domain_words) for cw in content_words)
+    if not has_domain_overlap:
+        return {
+            "score": 0.0,
+            "verdict": "incorrect",
+            "correct_points": [],
+            "missing_points": key_points,
+            "incorrect_statements": [],
+            "irrelevant_content": [text_clean],
+            "feedback": "The answer is completely unrelated to the question asked.",
+            "ideal_answer": f"Key concepts that should be explained: {', '.join(key_points)}."
+        }
+
+    # 4. Evaluate each key concept individually
     correct_points = []
     missing_points = []
 
     for kp in key_points:
-        kp_words = kp.split()
-        if kp in text_clean or any(kw in text_clean for kw in kp_words if len(kw) > 3):
+        kp_words = [w for w in re.findall(r"[a-zA-Z0-9]+", kp.lower()) if w not in stop_words]
+        if not kp_words:
+            continue
+        matched_kp_words = sum(1 for kw in kp_words if any(_words_match(cw, kw) for cw in content_words))
+
+        if len(kp_words) == 1 and matched_kp_words == 1:
+            correct_points.append(kp)
+        elif len(kp_words) > 1 and (matched_kp_words >= 2 or (matched_kp_words / len(kp_words)) >= 0.5):
             correct_points.append(kp)
         else:
             missing_points.append(kp)
 
+    # 5. Acronym / False definition check (e.g. "API means Apple Pie Ice cream")
+    if not correct_points:
+        return {
+            "score": 0.0,
+            "verdict": "incorrect",
+            "correct_points": [],
+            "missing_points": key_points,
+            "incorrect_statements": [f"Factually incorrect definition: '{text_clean}'"],
+            "irrelevant_content": [],
+            "feedback": "The answer did not address the actual technical concepts of the question.",
+            "ideal_answer": f"A correct explanation should cover: {', '.join(key_points)}."
+        }
+
+    # 6. Strict scoring without leniency bonus
     total_pts = max(len(key_points), 1)
-    matched_ratio = len(correct_points) / total_pts
-    length_bonus = min(len(words) / 30.0, 1.0) * 1.5
+    ratio = len(correct_points) / total_pts
 
-    raw_score = (matched_ratio * 8.5) + length_bonus
-    score = round(min(max(raw_score, 1.0 if len(words) < 5 else 2.5), 10.0), 1)
-
-    if score >= 7.5:
+    if ratio >= 0.70:
+        score = round(8.0 + (ratio - 0.70) * 6.6, 1)
         verdict = "correct"
-        feedback = "Good conceptual explanation covering the key principles accurately."
-    elif score >= 5.0:
-        verdict = "partially correct"
-        feedback = "Identified several essential points, but missed some key details."
+        feedback = "Solid explanation covering the essential concepts clearly."
+    elif ratio >= 0.30:
+        score = round(4.5 + (ratio - 0.30) * 8.0, 1)
+        verdict = "partially_correct"
+        missing_hint = ", ".join(missing_points[:2])
+        feedback = f"Identified some essential points, but missed: {missing_hint}."
     else:
-        verdict = "incorrect"
-        feedback = "The answer did not adequately address the core concepts of the question."
+        score = round(ratio * 9.0, 1)
+        verdict = "partially_correct" if score >= 2.0 else "incorrect"
+        feedback = "Answer demonstrated minimal conceptual understanding. Review the core definitions."
 
+    score = min(max(score, 0.0), 10.0)
     return {
         "score": score,
         "verdict": verdict,
         "correct_points": correct_points,
         "missing_points": missing_points,
+        "incorrect_statements": [],
+        "irrelevant_content": [],
         "feedback": feedback,
         "ideal_answer": f"Key concepts that should be explained: {', '.join(key_points)}."
     }
 
 
 def grade_answer(question: dict, transcript: str, language: str = "en") -> dict:
-    """Grade viva answer using IBM Granite rubric prompt with deterministic keyword fallback."""
-    if Config.MOCK_MODE or not Config.IBM_API_KEY:
-        return _keyword_grade(question, transcript)
-
+    """Grade viva answer using LLM rubric prompt with deterministic strict fallback."""
     words = (transcript or "").strip().split()
     if len(words) < 2:
         return _keyword_grade(question, transcript)
 
-    prompt = f"""You are an expert oral viva examiner grading a student's spoken answer.
+    has_llm_key = bool(
+        (Config.IBM_API_KEY and not Config.MOCK_MODE) or
+        os.getenv("GROQ_API_KEY") or
+        os.getenv("GEMINI_API_KEY") or
+        os.getenv("OPENROUTER_API_KEY")
+    )
+    if not has_llm_key:
+        return _keyword_grade(question, transcript)
+
+    prompt = f"""You are a strict academic oral viva examiner grading a student's spoken answer.
 
 Question: {question.get('text', '')}
 Expected Key Points: {json.dumps(question.get('key_points', []))}
 Student's Spoken Transcript: "{transcript}"
 Language: {language}
 
-Evaluate the student's answer fairly based on conceptual understanding. Spoken answers may have colloquial phrasing.
+STRICT EVALUATION RULES:
+1. If the answer is completely wrong, irrelevant, or nonsense (e.g. "banana is a fruit" or "API means Apple Pie Ice cream"), score MUST be 0.0 and verdict MUST be "incorrect".
+2. DO NOT give marks simply for repeating a single keyword out of context.
+3. DO NOT award any leniency bonus for length or speaking time.
+4. Partial credit (2.0 to 7.0) is ONLY allowed if the student demonstrates genuine partial understanding of the expected concepts.
+5. High marks (7.5 to 10.0) with verdict "correct" require accurate explanation of the core concepts.
+6. Maximum content score is 10.0. Minimum is 0.0.
+
 Respond ONLY with a valid JSON object matching this schema, with no markdown fences, no formatting:
 {{
   "score": <float between 0.0 and 10.0>,
-  "verdict": "<correct|partially correct|incorrect>",
+  "verdict": "<correct|partially_correct|incorrect>",
   "correct_points": ["<points the student mentioned correctly>"],
-  "missing_points": ["<key points the student omitted or got wrong>"],
+  "missing_points": ["<key points the student omitted>"],
+  "incorrect_statements": ["<incorrect or contradictory claims made>"],
+  "irrelevant_content": ["<off-topic text if any>"],
   "feedback": "<2-3 sentence constructive critique for the student>",
   "ideal_answer": "<concise 2-sentence reference answer>"
 }}
@@ -475,19 +645,24 @@ Respond ONLY with a valid JSON object matching this schema, with no markdown fen
         if isinstance(parsed, dict) and "score" in parsed:
             score = float(parsed.get("score", 0.0))
             score = max(0.0, min(10.0, round(score, 1)))
-            verdict = str(parsed.get("verdict", "partially correct")).lower()
-            if verdict not in ("correct", "partially correct", "incorrect"):
-                verdict = "correct" if score >= 7.5 else ("partially correct" if score >= 5.0 else "incorrect")
+            if score >= 7.5:
+                verdict = "correct"
+            elif score >= 2.5:
+                verdict = "partially_correct"
+            else:
+                verdict = "incorrect"
 
             return {
                 "score": score,
                 "verdict": verdict,
                 "correct_points": [str(p) for p in parsed.get("correct_points", [])],
                 "missing_points": [str(p) for p in parsed.get("missing_points", [])],
-                "feedback": str(parsed.get("feedback", "")).strip() or "Good effort.",
+                "incorrect_statements": [str(s) for s in parsed.get("incorrect_statements", [])],
+                "irrelevant_content": [str(i) for i in parsed.get("irrelevant_content", [])],
+                "feedback": str(parsed.get("feedback", "")).strip() or "Evaluation completed.",
                 "ideal_answer": str(parsed.get("ideal_answer", "")).strip() or "Review key definitions."
             }
     except Exception as e:
-        logger.warning("[granite] Answer grading failed via Granite, falling back to keyword grader: %s", e)
+        logger.warning("[granite] Answer grading failed via LLM, falling back to strict keyword grader: %s", e)
 
     return _keyword_grade(question, transcript)
