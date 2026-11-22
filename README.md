@@ -1,7 +1,7 @@
 <div align="center">
 
   <br />
-  <img src="assets/logo.png" alt="Oralyze Wordmark" width="520" />
+  <img src="static/brand/logo.png" alt="Oralyze Wordmark" width="220" />
   <br />
 
   <h3>Autonomous AI Voice Viva Voce Examiner & Acoustic Fluency Evaluator</h3>
@@ -239,14 +239,16 @@ Open **`http://localhost:5000`** in Google Chrome or modern Chromium browser.
 
 ---
 
-## Free Tier Limits
+## Free Tier Limits & Production Specifications
 
 | Service | Lite Tier Monthly Quota | Fallback Behavior on Depletion |
 | :--- | :--- | :--- |
-| **IBM Granite 3.3 (watsonx.ai)** | 300,000 tokens / month | Falls back to local question bank and keyword grader |
+| **IBM Granite 3.3 (watsonx.ai)** | 300,000 tokens / month | Multi-provider fallback (OpenRouter -> Groq -> Gemini -> local question bank) |
 | **Watson Speech to Text** | 500 audio minutes / month | Falls back to browser Web Speech recognition |
-| **Watson Text to Speech** | 10,000 characters / month | Falls back to browser speech synthesis audio |
+| **Watson Text to Speech** | 10,000 characters / month | Falls back to browser Web Speech API synthesis |
 | **IBM Cloudant** | 1 GB storage, 10 writes/sec | Falls back to local JSON session storage |
+
+> For complete specifications, consult [docs/limits.md](docs/limits.md), [docs/PRODUCTION.md](docs/PRODUCTION.md), and the [Production Audit Report](AUDIT.md) / [Post-Fix Verification](AUDIT-AFTER.md).
 
 ---
 
@@ -254,13 +256,20 @@ Open **`http://localhost:5000`** in Google Chrome or modern Chromium browser.
 
 ```text
 Oralyze/
-├── .github/workflows/pages.yml # Automated GitHub Pages deployment pipeline
+├── .github/workflows/
+│   └── static.yml              # Verified single GitHub Pages CI deployment
 ├── app.py                      # Flask REST backend and room coordinator
 ├── config.py                   # Environment configuration & credential validation
-├── config.js                   # Client base URL configuration
+├── CHANGELOG.md                # Conventional Commits changelog
+├── CONTRIBUTING.md             # Contribution guidelines
+├── LICENSE                     # MIT Open Source License
+├── AUDIT.md                    # Pre-fix production audit report
+├── AUDIT-AFTER.md              # Post-fix audit verification report
 ├── data/
-│   └── questions.json          # Bundled question bank for offline evaluation
+│   └── questions.json          # Bundled question bank across 7 curriculum subjects
 ├── docs/
+│   ├── limits.md               # Documented platform quotas & scope limits
+│   ├── PRODUCTION.md           # Measured benchmarks and system architecture
 │   ├── screenshots/            # 1440x900 desktop walkthrough screenshots
 │   └── social-preview.png      # Repository social preview card
 ├── services/
@@ -268,19 +277,23 @@ Oralyze/
 │   ├── granite.py              # Granite prompt generation and rubric grading
 │   ├── ibm_auth.py             # IAM token exchange and cache management
 │   ├── speech.py               # Raw REST Watson STT and TTS integrations
-│   └── store.py                # Cloudant NoSQL and local JSON persistence
+│   ├── store.py                # Cloudant NoSQL and local JSON persistence
+│   └── llm/                    # Multi-provider LLM fallback dispatcher
 ├── static/
 │   ├── 404.html                # GitHub Pages SPA hash redirector
-│   ├── config.js               # Client runtime configuration
+│   ├── config.js               # Client runtime configuration (API_BASE)
+│   ├── favicon.ico             # Multi-layer 16/32/48 Windows icon
 │   ├── index.html              # Unified responsive single-page application
-│   ├── assets/                 # Vector SVG logos and marks
+│   ├── manifest.webmanifest    # PWA progressive web app manifest
+│   ├── assets/icons/           # 16, 32, 180, 192, 512 PNG app icons
 │   ├── brand/                  # Application brand identity assets
 │   ├── data/                   # Client offline dataset copy
 │   └── js/
 │       ├── api.js              # Unified data abstraction layer
 │       └── grader.js           # Browser keyword-overlap grading engine
 └── tests/
-    └── test_fluency.py         # Unit tests for fluency metrics
+    ├── test_fluency.py         # Unit tests for fluency metrics
+    └── test_pipeline.py        # Integration tests for prompt, fallback, cache & health
 ```
 
 ---
