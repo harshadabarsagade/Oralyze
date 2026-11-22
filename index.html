@@ -533,10 +533,17 @@
             <div class="text-[48px] leading-tight font-bold tracking-[0.12em] text-on-surface tabular-nums mb-4 select-all font-mono" id="tLiveRoomCode">
               ------
             </div>
-            <button class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-secondary hover:text-on-surface hover:bg-surface-container-low transition-all active:scale-[0.99] mb-6" onclick="copyCode()">
-              <span class="material-symbols-outlined text-[18px]">content_copy</span>
-              <span class="text-[15px] font-medium" id="copy-text">Copy code</span>
-            </button>
+            <!-- 1-Click Share & Copy Buttons -->
+            <div class="flex items-center justify-center gap-2 mb-6 w-full max-w-[260px]">
+              <button class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-line bg-surface-container-low hover:bg-surface-container text-on-surface text-[14px] font-semibold transition-all active:scale-[0.98]" onclick="copyCode()">
+                <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                <span id="copy-text">Copy Code</span>
+              </button>
+              <button class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary text-white text-[14px] font-semibold hover:bg-primary-container shadow-sm transition-all active:scale-[0.98]" onclick="shareVivaLink()">
+                <span class="material-symbols-outlined text-[18px]">share</span>
+                <span id="share-btn-text">Share Link</span>
+              </button>
+            </div>
             <div class="w-full h-[1px] bg-surface-container-highest mb-6"></div>
             <p class="text-[15px] leading-relaxed text-secondary mb-6 px-1">
               Student opens <span class="text-on-surface font-medium">localhost:5000</span> or joins at <span class="text-on-surface font-medium">/join</span> with this code.
@@ -1200,6 +1207,32 @@
       }
     }
 
+    
+    function shareVivaLink() {
+      if (!activeCode) return;
+      const shareUrl = `${window.location.origin}${window.location.pathname}#/viva/${activeCode}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Oralyze AI Viva Examination',
+          text: `Join the live oral viva examination session. Room Code: ${activeCode}`,
+          url: shareUrl
+        }).catch(err => copyShareLink(shareUrl));
+      } else {
+        copyShareLink(shareUrl);
+      }
+    }
+
+    function copyShareLink(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        const btnText = document.getElementById("share-btn-text");
+        if (btnText) {
+          btnText.textContent = "Link Copied!";
+          setTimeout(() => btnText.textContent = "Share Link", 2000);
+        }
+      });
+    }
+
     function copyCode() {
       if (activeCode) {
         navigator.clipboard.writeText(activeCode);
@@ -1749,6 +1782,41 @@
       } catch (e) {
         tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-error font-medium">Unable to load dashboard records</td></tr>`;
       }
+    }
+
+    
+    // AI Viva Proctoring & Anti-Cheating System
+    let tabSwitchCount = 0;
+    document.addEventListener("visibilitychange", () => {
+      // Only monitor during active viva examination
+      const studentQView = document.getElementById("viewStudentQuestion");
+      if (studentQView && !studentQView.classList.contains("hidden-view")) {
+        if (document.hidden) {
+          tabSwitchCount++;
+          showProctorAlert(`Warning: Tab switch detected (${tabSwitchCount}/3). Leaving the examination tab is prohibited.`);
+        }
+      }
+    });
+
+    window.addEventListener("blur", () => {
+      const studentQView = document.getElementById("viewStudentQuestion");
+      if (studentQView && !studentQView.classList.contains("hidden-view")) {
+        const indicator = document.getElementById("sChannelStatus");
+        if (indicator) indicator.textContent = "Focus Lost - Return to Viva";
+      }
+    });
+
+    function showProctorAlert(msg) {
+      let toast = document.getElementById("proctorToast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "proctorToast";
+        toast.className = "fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm shadow-xl flex items-center gap-2 transition-all duration-300 animate-bounce";
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<span class="material-symbols-outlined text-[18px]">warning</span><span>${msg}</span>`;
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 4000);
     }
 
     // Initialize on load
