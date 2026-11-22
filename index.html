@@ -248,7 +248,7 @@
         <button type="button" id="navBtn_studentJoin" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('studentJoin')">Join Viva</button>
         <button type="button" id="navBtn_dashboard" class="relative z-10 px-3.5 py-1.5 text-[13.5px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer" onclick="navTo('dashboard')">Dashboard</button>
       </nav>
-      <div id="demoBadge" class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30">Offline demo build</div>
+      
       <div class="flex items-center gap-3">
         <div id="demoBadge" class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/40">
           Demo Mode
@@ -905,10 +905,10 @@
       const pill = document.getElementById("demoBadge");
       if (!pill) return;
       if (window.OralyzeApi && window.OralyzeApi.isHostedMode()) {
-        pill.textContent = "Offline demo build";
+        // pill removed
         pill.className = "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30";
       } else {
-        pill.textContent = "Live IBM backend";
+        // pill removed
         pill.className = "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant border border-tertiary/20";
       }
     }
