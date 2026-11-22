@@ -1868,6 +1868,58 @@
       feedbackBox.classList.add("flex");
     }
 
+    // MediaRecorder & Real-Time Acoustic Capture
+    async function startStudentRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        recordedWordTimings = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const submitBtn = document.getElementById("btnSubmitAnswer");
+          if (submitBtn) submitBtn.disabled = false;
+          stream.getTracks().forEach(t => t.stop());
+          teardownVisualizer();
+        };
+
+        setupVisualizer(stream);
+        setupLiveSpeechPreview();
+
+        mediaRecorder.start();
+        secondsElapsed = 0;
+        updateStudentTimer();
+        timerInterval = setInterval(() => {
+          secondsElapsed++;
+          updateStudentTimer();
+          if (secondsElapsed >= 90) {
+            handleMicClick();
+          }
+        }, 1000);
+
+        const submitBtn = document.getElementById("btnSubmitAnswer");
+        if (submitBtn) submitBtn.disabled = false;
+      } catch (err) {
+        alert("Microphone permission required: " + err.message);
+        setMicState('idle');
+      }
+    }
+
+    function stopStudentRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+      if (speechRecognizer) {
+        try { speechRecognizer.stop(); } catch (e) {}
+      }
+      clearInterval(timerInterval);
+    }
+
     function handleMicClick() {
       if (micState === 'speaking' || micState === 'checking' || micState === 'correct' || micState === 'partial' || micState === 'wrong') {
         return;
@@ -2069,6 +2121,9 @@
     }
 
     async function submitStudentAnswer() {
+      if (micState === 'recording') {
+        stopStudentRecording();
+      }
       setMicState('checking');
       const transcript = (liveFinalTranscript + " " + liveInterimTranscript).trim();
 
@@ -2081,7 +2136,7 @@
             feedback: isNumCorrect ? "Exact numeric answer detected!" : "Expected answer: " + q.expected,
             missing_points: isNumCorrect ? [] : ["Expected value " + q.expected]
           });
-        }, 500);
+        }, 400);
         return;
       }
 
