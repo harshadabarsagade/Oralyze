@@ -11,7 +11,23 @@ import requests
 from config import Config
 from services.ibm_auth import get_token, IAMAuthError
 
+import time
+
 logger = logging.getLogger("granite")
+
+# watsonx.ai rate limit is 2 req/sec on Lite plan.
+# Ensure minimum spacing between sequential Granite calls.
+_last_granite_call_time = 0.0
+
+
+def _rate_limit_granite():
+    """Ensure at least 550ms between requests to respect IBM Lite 2 req/sec rate limit."""
+    global _last_granite_call_time
+    now = time.time()
+    elapsed = now - _last_granite_call_time
+    if elapsed < 0.55:
+        time.sleep(0.55 - elapsed)
+    _last_granite_call_time = time.time()
 
 # Path to offline question bank
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
@@ -82,6 +98,7 @@ def chat(messages: list[dict], max_tokens: int = 700, temperature: float = 0.3) 
     Authorization: Bearer <token>
     {"model_id": "ibm/granite-3-3-8b-instruct", "project_id": "<PROJECT_ID>", ...}
     """
+    _rate_limit_granite()
     token = get_token()
     url = f"{Config.WATSONX_URL}/ml/v1/text/chat?version=2023-05-29"
     headers = {
