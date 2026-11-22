@@ -74,6 +74,10 @@
           // If JSON is organized by categories { "dbms": [...], "os": [...] }
           Object.keys(raw).forEach(cat => {
             if (Array.isArray(raw[cat])) {
+              raw[cat].forEach(item => {
+                if (!item.category) item.category = cat;
+                if (!item.subject) item.subject = cat.toUpperCase();
+              });
               flattened.push(...raw[cat]);
             }
           });
@@ -156,6 +160,14 @@
     return code;
   }
 
+  const TOPIC_KEYWORDS = {
+    'dbms': ['dbms', 'database', 'sql', 'acid', 'indexing', 'b+ tree', 'b tree', 'normalization', 'relational', 'transaction', 'superkey', '3nf', 'bcnf'],
+    'os': ['os', 'operating system', 'process', 'thread', 'scheduling', 'deadlock', 'semaphore', 'virtual memory', 'paging', 'kernel', 'context switch'],
+    'computer networks': ['network', 'networking', 'osi', 'tcp', 'udp', 'ip', 'dns', 'http', 'socket', 'subnet', 'router', 'switch', 'packet'],
+    'data structures': ['dsa', 'data structure', 'algorithm', 'array', 'linked list', 'stack', 'queue', 'tree', 'graph', 'sorting', 'binary search', 'dfs', 'bfs'],
+    'cloud computing': ['cloud', 'aws', 'azure', 'gcp', 'paas', 'iaas', 'saas', 'kubernetes', 'k8s', 'docker', 'container', 'serverless', 'microservice']
+  };
+
   /**
    * Preview viva questions from prompt
    */
@@ -163,23 +175,77 @@
     if (isHostedMode()) {
       const bank = await fetchBundledQuestions();
       const pLow = (prompt || '').toLowerCase();
-      let matched = bank.filter(q => {
+      
+      // 1. Identify primary subject category from prompt
+      let bestCat = null;
+      let maxCatHits = 0;
+      Object.keys(TOPIC_KEYWORDS).forEach(cat => {
+        let hits = 0;
+        TOPIC_KEYWORDS[cat].forEach(kw => {
+          if (pLow.includes(kw)) hits += kw.length; // weight longer phrase matches higher
+        });
+        if (hits > maxCatHits) {
+          maxCatHits = hits;
+          bestCat = cat;
+        }
+      });
+
+      // 2. Score questions based on category and textual match
+      const scored = bank.map(q => {
+        let score = 0;
+        const qCat = (q.category || '').toLowerCase();
         const s = (q.subject || '').toLowerCase();
         const t = (q.topic || '').toLowerCase();
         const txt = (q.text || '').toLowerCase();
-        return pLow.includes(s) || pLow.includes(t) || s.includes(pLow) || txt.includes(pLow);
+
+        if (bestCat && (qCat === bestCat || s.includes(bestCat) || t.includes(bestCat))) {
+          score += 50;
+        }
+
+        // Token match
+        const words = pLow.replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+        words.forEach(w => {
+          if (s.includes(w)) score += 10;
+          if (t.includes(w)) score += 8;
+          if (txt.includes(w)) score += 4;
+        });
+
+        return { q, score };
       });
 
+      scored.sort((a, b) => b.score - a.score);
+      let matched = scored.filter(item => item.score > 0).map(item => item.q);
+
       if (matched.length < count) {
-        matched = bank.slice(0, count);
-      } else {
-        matched = matched.slice(0, count);
+        // Fill remaining from bank without duplicates
+        const existingIds = new Set(matched.map(m => m.id || m.text));
+        for (const q of bank) {
+          const key = q.id || q.text;
+          if (!existingIds.has(key)) {
+            matched.push(q);
+            existingIds.add(key);
+            if (matched.length >= count) break;
+          }
+        }
+      }
+      matched = matched.slice(0, count);
+
+      // Determine clean human subject title
+      let subjectTitle = 'Computer Science';
+      if (bestCat === 'os') subjectTitle = 'Operating Systems';
+      else if (bestCat === 'dbms') subjectTitle = 'Database Systems';
+      else if (bestCat === 'computer networks') subjectTitle = 'Computer Networks';
+      else if (bestCat === 'data structures') subjectTitle = 'Data Structures & Algorithms';
+      else if (bestCat === 'cloud computing') subjectTitle = 'Cloud Computing';
+      else if (prompt.trim()) {
+        const words = prompt.trim().split(/\s+/).slice(0, 3).join(' ');
+        subjectTitle = words.charAt(0).toUpperCase() + words.slice(1);
       }
 
       return {
-        title: `${prompt.slice(0, 25).trim() || 'Engineering'} Viva`,
-        subject: prompt.slice(0, 20).trim() || 'Computer Science',
-        topic: prompt.slice(0, 30).trim() || 'Technical Viva',
+        title: `${subjectTitle} Viva Voce`,
+        subject: subjectTitle,
+        topic: prompt.slice(0, 40).trim() || 'Technical Oral Examination',
         difficulty,
         language,
         questions: matched.map((q, idx) => ({
