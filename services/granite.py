@@ -172,3 +172,126 @@ JSON structure:
         logger.warning("[granite] Question generation failed via Granite, falling back to bank: %s", e)
 
     return get_bank_questions(subject, n)
+
+
+def _keyword_grade(question: dict, transcript: str) -> dict:
+    """Deterministic keyword-based grading fallback when offline or on API failure.
+    
+    Scores answer based on overlap of required key points in the student's spoken transcript.
+    """
+    key_points = [kp.lower().strip() for kp in question.get("key_points", []) if kp]
+    text_clean = (transcript or "").lower()
+    words = text_clean.split()
+
+    if not words or len(words) < 2:
+        return {
+            "score": 1.5,
+            "verdict": "incorrect",
+            "correct_points": [],
+            "missing_points": key_points[:3],
+            "feedback": "Answer was too brief or inaudible to demonstrate understanding.",
+            "ideal_answer": f"A comprehensive answer should cover: {', '.join(key_points)}."
+        }
+
+    correct_points = []
+    missing_points = []
+
+    for kp in key_points:
+        kp_words = kp.split()
+        if kp in text_clean or any(kw in text_clean for kw in kp_words if len(kw) > 3):
+            correct_points.append(kp)
+        else:
+            missing_points.append(kp)
+
+    total_pts = max(len(key_points), 1)
+    matched_ratio = len(correct_points) / total_pts
+
+    # Length factor (speaking in depth adds credibility up to a threshold)
+    length_bonus = min(len(words) / 30.0, 1.0) * 1.5
+
+    # Compute raw score 0 to 10
+    raw_score = (matched_ratio * 8.5) + length_bonus
+    score = round(min(max(raw_score, 1.0 if len(words) < 5 else 2.5), 10.0), 1)
+
+    if score >= 7.5:
+        verdict = "correct"
+        feedback = "Good conceptual explanation covering the key principles accurately."
+    elif score >= 5.0:
+        verdict = "partially correct"
+        feedback = "Identified several essential points, but missed some key details."
+    else:
+        verdict = "incorrect"
+        feedback = "The answer did not adequately address the core concepts of the question."
+
+    return {
+        "score": score,
+        "verdict": verdict,
+        "correct_points": correct_points,
+        "missing_points": missing_points,
+        "feedback": feedback,
+        "ideal_answer": f"Key concepts that should be explained: {', '.join(key_points)}."
+    }
+
+
+def grade_answer(question: dict, transcript: str, language: str = "en") -> dict:
+    """Grade viva answer using IBM Granite rubric prompt with deterministic keyword fallback.
+    
+    Returns:
+    {
+      "score": float (0-10),
+      "verdict": "correct"|"partially correct"|"incorrect",
+      "correct_points": list[str],
+      "missing_points": list[str],
+      "feedback": str,
+      "ideal_answer": str
+    }
+    """
+    if Config.MOCK_MODE or not Config.IBM_API_KEY:
+        return _keyword_grade(question, transcript)
+
+    # Empty or trivial transcript check
+    words = (transcript or "").strip().split()
+    if len(words) < 2:
+        return _keyword_grade(question, transcript)
+
+    prompt = f"""You are an expert oral viva examiner grading a student's spoken answer.
+
+Question: {question.get('text', '')}
+Expected Key Points: {json.dumps(question.get('key_points', []))}
+Student's Spoken Transcript: "{transcript}"
+Language: {language}
+
+Evaluate the student's answer fairly based on conceptual understanding. Spoken answers may have colloquial phrasing.
+Respond ONLY with a valid JSON object matching this schema, with no markdown fences, no formatting:
+{{
+  "score": <float between 0.0 and 10.0>,
+  "verdict": "<correct|partially correct|incorrect>",
+  "correct_points": ["<points the student mentioned correctly>"],
+  "missing_points": ["<key points the student omitted or got wrong>"],
+  "feedback": "<2-3 sentence constructive critique for the student>",
+  "ideal_answer": "<concise 2-sentence reference answer>"
+}}
+"""
+
+    try:
+        raw_res = chat([{"role": "user", "content": prompt}], max_tokens=600, temperature=0.2)
+        parsed = _extract_json(raw_res)
+        if isinstance(parsed, dict) and "score" in parsed:
+            score = float(parsed.get("score", 0.0))
+            score = max(0.0, min(10.0, round(score, 1)))
+            verdict = str(parsed.get("verdict", "partially correct")).lower()
+            if verdict not in ("correct", "partially correct", "incorrect"):
+                verdict = "correct" if score >= 7.5 else ("partially correct" if score >= 5.0 else "incorrect")
+
+            return {
+                "score": score,
+                "verdict": verdict,
+                "correct_points": [str(p) for p in parsed.get("correct_points", [])],
+                "missing_points": [str(p) for p in parsed.get("missing_points", [])],
+                "feedback": str(parsed.get("feedback", "")).strip() or "Good effort.",
+                "ideal_answer": str(parsed.get("ideal_answer", "")).strip() or "Review key definitions."
+            }
+    except Exception as e:
+        logger.warning("[granite] Answer grading failed via Granite, falling back to keyword grader: %s", e)
+
+    return _keyword_grade(question, transcript)
