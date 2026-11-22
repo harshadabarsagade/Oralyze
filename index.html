@@ -124,6 +124,69 @@
       header, .no-print { display: none !important; }
       .print-border { border: 1px solid #dbe2fa !important; box-shadow: none !important; }
     }
+  
+    /* Premium Smooth UI Transitions & Keyframe Animations */
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.97) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 91, 255, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 14px rgba(59, 91, 255, 0);
+      }
+    }
+
+    @keyframes waveBar {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+
+    @keyframes shimmerMove {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Screen entrance transitions */
+    main > section:not(.hidden-view) {
+      animation: fadeInScale 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Card & Button Smooth Hover States */
+    button, a, input, select, textarea, .card-interactive {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Acoustic Recording Pulse */
+    .rec-pulse-active {
+      animation: pulseGlow 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+
+    /* Shimmer Skeleton */
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #E7EAF0 25%, #F6F7F9 50%, #E7EAF0 75%);
+      background-size: 200% 100%;
+      animation: shimmerMove 1.5s infinite;
+    }
+
+    /* Smooth Question transition */
+    .question-appear {
+      animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
   </style>
 </head>
 <body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed">
@@ -137,7 +200,6 @@
         </div>
         <div class="flex items-center gap-2">
           <span class="font-bold text-[20px] tracking-tight text-on-surface">Oralyze</span>
-          <span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span>
         </div>
       </div>
       <nav class="flex items-center gap-6">
