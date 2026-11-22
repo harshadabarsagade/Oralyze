@@ -1,31 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80" fill="none">
-  <!-- Soft subtle gradient definition -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 120" width="540" height="120" fill="none">
   <defs>
-    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#3B5BFF"/>
       <stop offset="100%" stop-color="#6E5BFF"/>
     </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#3B5BFF" flood-opacity="0.25"/>
+    </filter>
   </defs>
 
-  <!-- Logo Icon Mark (Geometric Voice/Acoustic Ring) -->
-  <g transform="translate(16, 16)">
-    <rect width="48" height="48" rx="14" fill="#3B5BFF" fill-opacity="0.08"/>
-    <circle cx="24" cy="24" r="16" stroke="url(#primaryGrad)" stroke-width="2.5" stroke-dasharray="3 3"/>
-    <circle cx="24" cy="24" r="9" fill="url(#primaryGrad)"/>
+  <!-- Logo Icon Mark (Large & Crisp) -->
+  <g transform="translate(20, 20)">
+    <rect width="80" height="80" rx="22" fill="#3B5BFF" fill-opacity="0.12" filter="url(#glow)"/>
+    <rect x="1" y="1" width="78" height="78" rx="21" stroke="#3B5BFF" stroke-opacity="0.3" stroke-width="1.5"/>
+    <circle cx="40" cy="40" r="26" stroke="url(#brandGrad)" stroke-width="3.5" stroke-dasharray="5 4"/>
+    <circle cx="40" cy="40" r="14" fill="url(#brandGrad)"/>
     <!-- Voice Wave Lines -->
-    <path d="M19 24v-4M24 24v-7M29 24v-4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-    <path d="M19 24v4M24 24v7M29 24v4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+    <path d="M32 40v-8M40 40v-13M48 40v-8" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+    <path d="M32 40v8M40 40v13M48 40v8" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
   </g>
 
-  <!-- Logotype Typography (Modern geometric sans) -->
-  <text x="78" y="47" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="28" font-weight="700" letter-spacing="-0.03em" fill="#0E1726">
+  <!-- Logotype Typography (Bold & Highly Visible on both Dark and Light backgrounds) -->
+  <text x="124" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="44" font-weight="800" letter-spacing="-0.03em" fill="#3B5BFF">
     Oralyze
   </text>
-  <!-- Accent Dot -->
-  <circle cx="184" cy="43" r="3.5" fill="#3B5BFF"/>
+  <!-- Distinct Dot -->
+  <circle cx="304" cy="62" r="5.5" fill="#6E5BFF"/>
 
-  <!-- Subtitle Tagline -->
-  <text x="79" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="10.5" font-weight="600" letter-spacing="0.08em" fill="#7A8798">
+  <!-- Subtitle Tagline (High contrast) -->
+  <text x="126" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="14" font-weight="700" letter-spacing="0.12em" fill="#8592A6">
     AI VOICE VIVA EXAMINER
   </text>
 </svg>

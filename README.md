@@ -1,10 +1,12 @@
 <div align="center">
-  <img src="assets/logo.svg" alt="Oralyze Wordmark" width="320" />
-  <p><strong>AI voice viva voce examination platform powered by IBM Cloud.</strong></p>
-  <p>Generates academic oral viva questions, speaks them aloud, listens to spoken answers, and evaluates technical content accuracy alongside oral communication fluency in real time.</p>
+  <img src="assets/logo.svg" alt="Oralyze Wordmark" width="480" />
+  <h3>AI Voice Viva Voce Examination Platform</h3>
+  <p><strong>Powered by IBM Cloud: watsonx Granite 3.3, Watson STT/TTS, and IBM Cloudant</strong></p>
+  <p>Generates academic oral viva questions from teacher prompts, speaks questions aloud with neural audio, listens to student responses with live speech-to-text, and grades technical content accuracy alongside oral communication fluency in real time.</p>
 </div>
 
 <div align="center">
+  <a href="https://mohitraj8503.github.io/Oralyze/"><img src="https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-3B5BFF?style=flat&logo=githubpages&logoColor=white" alt="Live Demo" /></a>
   <img src="https://img.shields.io/badge/Python-3.12-3B5BFF?style=flat&logo=python&logoColor=white" alt="Python 3.12" />
   <img src="https://img.shields.io/badge/Framework-Flask-3B5BFF?style=flat&logo=flask&logoColor=white" alt="Flask" />
   <img src="https://img.shields.io/badge/AI-IBM%20watsonx-3B5BFF?style=flat&logo=ibm&logoColor=white" alt="IBM watsonx" />
@@ -14,25 +16,27 @@
 
 <br />
 
+## Platform Walkthrough
+
 <table align="center" width="100%">
   <tr>
     <td width="50%" align="center">
-      <a href="docs/screenshots/01-teacher-setup.png"><img src="docs/screenshots/01-teacher-setup.png" alt="Teacher Setup" width="100%" /></a>
-      <p><em>Teacher natural language prompt and viva configuration</em></p>
+      <a href="docs/screenshots/01-teacher-setup.png"><img src="docs/screenshots/01-teacher-setup.png" alt="Teacher Prompt Setup" width="100%" /></a>
+      <p><strong>1. Teacher Prompt & Question Generation</strong><br /><em>Teacher inputs topic prompt; Granite 3.3 writes rubric-grounded oral questions.</em></p>
     </td>
     <td width="50%" align="center">
-      <a href="docs/screenshots/02-live-question.png"><img src="docs/screenshots/02-live-question.png" alt="Live Spoken Question" width="100%" /></a>
-      <p><em>Candidate voice response and live speech transcript</em></p>
+      <a href="docs/screenshots/02-desktop-live-viva.png"><img src="docs/screenshots/02-desktop-live-viva.png" alt="Live Spoken Examination" width="100%" /></a>
+      <p><strong>2. Live Audio Viva & Real-Time Transcript</strong><br /><em>TTS speaks questions; microphone captures speech with live acoustic waveform.</em></p>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <a href="docs/screenshots/03-result.png"><img src="docs/screenshots/03-result.png" alt="Evaluation Result" width="100%" /></a>
-      <p><em>Dual scoring for content accuracy and speech delivery</em></p>
+      <a href="docs/screenshots/03-desktop-evaluation.png"><img src="docs/screenshots/03-desktop-evaluation.png" alt="Evaluation Result" width="100%" /></a>
+      <p><strong>3. Content (70%) & Delivery (30%) Scoring</strong><br /><em>Granite scores technical accuracy; timing engine grades speaking pace and pauses.</em></p>
     </td>
     <td width="50%" align="center">
       <a href="docs/screenshots/04-dashboard.png"><img src="docs/screenshots/04-dashboard.png" alt="Teacher Dashboard" width="100%" /></a>
-      <p><em>Instructor classroom dashboard and session analytics</em></p>
+      <p><strong>4. Classroom Analytics & Scorecards</strong><br /><em>Instructor dashboard with aggregated session performance and printable A4 reports.</em></p>
     </td>
   </tr>
 </table>
@@ -44,26 +48,79 @@
 - Transcribes student spoken answers in real time with word timestamps.
 - Produces split scoring for technical correctness (70%) and oral fluency (30%).
 
-## How it works
+## How it works & Architecture
 
-1. **Question Generation**: An instructor inputs a natural language prompt. IBM watsonx Granite 3.3 8B Instruct generates targeted viva questions with Bloom-taxonomy levels and grading rubrics.
-2. **Audio Delivery**: The viva room generates a unique 6-character access code. The question is spoken via IBM Watson Text to Speech.
-3. **Speech Transcription & Acoustic Timing**: The candidate records their oral response. IBM Watson Speech to Text produces the verbatim transcript along with word-level start and end timestamps.
-4. **Scoring & Persistence**: IBM Granite scores the technical content against the rubric. A fluency engine computes pace, pauses, and filler frequency. The scorecard is archived to IBM Cloudant.
+Oralyze coordinates generative artificial intelligence, neural acoustics, and real-time audio analytics:
 
-```text
-[Teacher Prompt] ──> [IBM Granite 3.3 8B] ──> [Question Bank & Rubric]
-                                                      │
-[Student Mic] ────> [Watson STT Timestamps]           ▼
-       │                    │                  [Watson TTS Audio]
-       ▼                    ▼                         │
-[Live Transcript] ──> [Fluency Engine]                ▼
-                            │                  [Student Speaker]
-                            ▼
-              [Granite Content Grader]
-                            │
-                            ▼
-       [Combined Scorecard -> IBM Cloudant] ──> [Teacher Dashboard]
+```mermaid
+flowchart TD
+    subgraph Teacher["Teacher Stage"]
+        T1["Teacher Topic Prompt"] --> T2["Granite 3.3 8B Instruct"]
+        T2 --> T3["Curriculum Viva Questions & Rubrics"]
+        T3 --> T4["Unique 6-Character Room Code"]
+    end
+
+    subgraph Candidate["Candidate Oral Viva Stage"]
+        T4 --> C1["Candidate Joins Room"]
+        C1 --> C2["Watson Neural Text-to-Speech"]
+        C2 --> C3["Candidate Hears Spoken Question"]
+        C3 --> C4["Microphone Audio Capture"]
+        C4 --> C5["Watson Speech to Text"]
+    end
+
+    subgraph Evaluation["Real-Time Dual Evaluation"]
+        C5 --> E1["Verbatim Spoken Transcript"]
+        C5 --> E2["Word Timestamps & Acoustic Pauses"]
+        E1 --> E3["Granite Rubric Grader (70% Content)"]
+        E2 --> E4["Fluency Timing Engine (30% Delivery)"]
+        E3 --> E5["Composite Viva Scorecard"]
+        E4 --> E5
+    end
+
+    subgraph Storage["Classroom Dashboard & Storage"]
+        E5 --> S1[("IBM Cloudant NoSQL Store")]
+        S1 --> S2["Live Teacher Monitor & Analytics"]
+        S1 --> S3["Printable A4 Academic Report"]
+    end
+
+    style Teacher fill:#F6F7F9,stroke:#3B5BFF,stroke-width:1.5px
+    style Candidate fill:#FFFFFF,stroke:#3B5BFF,stroke-width:1.5px
+    style Evaluation fill:#EDF1FF,stroke:#3B5BFF,stroke-width:1.5px
+    style Storage fill:#F6F7F9,stroke:#0F9D6E,stroke-width:1.5px
+```
+
+### Detailed Evaluation Dataflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Teacher as Instructor
+    participant Web as Oralyze Web App
+    participant Granite as IBM Granite 3.3
+    participant Speech as Watson STT & TTS
+    participant DB as IBM Cloudant
+    actor Student as Candidate
+
+    Teacher->>Web: Input topic prompt (e.g. DBMS Indexing)
+    Web->>Granite: POST /v1/generate (Bloom rubric instructions)
+    Granite-->>Web: Structured questions with key points & ideal duration
+    Teacher->>Web: Launch Room (e.g. A7K2QX)
+    Student->>Web: Join room with code
+    Web->>Speech: Synthesize question text (en-IN/hi-IN)
+    Speech-->>Student: Neural audio playback
+    Student->>Web: Speaks oral answer into microphone
+    Web->>Speech: Stream audio chunks
+    Speech-->>Web: Transcript + word timestamps
+    par Content Evaluation
+        Web->>Granite: Grade transcript against rubric points
+        Granite-->>Web: Content score (0-10) + feedback
+    and Fluency Evaluation
+        Web->>Web: Calculate WPM, filler frequency, pauses (>0.8s)
+        Web-->>Web: Delivery score (0-100)
+    end
+    Web->>DB: Persist final scorecard
+    Web-->>Student: Display instant score breakdown
+    Web-->>Teacher: Live monitor updates in real time
 ```
 
 ## Try it
@@ -154,7 +211,7 @@ Oralyze/
 ├── data/
 │   └── questions.json          # Bundled question bank for offline evaluation
 ├── docs/
-│   ├── screenshots/            # UI walkthrough images
+│   ├── screenshots/            # High-resolution desktop UI walkthrough images
 │   └── social-preview.png      # Repository social preview card
 ├── services/
 │   ├── fluency.py              # Speaking rate, pause, and filler analytics
