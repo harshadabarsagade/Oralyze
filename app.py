@@ -26,7 +26,7 @@ import uuid
 from flask import Flask, jsonify, request, send_from_directory
 from config import Config
 from services.fluency import analyze_fluency
-from services.granite import generate_questions, grade_answer
+from services.granite import generate_questions, grade_answer, preview_viva_from_prompt
 from services.speech import synthesize, transcribe
 from services import store
 
@@ -37,6 +37,38 @@ logging.basicConfig(
 logger = logging.getLogger("oralyze")
 
 app = Flask(__name__, static_folder="static")
+
+# Enable CORS for GitHub Pages and local development
+# Allowed origins only; never wildcard '*' on routes that spend IBM tokens
+ALLOWED_ORIGINS = {
+    "https://mohitraj8503.github.io",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://localhost:3000"
+}
+
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+    if origin and (origin in ALLOWED_ORIGINS or origin.endswith(".github.io")):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
+
+
+@app.route("/", defaults={"path": ""}, methods=["OPTIONS"])
+@app.route("/<path:path>", methods=["OPTIONS"])
+def options_handler(path):
+    response = jsonify({"status": "ok"})
+    origin = request.headers.get("Origin")
+    if origin and (origin in ALLOWED_ORIGINS or origin.endswith(".github.io")):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 # In-memory room store: code -> room dict
 # code: 6 uppercase alphanumeric chars
@@ -87,60 +119,105 @@ def health_check():
     })
 
 
+@app.route("/api/viva/preview", methods=["POST"])
+def preview_viva():
+    """Generate question preview from teacher natural language prompt."""
+    data = request.get_json(silent=True) or {}
+    prompt = (data.get("prompt") or "").strip()
+    difficulty = (data.get("difficulty") or "medium").strip().lower()
+    language = (data.get("language") or "English").strip()
+    count = data.get("count", 5)
+
+    result, status_code = preview_viva_from_prompt(
+        prompt=prompt,
+        difficulty=difficulty,
+        language=language,
+        count=count
+    )
+    return jsonify(result), status_code
+
+
 @app.route("/api/viva", methods=["POST"])
 def create_viva():
-    """Teacher creates a viva room with subject/topic."""
+    """Teacher creates a viva room from prompt or custom questions list."""
     data = request.get_json(silent=True) or {}
-    subject = (data.get("subject") or "DBMS").strip()
-    topic = (data.get("topic") or "").strip()
-    level = (data.get("level") or "undergraduate").strip().lower()
-    language = (data.get("language") or "en").strip().lower()
+    prompt = (data.get("prompt") or "").strip()
+    difficulty = (data.get("difficulty") or "medium").strip().lower()
+    language = (data.get("language") or "English").strip()
+    custom_questions = data.get("questions")
+    count = data.get("count", 5)
+
     try:
-        count = int(data.get("count", 5))
+        count = int(count)
     except (ValueError, TypeError):
         count = 5
+    count = max(3, min(count, 7))
 
-    count = max(1, min(count, 10))
+    # If questions list was already edited and provided by teacher
+    if isinstance(custom_questions, list) and len(custom_questions) >= 1:
+        subject = (data.get("subject") or "Viva Assessment").strip()
+        topic = (data.get("topic") or "Oral Exam").strip()
+        title = (data.get("title") or f"{subject} Viva").strip()
+        raw_questions = custom_questions
+        source = data.get("source", "teacher")
+    else:
+        # Generate from prompt if no questions list provided
+        if not prompt:
+            prompt = (data.get("subject") or "DBMS") + " oral viva questions"
+        preview_res, status_code = preview_viva_from_prompt(
+            prompt=prompt,
+            difficulty=difficulty,
+            language=language,
+            count=count
+        )
+        if status_code != 200:
+            return jsonify(preview_res), status_code
+
+        title = preview_res.get("title", "Viva Examination")
+        subject = preview_res.get("subject", "Engineering")
+        topic = preview_res.get("topic", "Viva Voce")
+        difficulty = preview_res.get("difficulty", difficulty)
+        language = preview_res.get("language", language)
+        raw_questions = preview_res.get("questions", [])
+        source = preview_res.get("source", "granite")
+
     code = _generate_code()
-
-    # Query term combines subject and specific topic
-    query = f"{subject}: {topic}" if topic else subject
-
-    try:
-        raw_questions = generate_questions(subject=query, level=level, n=count)
-    except Exception as e:
-        logger.error("[viva] Error generating questions: %s", e)
-        return jsonify({"error": "Failed to generate viva questions"}), 500
-
     questions = []
     audio_cache = {}
+
     for idx, q in enumerate(raw_questions):
-        qid = f"q_{idx}"
+        qid = q.get("id") or f"q_{idx}"
         q_item = {
             "id": qid,
             "index": idx,
             "text": q.get("text", ""),
-            "level": q.get("level", "understand"),
-            "key_points": q.get("key_points", [])
+            "bloom": q.get("bloom", q.get("level", "understand")),
+            "level": q.get("bloom", q.get("level", "understand")),
+            "key_points": q.get("key_points", []),
+            "ideal_seconds": q.get("ideal_seconds", 40)
         }
         questions.append(q_item)
 
-    # Pre-synthesize question 0 so student hears it immediately on join
+    # Pre-synthesize question 0 audio
     if questions:
-        b64, _ = _get_or_synthesize_audio(questions[0]["text"], language)
+        lang_code = "hi" if "hindi" in str(language).lower() else "en"
+        b64, _ = _get_or_synthesize_audio(questions[0]["text"], lang_code)
         audio_cache[0] = b64
 
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
     room = {
         "code": code,
+        "title": title,
         "subject": subject,
         "topic": topic,
-        "level": level,
+        "prompt": prompt,
+        "difficulty": difficulty,
         "language": language,
+        "source": source,
         "total": len(questions),
         "questions": questions,
         "audio_cache": audio_cache,
-        "status": "waiting",  # waiting -> answering -> done
+        "status": "waiting",
         "current_index": 0,
         "student_name": "Student",
         "answers": [],
@@ -148,20 +225,24 @@ def create_viva():
     }
     VIVAS[code] = room
 
-    # Client-safe question representations
     client_questions = [{
         "id": q["id"],
         "index": q["index"],
         "text": q["text"],
-        "level": q["level"]
+        "bloom": q["bloom"],
+        "level": q["level"],
+        "key_points": q["key_points"],
+        "ideal_seconds": q["ideal_seconds"]
     } for q in questions]
 
     return jsonify({
         "code": code,
+        "title": title,
         "subject": subject,
         "topic": topic,
-        "level": level,
+        "difficulty": difficulty,
         "language": language,
+        "source": source,
         "questions": client_questions,
         "total": len(questions)
     })

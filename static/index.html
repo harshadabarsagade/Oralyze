@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   
+    <!-- Oralyze Client Config & Offline Engine -->
+  <script src="./config.js"></script>
+  <script src="./js/grader.js"></script>
+  <script src="./js/api.js"></script>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script id="tailwind-config">
@@ -128,7 +132,9 @@
   <header class="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
     <div class="h-16 max-w-[920px] mx-auto px-4 md:px-8 flex items-center justify-between">
       <div class="flex items-center gap-3 cursor-pointer" onclick="navTo('landing')">
-        <img src="/static/brand/logo.png" alt="Oralyze Logo" class="w-8 h-8 rounded-xl object-contain shadow-sm">
+        <div class="w-9 h-9 rounded-xl bg-primary-container/10 border border-primary-container/20 flex items-center justify-center p-1 shadow-sm">
+          <img src="./brand/logo.png" onerror="this.onerror=null; this.src='data:image/png;base64,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';" alt="Oralyze Logo" class="w-full h-full object-contain">
+        </div>
         <div class="flex items-center gap-2">
           <span class="font-bold text-[20px] tracking-tight text-on-surface">Oralyze</span>
           <span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span>
@@ -249,82 +255,152 @@
       <!-- ========================================== -->
       <!-- 2. TEACHER SETUP (oralyze_teacher_setup)   -->
       <!-- ========================================== -->
-      <section id="viewTeacherSetup" class="hidden-view w-full max-w-[720px] mx-auto flex flex-col pt-4 pb-12">
-        <header class="flex flex-col mb-8">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="inline-block w-2 h-2 rounded-full bg-primary-container"></span>
-            <span class="text-[13px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">Viva Configuration</span>
-          </div>
-          <h1 class="text-[36px] md:text-[44px] font-bold text-on-surface tracking-tight leading-tight">Create a viva</h1>
-          <p class="text-[18px] text-on-surface-variant mt-2">Pick a subject and a topic. Questions are generated in about three seconds.</p>
+      <section id="viewTeacherSetup" class="hidden-view w-full max-w-[760px] mx-auto flex flex-col pt-4 pb-16">
+        <header class="flex flex-col mb-8 text-center sm:text-left">
+          <h1 class="text-[38px] sm:text-[44px] font-bold text-on-surface tracking-tight leading-tight">Create a viva</h1>
+          <p class="text-[18px] text-[#41506A] mt-2 max-w-[52ch]">Describe the viva you want. The AI writes the questions.</p>
         </header>
 
-        <div class="w-full bg-surface-container-lowest rounded-[22px] p-8 shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] relative overflow-hidden">
-          <form class="flex flex-col gap-6" onsubmit="event.preventDefault(); createVivaRoom();">
-            <!-- Subject -->
-            <div class="flex flex-col gap-2">
-              <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tSubject">Subject</label>
-              <input class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all placeholder:text-outline" id="tSubject" type="text" value="DBMS">
-            </div>
+        <!-- FRAME 1: TEACHER INPUT CARD -->
+        <div id="tSetupFrame1" class="w-full bg-white rounded-[22px] p-6 sm:p-8 shadow-[0_2px_8px_rgba(13,21,38,0.05),0_16px_32px_rgba(13,21,38,0.06)] border border-[#E7EAF0] flex flex-col gap-6">
+          <!-- Label & Character Counter -->
+          <div class="flex items-center justify-between text-[13px] font-semibold tracking-wider text-[#7A8798] uppercase">
+            <span>YOUR PROMPT</span>
+            <span id="tPromptCounter" class="font-mono normal-case tracking-normal">0 / 500</span>
+          </div>
 
-            <!-- Topic -->
-            <div class="flex flex-col gap-2">
-              <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tTopic">Topic or Chapter</label>
-              <input class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all placeholder:text-outline" id="tTopic" placeholder="Indexing, normalisation, transactions…" type="text" value="Indexing & B+ Trees">
-            </div>
+          <!-- Prompt Textarea -->
+          <div class="relative">
+            <textarea id="tPromptInput" rows="8" maxlength="500" class="w-full h-[220px] p-5 rounded-[16px] bg-white text-on-surface text-[17px] leading-[1.6] border border-[#E7EAF0] outline-none focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/25 transition-all resize-none placeholder:text-[#8592A6] font-normal" placeholder="Example: DBMS for B.Tech 3rd semester. Ask 5 viva questions on indexing and B+ trees, medium difficulty, answers should take about 40 seconds. Ask in English.">DBMS 3rd semester. 5 oral questions on indexing, B+ trees and transactions. Medium difficulty, answerable in 40 seconds each.</textarea>
+          </div>
 
-            <!-- Academic Level & Language -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="flex flex-col gap-2">
-                <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tLevel">Academic Level</label>
-                <div class="relative w-full">
-                  <select class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all appearance-none cursor-pointer pr-10" id="tLevel">
-                    <option selected value="undergraduate">Undergraduate (B.Tech / BCA)</option>
-                    <option value="postgraduate">Postgraduate (M.Tech / MCA)</option>
+          <!-- Suggestion Chips Row -->
+          <div class="flex flex-wrap items-center gap-2.5 pt-1">
+            <button type="button" onclick="applyPromptChip('Operating Systems — deadlocks')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FBFCFD] border border-[#E7EAF0] text-[14px] text-[#41506A] hover:border-[#3B5BFF] hover:text-[#3B5BFF] transition-all cursor-pointer">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round"/></svg>
+              <span>Operating Systems — deadlocks</span>
+            </button>
+            <button type="button" onclick="applyPromptChip('DBMS — normalisation')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FBFCFD] border border-[#E7EAF0] text-[14px] text-[#41506A] hover:border-[#3B5BFF] hover:text-[#3B5BFF] transition-all cursor-pointer">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round"/></svg>
+              <span>DBMS — normalisation</span>
+            </button>
+            <button type="button" onclick="applyPromptChip('Computer Networks — TCP vs UDP')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FBFCFD] border border-[#E7EAF0] text-[14px] text-[#41506A] hover:border-[#3B5BFF] hover:text-[#3B5BFF] transition-all cursor-pointer">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round"/></svg>
+              <span>Computer Networks — TCP vs UDP</span>
+            </button>
+            <button type="button" onclick="applyPromptChip('Data Structures — trees and graphs')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FBFCFD] border border-[#E7EAF0] text-[14px] text-[#41506A] hover:border-[#3B5BFF] hover:text-[#3B5BFF] transition-all cursor-pointer">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round"/></svg>
+              <span>Data Structures — trees and graphs</span>
+            </button>
+          </div>
+
+          <!-- Hairline Divider -->
+          <div class="w-full h-[1px] bg-[#E7EAF0]"></div>
+
+          <!-- Collapsible Advanced Section -->
+          <div class="flex flex-col">
+            <button type="button" id="btnToggleAdvanced" onclick="toggleAdvancedSettings()" class="flex items-center justify-between py-1 text-[15px] font-semibold text-[#41506A] hover:text-on-surface transition-colors cursor-pointer">
+              <span>Advanced settings</span>
+              <svg id="advancedChevron" class="w-4 h-4 text-[#7A8798] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            
+            <div id="advancedSettingsPanel" class="hidden flex-col gap-4 pt-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- Difficulty -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-semibold uppercase tracking-wider text-[#7A8798]">Difficulty</label>
+                  <select id="tAdvDifficulty" class="h-12 px-3 rounded-[12px] bg-white border border-[#E7EAF0] text-[15px] font-medium text-on-surface outline-none focus:border-[#3B5BFF]">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
                   </select>
-                  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                </div>
+                <!-- Language -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-semibold uppercase tracking-wider text-[#7A8798]">Language</label>
+                  <select id="tAdvLanguage" class="h-12 px-3 rounded-[12px] bg-white border border-[#E7EAF0] text-[15px] font-medium text-on-surface outline-none focus:border-[#3B5BFF]">
+                    <option value="English" selected>English</option>
+                    <option value="Hindi">Hindi / Hinglish</option>
+                  </select>
+                </div>
+                <!-- Questions Segmented Control -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-semibold uppercase tracking-wider text-[#7A8798]">Questions</label>
+                  <div class="grid grid-cols-3 gap-1 p-1 bg-[#F1F3F8] rounded-[12px] h-12 items-center text-center text-[14px] font-semibold">
+                    <button type="button" class="t-count-btn h-10 rounded-[9px] text-[#505F7A] transition-all" onclick="setPromptQCount(3)">3</button>
+                    <button type="button" class="t-count-btn active h-10 rounded-[9px] bg-white text-on-surface shadow-xs transition-all" onclick="setPromptQCount(5)">5</button>
+                    <button type="button" class="t-count-btn h-10 rounded-[9px] text-[#505F7A] transition-all" onclick="setPromptQCount(7)">7</button>
                   </div>
                 </div>
               </div>
-
-              <div class="flex flex-col gap-2">
-                <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold" for="tLang">Language Mode</label>
-                <div class="relative w-full">
-                  <select class="w-full h-14 px-5 rounded-[14px] bg-surface-container-lowest text-on-surface text-[17px] outline-none shadow-[inset_0_0_0_1px_rgba(231,234,240,1)] focus:shadow-[inset_0_0_0_1px_#3b5bff,0_0_0_3px_rgba(59,91,255,0.15)] transition-all appearance-none cursor-pointer pr-10" id="tLang">
-                    <option selected value="en">English</option>
-                    <option value="hi">Hindi / Hinglish</option>
-                  </select>
-                  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                  </div>
-                </div>
-              </div>
+              <p class="text-[13px] text-[#7A8798]">Leave these on auto if your prompt already specifies them.</p>
             </div>
+          </div>
 
-            <!-- Number of questions -->
-            <div class="flex flex-col gap-2">
-              <label class="text-[13px] uppercase tracking-[0.08em] text-on-surface-variant font-semibold">Number of questions</label>
-              <div class="grid grid-cols-3 gap-3 p-1.5 bg-surface-container-low rounded-[16px]">
-                <button type="button" class="q-count-btn py-3 rounded-[12px] text-[16px] font-semibold text-secondary hover:text-on-surface transition-all" onclick="setQCount(3)">3 Questions</button>
-                <button type="button" class="q-count-btn active py-3 rounded-[12px] text-[16px] font-semibold bg-surface-container-lowest text-on-surface shadow-sm transition-all" onclick="setQCount(5)">5 Questions</button>
-                <button type="button" class="q-count-btn py-3 rounded-[12px] text-[16px] font-semibold text-secondary hover:text-on-surface transition-all" onclick="setQCount(7)">7 Questions</button>
-              </div>
-            </div>
+          <!-- Generate Action Button -->
+          <div class="flex flex-col gap-2.5 pt-2">
+            <button type="button" id="btnGeneratePreview" onclick="generateQuestionPreview()" class="w-full h-14 rounded-[14px] bg-[#3B5BFF] hover:bg-[#2A45D6] text-white text-[17px] font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm cursor-pointer">
+              <span>Generate questions</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </button>
+            <p class="text-[13px] text-[#7A8798] text-center">One Granite call, about 1,500 tokens. Free on IBM Cloud Lite.</p>
+          </div>
+        </div>
 
-            <!-- Submit Button -->
-            <div class="flex flex-col gap-3 mt-4">
-              <button type="submit" id="btnCreateViva" class="w-full h-14 rounded-[14px] bg-primary text-on-primary text-[17px] font-semibold flex items-center justify-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99] shadow-sm">
-                <span>Create viva</span>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-              </button>
-              <p class="text-[13px] text-outline text-center">Uses ~1,500 Granite tokens per question.</p>
+        <!-- FRAME 2: LOADING SKELETON STATE -->
+        <div id="tSetupFrame2" class="hidden w-full flex-col gap-4">
+          <div class="w-full bg-white rounded-[22px] p-8 shadow-sm border border-[#E7EAF0] flex items-center justify-center gap-3 text-[17px] font-semibold text-[#3B5BFF]">
+            <svg class="w-6 h-6 animate-spin text-[#3B5BFF]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <span>Writing your questions…</span>
+          </div>
+          <!-- 3 Question Skeleton Cards -->
+          <div class="flex flex-col gap-3.5">
+            <div class="w-full h-24 bg-white rounded-[18px] p-5 border border-[#E7EAF0] flex flex-col justify-between animate-pulse">
+              <div class="flex items-center gap-3"><div class="w-12 h-4 bg-[#E7EAF0] rounded"></div><div class="w-20 h-4 bg-[#E7EAF0] rounded-full"></div></div>
+              <div class="w-3/4 h-5 bg-[#E7EAF0] rounded"></div>
             </div>
-          </form>
+            <div class="w-full h-24 bg-white rounded-[18px] p-5 border border-[#E7EAF0] flex flex-col justify-between animate-pulse">
+              <div class="flex items-center gap-3"><div class="w-12 h-4 bg-[#E7EAF0] rounded"></div><div class="w-20 h-4 bg-[#E7EAF0] rounded-full"></div></div>
+              <div class="w-5/6 h-5 bg-[#E7EAF0] rounded"></div>
+            </div>
+            <div class="w-full h-24 bg-white rounded-[18px] p-5 border border-[#E7EAF0] flex flex-col justify-between animate-pulse">
+              <div class="flex items-center gap-3"><div class="w-12 h-4 bg-[#E7EAF0] rounded"></div><div class="w-20 h-4 bg-[#E7EAF0] rounded-full"></div></div>
+              <div class="w-2/3 h-5 bg-[#E7EAF0] rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FRAME 3: GENERATED QUESTIONS & EDIT REVIEW -->
+        <div id="tSetupFrame3" class="hidden w-full flex-col gap-6">
+          <div class="flex items-center justify-between pb-2 border-b border-[#E7EAF0]">
+            <div>
+              <h2 class="text-[22px] font-bold text-on-surface tracking-tight" id="tGenHeaderTitle">5 questions ready</h2>
+              <p class="text-[14px] text-[#7A8798]" id="tGenMetaSubtitle">Engineering • Viva Voce</p>
+            </div>
+            <button type="button" onclick="generateQuestionPreview()" class="text-[14px] font-semibold text-[#3B5BFF] hover:underline flex items-center gap-1 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Regenerate</span>
+            </button>
+          </div>
+
+          <!-- List of Question Cards -->
+          <div class="flex flex-col gap-4" id="tGenQuestionsList">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- Sticky Bottom Bar -->
+          <div class="sticky bottom-4 z-20 w-full p-4 bg-white/95 backdrop-blur-md rounded-[18px] border border-[#E7EAF0] shadow-lg flex items-center justify-between gap-4">
+            <button type="button" onclick="returnToInputFrame()" class="h-12 px-6 rounded-[12px] border border-[#E7EAF0] text-[15px] font-semibold text-[#41506A] hover:bg-[#F6F7F9] transition-all cursor-pointer">
+              Edit prompt
+            </button>
+            <button type="button" id="btnCommitCreateViva" onclick="commitAndCreateViva()" class="h-12 px-8 rounded-[12px] bg-[#3B5BFF] hover:bg-[#2A45D6] text-white text-[15px] font-semibold flex items-center gap-2 transition-all active:scale-[0.99] shadow-sm cursor-pointer">
+              <span>Create viva</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </button>
+          </div>
         </div>
       </section>
 
-      <!-- ========================================== -->
       <!-- 3. LIVE MONITOR (oralyze_live_monitor)     -->
       <!-- ========================================== -->
       <section id="viewTeacherLive" class="hidden-view flex flex-col w-full pb-12">
@@ -675,13 +751,14 @@
 
   <!-- Script Logic -->
   <script>
-    // System State
+    // System State & Active Viva
     let activeCode = null;
     let selectedQCount = 5;
     let currentQIndex = 0;
     let totalQuestions = 5;
     let currentAudioB64 = null;
     let monitorTimer = null;
+    let generatedVivaData = null; // Stored from preview for edits
 
     // Speech & Media Recording
     let mediaRecorder = null;
@@ -695,37 +772,116 @@
     let animFrame = null;
     let timerInterval = null;
     let secondsElapsed = 0;
+    let recordedWordTimings = [];
 
     // Protocol check
     function checkProtocolSecurity() {
       const isFile = window.location.protocol === "file:";
       const isSecure = window.isSecureContext || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      if (isFile || !isSecure) {
-        document.getElementById("protocolWarning").classList.remove("hidden-view");
+      const warningEl = document.getElementById("protocolWarning");
+      if (warningEl) {
+        if (isFile || !isSecure) {
+          warningEl.classList.remove("hidden-view");
+        } else {
+          warningEl.classList.add("hidden-view");
+        }
       }
     }
     checkProtocolSecurity();
 
-    // Check Mock Mode Status
-    async function checkHealth() {
-      try {
-        const resp = await fetch("/api/health");
-        const data = await resp.json();
-        const pill = document.getElementById("demoBadge");
-        if (data.mock_mode) {
-          pill.textContent = "Demo Mode";
-        } else {
-          pill.textContent = "IBM Live Connected";
-          pill.className = "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant border border-tertiary/20";
-        }
-      } catch (e) {
-        console.warn("Backend health check warning:", e);
+    // Check Build Mode Badge
+    async function updateBuildBadge() {
+      const pill = document.getElementById("demoBadge");
+      if (!pill) return;
+      if (window.OralyzeApi && window.OralyzeApi.isHostedMode()) {
+        pill.textContent = "Offline demo build";
+        pill.className = "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30";
+      } else {
+        pill.textContent = "Live IBM backend";
+        pill.className = "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant border border-tertiary/20";
       }
     }
-    checkHealth();
+    updateBuildBadge();
+
+    // Live prompt character counter & chip listener
+    const promptInput = document.getElementById("tPromptInput");
+    const promptCounter = document.getElementById("tPromptCounter");
+    if (promptInput && promptCounter) {
+      promptInput.addEventListener("input", () => {
+        promptCounter.textContent = `${promptInput.value.length} / 500`;
+      });
+      promptCounter.textContent = `${promptInput.value.length} / 500`;
+    }
+
+    function applyPromptChip(text) {
+      if (promptInput) {
+        promptInput.value = text;
+        if (promptCounter) promptCounter.textContent = `${text.length} / 500`;
+        promptInput.focus();
+      }
+    }
+
+    function toggleAdvancedSettings() {
+      const panel = document.getElementById("advancedSettingsPanel");
+      const chevron = document.getElementById("advancedChevron");
+      if (panel.classList.contains("hidden")) {
+        panel.classList.remove("hidden");
+        panel.classList.add("flex");
+        if (chevron) chevron.classList.add("rotate-180");
+      } else {
+        panel.classList.remove("flex");
+        panel.classList.add("hidden");
+        if (chevron) chevron.classList.remove("rotate-180");
+      }
+    }
+
+    function setPromptQCount(n) {
+      selectedQCount = n;
+      document.querySelectorAll(".t-count-btn").forEach(btn => {
+        if (btn.textContent.trim() === String(n)) {
+          btn.className = "t-count-btn active h-10 rounded-[9px] bg-white text-on-surface shadow-xs transition-all";
+        } else {
+          btn.className = "t-count-btn h-10 rounded-[9px] text-[#505F7A] transition-all";
+        }
+      });
+    }
+
+    // Hash-based router: #/teacher, #/join, #/viva/A7K2QX, #/result, #/dashboard
+    function handleHashRouting() {
+      const hash = window.location.hash || "#/";
+      const clean = hash.replace(/^#\/?/, "");
+      
+      if (!clean || clean === "home" || clean === "landing") {
+        navTo("landing", false);
+      } else if (clean === "teacher" || clean === "create") {
+        navTo("teacherSetup", false);
+      } else if (clean === "join") {
+        navTo("studentJoin", false);
+      } else if (clean.startsWith("viva/")) {
+        const parts = clean.split("/");
+        const code = parts[1];
+        if (code) {
+          activeCode = code.toUpperCase();
+          navTo("studentQuestion", false);
+          loadVivaRoom(activeCode);
+        } else {
+          navTo("studentJoin", false);
+        }
+      } else if (clean === "monitor") {
+        navTo("teacherLive", false);
+      } else if (clean === "scorecard" || clean === "result") {
+        navTo("scorecard", false);
+      } else if (clean === "dashboard") {
+        navTo("dashboard", false);
+      } else {
+        navTo("landing", false);
+      }
+    }
+
+    window.addEventListener("hashchange", handleHashRouting);
 
     // Screen Router
-    function navTo(screen) {
+    function navTo(screen, updateHash = true) {
       if (monitorTimer) {
         clearInterval(monitorTimer);
         monitorTimer = null;
@@ -736,80 +892,191 @@
         "viewStudentJoin", "viewStudentQuestion", "viewStudentResult",
         "viewScorecard", "viewDashboard"
       ];
-      screens.forEach(s => document.getElementById(s).classList.add("hidden-view"));
+      screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.add("hidden-view");
+      });
 
       if (screen === "landing") {
         document.getElementById("viewLanding").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/";
       } else if (screen === "teacherSetup") {
         document.getElementById("viewTeacherSetup").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/teacher";
       } else if (screen === "teacherLive") {
         document.getElementById("viewTeacherLive").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/monitor";
         startLiveMonitor();
       } else if (screen === "studentJoin") {
         document.getElementById("viewStudentJoin").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/join";
         setupCodeInputs();
       } else if (screen === "studentQuestion") {
         document.getElementById("viewStudentQuestion").classList.remove("hidden-view");
+        if (updateHash && activeCode) window.location.hash = `#/viva/${activeCode}`;
       } else if (screen === "studentResult") {
         document.getElementById("viewStudentResult").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/result";
       } else if (screen === "scorecard") {
         document.getElementById("viewScorecard").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/scorecard";
+        if (activeCode) renderScorecard(activeCode);
       } else if (screen === "dashboard") {
         document.getElementById("viewDashboard").classList.remove("hidden-view");
+        if (updateHash) window.location.hash = "#/dashboard";
         loadDashboard();
       }
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.scrollTo({ top: 0, behavior: "instant" });
     }
 
-    function setQCount(cnt) {
-      selectedQCount = cnt;
-      document.querySelectorAll(".q-count-btn").forEach(btn => {
-        const isActive = btn.textContent.startsWith(String(cnt));
-        if (isActive) {
-          btn.className = "q-count-btn active py-3 rounded-[12px] text-[16px] font-semibold bg-surface-container-lowest text-on-surface shadow-sm transition-all";
-        } else {
-          btn.className = "q-count-btn py-3 rounded-[12px] text-[16px] font-semibold text-secondary hover:text-on-surface transition-all";
-        }
+    // -------------------------------------------------------------
+    // FRAME WORKFLOW: TEACHER PROMPT PREVIEW & EDIT
+    // -------------------------------------------------------------
+    async function generateQuestionPreview() {
+      const prompt = (promptInput ? promptInput.value : "").trim();
+      if (!prompt || prompt.length < 5) {
+        alert("Please enter a subject or topic for the viva questions.");
+        return;
+      }
+
+      const diff = document.getElementById("tAdvDifficulty").value || "medium";
+      const lang = document.getElementById("tAdvLanguage").value || "English";
+
+      const f1 = document.getElementById("tSetupFrame1");
+      const f2 = document.getElementById("tSetupFrame2");
+      const f3 = document.getElementById("tSetupFrame3");
+
+      f1.classList.add("hidden");
+      f3.classList.add("hidden");
+      f2.classList.remove("hidden");
+      f2.classList.add("flex");
+
+      try {
+        const preview = await window.OralyzeApi.previewViva(prompt, diff, lang, selectedQCount);
+        generatedVivaData = preview;
+
+        // Render Frame 3
+        renderGeneratedQuestionsFrame(preview);
+
+        f2.classList.remove("flex");
+        f2.classList.add("hidden");
+        f3.classList.remove("hidden");
+        f3.classList.add("flex");
+      } catch (err) {
+        alert("Generation error: " + err.message);
+        f2.classList.remove("flex");
+        f2.classList.add("hidden");
+        f1.classList.remove("hidden");
+      }
+    }
+
+    function returnToInputFrame() {
+      const f1 = document.getElementById("tSetupFrame1");
+      const f2 = document.getElementById("tSetupFrame2");
+      const f3 = document.getElementById("tSetupFrame3");
+      f3.classList.remove("flex");
+      f3.classList.add("hidden");
+      f2.classList.remove("flex");
+      f2.classList.add("hidden");
+      f1.classList.remove("hidden");
+    }
+
+    function renderGeneratedQuestionsFrame(data) {
+      const count = data.questions ? data.questions.length : 0;
+      document.getElementById("tGenHeaderTitle").textContent = `${count} questions ready`;
+      document.getElementById("tGenMetaSubtitle").textContent = `${data.subject || 'Engineering'} • ${data.topic || 'Viva Voce'}`;
+
+      const listContainer = document.getElementById("tGenQuestionsList");
+      listContainer.innerHTML = "";
+
+      data.questions.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.className = "w-full bg-white rounded-[18px] p-5 border border-[#E7EAF0] shadow-xs flex flex-col gap-3 relative transition-all";
+        card.id = `qCard_${idx}`;
+
+        const bloomTag = (q.bloom || q.level || "understand").toUpperCase();
+        
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-[#F1F3F8] text-[#505F7A] text-[12px] font-bold flex items-center justify-center">${idx + 1}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#EDF1FF] text-[#2A45D6] border border-[#3B5BFF]/20">${bloomTag}</span>
+              <span class="text-[12px] text-[#7A8798]">~${q.ideal_seconds || 40}s answer</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="editQuestionText(${idx})" class="p-1.5 rounded-lg text-[#7A8798] hover:text-[#3B5BFF] hover:bg-[#F6F7F9] transition-colors" title="Edit question">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </button>
+              <button type="button" onclick="deleteQuestion(${idx})" class="p-1.5 rounded-lg text-[#7A8798] hover:text-[#D64545] hover:bg-[#FDECEC] transition-colors" title="Delete question">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="text-[16px] font-medium text-on-surface leading-snug" id="qText_${idx}">${q.text}</p>
+          <div class="flex flex-col gap-1.5 pt-1 border-t border-[#F1F3F8]">
+            <span class="text-[12px] font-semibold uppercase tracking-wider text-[#7A8798]">Key Rubric Points:</span>
+            <div class="flex flex-wrap gap-1.5">
+              ${(q.key_points || []).map(kp => `<span class="px-2.5 py-1 rounded-md bg-[#FBFCFD] border border-[#E7EAF0] text-[12px] text-[#41506A]">${kp}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(card);
       });
     }
 
-    // Teacher Flow: Create Viva Room
-    async function createVivaRoom() {
-      const subject = document.getElementById("tSubject").value.trim() || "DBMS";
-      const topic = document.getElementById("tTopic").value.trim();
-      const level = document.getElementById("tLevel").value;
-      const language = document.getElementById("tLang").value;
-      const btn = document.getElementById("btnCreateViva");
+    function editQuestionText(idx) {
+      if (!generatedVivaData || !generatedVivaData.questions[idx]) return;
+      const current = generatedVivaData.questions[idx].text;
+      const updated = prompt("Edit viva question text:", current);
+      if (updated && updated.trim()) {
+        generatedVivaData.questions[idx].text = updated.trim();
+        const el = document.getElementById(`qText_${idx}`);
+        if (el) el.textContent = updated.trim();
+      }
+    }
 
+    function deleteQuestion(idx) {
+      if (!generatedVivaData || !generatedVivaData.questions) return;
+      if (generatedVivaData.questions.length <= 1) {
+        alert("A viva must have at least one question.");
+        return;
+      }
+      generatedVivaData.questions.splice(idx, 1);
+      renderGeneratedQuestionsFrame(generatedVivaData);
+    }
+
+    async function commitAndCreateViva() {
+      if (!generatedVivaData || !generatedVivaData.questions || !generatedVivaData.questions.length) {
+        alert("Please generate questions first.");
+        return;
+      }
+
+      const btn = document.getElementById("btnCommitCreateViva");
       btn.disabled = true;
-      btn.innerHTML = `<span>Creating room & questions…</span>`;
+      btn.innerHTML = `<span>Creating room…</span>`;
 
       try {
-        const resp = await fetch("/api/viva", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            subject, topic, level, language, count: selectedQCount
-          })
-        });
-        const data = await resp.json();
+        const payload = {
+          title: generatedVivaData.title || "Viva Examination",
+          subject: generatedVivaData.subject || "Engineering",
+          topic: generatedVivaData.topic || "Viva Voce",
+          difficulty: generatedVivaData.difficulty || "medium",
+          language: generatedVivaData.language || "English",
+          count: generatedVivaData.questions.length,
+          questions: generatedVivaData.questions
+        };
 
-        if (resp.status !== 200 || data.error) {
-          alert("Error creating room: " + (data.error || "Unknown error"));
-          btn.disabled = false;
-          btn.innerHTML = `<span>Create viva</span>`;
-          return;
-        }
+        const created = await window.OralyzeApi.createViva(payload);
+        activeCode = created.code;
 
-        activeCode = data.code;
         document.getElementById("tLiveRoomCode").textContent = activeCode;
-        document.getElementById("tLiveSubjectMeta").textContent = `${data.subject} • ${data.level}`;
-        document.getElementById("tLiveTopicTitle").textContent = data.topic || data.subject;
+        document.getElementById("tLiveSubjectMeta").textContent = `${created.subject} • ${created.difficulty || 'Medium'}`;
+        document.getElementById("tLiveTopicTitle").textContent = created.topic || created.subject;
 
-        // Render initial empty questions in teacher feed
+        // Render teacher live feed
         const feed = document.getElementById("tLiveFeed");
         feed.innerHTML = "";
-        data.questions.forEach((q, idx) => {
+        created.questions.forEach((q, idx) => {
           const item = document.createElement("div");
           item.className = "flex items-center justify-between p-4 bg-surface-container-low rounded-[14px]";
           item.id = `monitor_q_${idx}`;
@@ -828,7 +1095,7 @@
 
         navTo("teacherLive");
       } catch (err) {
-        alert("Network communication error: " + err);
+        alert("Room creation failed: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<span>Create viva</span>`;
@@ -839,8 +1106,10 @@
       if (activeCode) {
         navigator.clipboard.writeText(activeCode);
         const el = document.getElementById('copy-text');
-        el.innerText = 'Copied!';
-        setTimeout(() => el.innerText = 'Copy code', 2000);
+        if (el) {
+          el.innerText = 'Copied!';
+          setTimeout(() => el.innerText = 'Copy code', 2000);
+        }
       }
     }
 
@@ -854,44 +1123,35 @@
     async function pollLiveMonitor() {
       if (!activeCode) return;
       try {
-        const resp = await fetch(`/api/viva/${activeCode}/live`);
-        if (resp.status !== 200) return;
-        const data = await resp.json();
-
+        const data = await window.OralyzeApi.getLive(activeCode);
         const statusEl = document.getElementById("tLiveStatusText");
+        
         if (data.status === "waiting") {
           statusEl.textContent = "Awaiting student entry…";
-        } else if (data.status === "answering") {
-          statusEl.textContent = `Student answering question ${data.current_index + 1} of ${data.total}…`;
-        } else if (data.status === "done") {
+        } else if (data.status === "in_progress" || data.status === "answering") {
+          statusEl.textContent = `Student answering question ${(data.current_question || 0) + 1} of ${data.total_questions}…`;
+        } else if (data.status === "completed" || data.status === "done") {
           statusEl.textContent = "Viva completed!";
           statusEl.className = "text-[13px] font-semibold text-tertiary";
         }
 
-        // Update items in list
-        (data.answers || []).forEach(a => {
-          const dot = document.getElementById(`dot_q_${a.index}`);
-          const scoreEl = document.getElementById(`score_q_${a.index}`);
+        // Update answers in list
+        (data.answers || []).forEach((a, idx) => {
+          const dot = document.getElementById(`dot_q_${idx}`);
+          const scoreEl = document.getElementById(`score_q_${idx}`);
           if (dot) {
             dot.className = "w-2.5 h-2.5 rounded-full bg-tertiary";
           }
           if (scoreEl) {
             scoreEl.innerHTML = `
-              <span class="text-primary font-semibold">Content: ${a.content.score}</span> · 
-              <span class="text-tertiary font-semibold">Delivery: ${a.delivery.fluency_score}</span> · 
-              <strong class="text-on-surface">${a.total}%</strong>
+              <span class="text-primary font-semibold">Content: ${a.content_score || a.content?.score || 0}</span> · 
+              <span class="text-tertiary font-semibold">Delivery: ${a.delivery_score || a.delivery?.fluency_score || 0}</span> · 
+              <strong class="text-on-surface">${a.overall_score || a.total || 0}%</strong>
             `;
           }
         });
-
-        if (data.status === "answering" && data.current_index < data.total) {
-          const currDot = document.getElementById(`dot_q_${data.current_index}`);
-          if (currDot && !currDot.classList.contains("bg-tertiary")) {
-            currDot.className = "w-2.5 h-2.5 rounded-full bg-primary animate-ping";
-          }
-        }
       } catch (e) {
-        console.warn("[dashboard] poll error:", e);
+        console.warn("[monitor] poll note:", e);
       }
     }
 
@@ -929,7 +1189,7 @@
           }
         };
       });
-      boxes[0].focus();
+      if (boxes[0]) boxes[0].focus();
     }
 
     async function submitJoinCode() {
@@ -947,33 +1207,45 @@
       btn.innerHTML = `<span>Joining viva…</span>`;
 
       try {
-        const resp = await fetch(`/api/viva/${code}`);
-        const data = await resp.json();
-
-        if (resp.status !== 200 || data.error) {
-          alert("Error: " + (data.error || "Room not found"));
-          btn.disabled = false;
-          btn.innerHTML = `<span>Enter Viva Room</span>`;
-          return;
-        }
-
-        activeCode = data.code;
-        currentQIndex = data.current_index;
-        totalQuestions = data.total;
-
-        renderStudentQuestion(data.question, data.audio_b64);
-        navTo("studentQuestion");
-
-        // The Machine Speaks First
-        if (data.audio_b64) {
-          playAudio(data.audio_b64);
-        }
+        await loadVivaRoom(code);
       } catch (err) {
-        alert("Server connection error: " + err);
+        alert("Error joining viva: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<span>Enter Viva Room</span>`;
       }
+    }
+
+    async function loadVivaRoom(code) {
+      const data = await window.OralyzeApi.getViva(code);
+      activeCode = data.code;
+      currentQIndex = data.current_question || 0;
+      totalQuestions = data.total_questions || (data.questions ? data.questions.length : 5);
+
+      const q = data.questions[currentQIndex] || data.questions[0];
+      renderStudentQuestion(q, data.audio_b64);
+      navTo("studentQuestion");
+
+      // Voice synthesis
+      speakQuestion(q.text, data.language || "en");
+    }
+
+    function speakQuestion(text, language = "en") {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.lang = language.toLowerCase().startsWith("hi") ? "hi-IN" : "en-IN";
+        const voices = window.speechSynthesis.getVoices();
+        const matchedVoice = voices.find(v => v.lang.includes(utterance.lang) || v.lang.includes("en-GB"));
+        if (matchedVoice) utterance.voice = matchedVoice;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function replayAudio() {
+      const qText = document.getElementById("sQText").textContent;
+      speakQuestion(qText);
     }
 
     function renderStudentQuestion(q, audioB64) {
@@ -981,7 +1253,6 @@
       document.getElementById("sQText").textContent = q.text;
       currentAudioB64 = audioB64;
       
-      // Update progress bars
       const barContainer = document.getElementById("sProgressBar");
       barContainer.innerHTML = "";
       for (let i = 0; i < totalQuestions; i++) {
@@ -993,18 +1264,7 @@
       resetStudentRecordingUI();
     }
 
-    function playAudio(b64) {
-      if (!b64 || b64.length < 50) return;
-      const audio = document.getElementById("audioPlayer");
-      audio.src = `data:audio/mp3;base64,${b64}`;
-      audio.play().catch(e => console.log("Audio autoplay prevented by client"));
-    }
-
-    function replayAudio() {
-      if (currentAudioB64) playAudio(currentAudioB64);
-    }
-
-    // Student Speech & Real-Time Transcript Streaming
+    // Student Voice Recording & Web Speech
     async function toggleStudentRecording() {
       if (mediaRecorder && mediaRecorder.state === "recording") {
         stopStudentRecording();
@@ -1017,6 +1277,7 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioChunks = [];
+        recordedWordTimings = [];
         mediaRecorder = new MediaRecorder(stream);
 
         mediaRecorder.ondataavailable = e => {
@@ -1054,7 +1315,7 @@
         mediaRecorder.stop();
       }
       if (speechRecognizer) {
-        speechRecognizer.stop();
+        try { speechRecognizer.stop(); } catch (e) {}
       }
       clearInterval(timerInterval);
       document.getElementById("sChannelStatus").textContent = "Recording Complete";
@@ -1063,12 +1324,15 @@
 
     function resetStudentRecordingUI() {
       clearInterval(timerInterval);
-      if (speechRecognizer) speechRecognizer.stop();
+      if (speechRecognizer) {
+        try { speechRecognizer.stop(); } catch (e) {}
+      }
       teardownVisualizer();
       secondsElapsed = 0;
       audioBlob = null;
       liveFinalTranscript = "";
       liveInterimTranscript = "";
+      recordedWordTimings = [];
       document.getElementById("sFinalSpoken").textContent = "";
       document.getElementById("sInterimSpoken").textContent = "Verbal transcript will appear here live as you talk…";
       document.getElementById("btnSubmitAnswer").disabled = true;
@@ -1084,11 +1348,10 @@
         `Recording… ${mins}:${String(secs).padStart(2, '0')} · ${wordCount} words`;
     }
 
-    // Live Web Speech Recognition
     function setupLiveSpeechPreview() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {
-        document.getElementById("sInterimSpoken").textContent = "Recording audio directly…";
+        document.getElementById("sInterimSpoken").textContent = "Recording audio directly (SpeechRecognition not supported in this browser)…";
         return;
       }
 
@@ -1103,7 +1366,11 @@
         liveInterimTranscript = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            liveFinalTranscript += event.results[i][0].transcript + " ";
+            const finalStr = event.results[i][0].transcript;
+            liveFinalTranscript += finalStr + " ";
+            const words = finalStr.trim().split(/\s+/);
+            const nowSec = secondsElapsed;
+            words.forEach(w => recordedWordTimings.push({ word: w, end: nowSec, start: Math.max(0, nowSec - 0.3) }));
           } else {
             liveInterimTranscript += event.results[i][0].transcript;
           }
@@ -1112,14 +1379,13 @@
         document.getElementById("sInterimSpoken").textContent = liveInterimTranscript;
 
         const box = document.getElementById("sLiveTranscriptBox");
-        box.scrollTop = box.scrollHeight;
+        if (box) box.scrollTop = box.scrollHeight;
       };
 
       speechRecognizer.onerror = err => console.warn("Live stream preview note:", err);
-      speechRecognizer.start();
+      try { speechRecognizer.start(); } catch (e) {}
     }
 
-    // 5-Bar Live Level Meter via Web Audio AnalyserNode
     function setupVisualizer(stream) {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1162,38 +1428,28 @@
       });
     }
 
-    // Submit Answer for Grading
+    // Submit Student Answer
     async function submitStudentAnswer() {
       const btn = document.getElementById("btnSubmitAnswer");
       btn.disabled = true;
-      btn.innerHTML = `<span>Grading with Granite…</span>`;
+      btn.innerHTML = `<span>Grading answer…</span>`;
 
-      const formData = new FormData();
-      formData.append("qid", `q_${currentQIndex}`);
-      formData.append("language", "en");
-      formData.append("live_transcript", (liveFinalTranscript + " " + liveInterimTranscript).trim());
-      if (audioBlob) {
-        formData.append("audio", audioBlob, "answer.webm");
-      }
+      const transcript = (liveFinalTranscript + " " + liveInterimTranscript).trim();
 
       try {
-        const resp = await fetch(`/api/viva/${activeCode}/answer`, {
-          method: "POST",
-          body: formData
-        });
-        const data = await resp.json();
+        const result = await window.OralyzeApi.submitAnswer(
+          activeCode,
+          audioBlob,
+          transcript,
+          currentQIndex,
+          recordedWordTimings,
+          Math.max(secondsElapsed, 5)
+        );
 
-        if (resp.status !== 200 || data.error) {
-          alert("Submission error: " + (data.error || "Grading failure"));
-          btn.disabled = false;
-          btn.innerHTML = `<span>Submit Answer</span>`;
-          return;
-        }
-
-        renderStudentResult(data);
+        renderStudentResult(result);
         navTo("studentResult");
       } catch (err) {
-        alert("Grading connection error: " + err);
+        alert("Grading error: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<span>Submit Answer</span>`;
@@ -1205,32 +1461,30 @@
     }
 
     function renderStudentResult(data) {
-      const content = data.content || {};
-      const delivery = data.delivery || {};
+      const ev = data.evaluation || data;
+      const contentScore = ev.content_score || 0;
+      const deliveryScore = ev.delivery_score || 0;
 
-      countUp(document.getElementById("resContentVal"), content.score || 0, true);
-      countUp(document.getElementById("resDeliveryVal"), delivery.fluency_score || 0, false);
+      countUp(document.getElementById("resContentVal"), contentScore, true);
+      countUp(document.getElementById("resDeliveryVal"), deliveryScore, false);
 
-      const verd = (content.verdict || "evaluated").toLowerCase();
+      const verd = (ev.verdict || "evaluated").toLowerCase();
       const verdPill = document.getElementById("resVerdictPill");
       verdPill.textContent = verd.toUpperCase();
       verdPill.className = verd === "correct" 
         ? "px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant"
         : "px-3 py-1 rounded-full text-xs font-semibold bg-error-container text-on-error-container";
 
-      const band = delivery.band || "Good";
       const bandPill = document.getElementById("resBandPill");
-      bandPill.textContent = band;
+      bandPill.textContent = ev.fluency_metrics?.pace_label || "Moderate";
 
-      // Metric Chips Cluster (Stitch styling)
       const chipsRow = document.getElementById("resChipsRow");
       chipsRow.innerHTML = "";
       const metrics = [
-        { text: `${delivery.wpm || 0} wpm`, warn: (delivery.wpm < 110 || delivery.wpm > 165) },
-        { text: `${delivery.filler_count || 0} fillers`, warn: delivery.filler_count > 3 },
-        { text: `${delivery.pause_count || 0} pauses`, warn: delivery.pause_count > 2 },
-        { text: `longest ${delivery.longest_pause || 0}s`, warn: delivery.longest_pause > 1.5 },
-        { text: `confidence ${Math.round(delivery.confidence || 90)}%`, warn: false }
+        { text: `${ev.wpm || ev.fluency_metrics?.wpm || 120} wpm`, warn: ((ev.wpm || 120) < 110 || (ev.wpm || 120) > 165) },
+        { text: `${ev.filler_count || ev.fluency_metrics?.filler_count || 0} fillers`, warn: (ev.filler_count || 0) > 3 },
+        { text: `${ev.pause_count || ev.fluency_metrics?.pause_count || 0} pauses`, warn: (ev.pause_count || 0) > 2 },
+        { text: `rubric: ${ev.correct_points ? ev.correct_points.length : 0} matched`, warn: false }
       ];
       metrics.forEach(m => {
         const span = document.createElement("span");
@@ -1241,10 +1495,11 @@
         chipsRow.appendChild(span);
       });
 
-      document.getElementById("resFeedbackText").textContent = content.feedback || "Evaluation complete.";
+      document.getElementById("resFeedbackText").textContent = ev.feedback || "Evaluation complete.";
 
       const nextBtn = document.getElementById("btnNextStudentQ");
-      if (data.done) {
+      const isDone = (currentQIndex + 1 >= totalQuestions) || data.viva_status === "completed";
+      if (isDone) {
         nextBtn.innerHTML = `<span>View Final Scorecard</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>`;
       } else {
         nextBtn.innerHTML = `<span>Next question</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>`;
@@ -1252,6 +1507,7 @@
     }
 
     function countUp(el, endVal, isDecimal = false) {
+      if (!el) return;
       const duration = 700;
       const start = performance.now();
       function update(now) {
@@ -1274,18 +1530,11 @@
       }
 
       try {
-        const resp = await fetch(`/api/viva/${activeCode}`);
-        const data = await resp.json();
-        if (resp.status !== 200 || data.error) {
-          await renderScorecard(activeCode);
-          navTo("scorecard");
-          return;
-        }
-
-        renderStudentQuestion(data.question, data.audio_b64);
+        const data = await window.OralyzeApi.getViva(activeCode);
+        const q = data.questions[currentQIndex];
+        renderStudentQuestion(q, null);
         navTo("studentQuestion");
-
-        if (data.audio_b64) playAudio(data.audio_b64);
+        speakQuestion(q.text, data.language || "en");
       } catch (e) {
         await renderScorecard(activeCode);
         navTo("scorecard");
@@ -1295,15 +1544,14 @@
     // Scorecard Presentation
     async function renderScorecard(code) {
       try {
-        const resp = await fetch(`/api/viva/${code}/scorecard`);
-        const data = await resp.json();
+        const data = await window.OralyzeApi.getScorecard(code);
 
         document.getElementById("scTitle").textContent = `${data.subject || "Viva"} Scorecard`;
         document.getElementById("scCodeMeta").textContent = `CODE: ${data.code || code}`;
 
-        document.getElementById("scTotalVal").textContent = `${data.average_total || 0}%`;
-        document.getElementById("scContentAvg").textContent = `${data.average_content || 0}%`;
-        document.getElementById("scDeliveryAvg").textContent = `${data.average_delivery || 0}/100`;
+        document.getElementById("scTotalVal").textContent = `${data.overall_score || data.average_total || 0}%`;
+        document.getElementById("scContentAvg").textContent = `${data.content_score || data.average_content || 0}/10`;
+        document.getElementById("scDeliveryAvg").textContent = `${data.delivery_score || data.average_delivery || 0}/100`;
 
         const tbody = document.getElementById("scTableRows");
         tbody.innerHTML = "";
@@ -1312,9 +1560,9 @@
           tr.innerHTML = `
             <td class="py-3 px-4 font-semibold text-secondary">${idx + 1}</td>
             <td class="py-3 px-4 font-medium text-on-surface max-w-[340px]">${a.question_text || "Question"}</td>
-            <td class="py-3 px-4 text-right font-semibold text-primary">${a.content_pct}%</td>
-            <td class="py-3 px-4 text-right font-semibold text-tertiary">${a.delivery.fluency_score}</td>
-            <td class="py-3 px-4 text-right font-bold text-on-surface">${a.total}%</td>
+            <td class="py-3 px-4 text-right font-semibold text-primary">${a.content_score || a.content_pct || 0}/10</td>
+            <td class="py-3 px-4 text-right font-semibold text-tertiary">${a.delivery_score || a.delivery?.fluency_score || 0}</td>
+            <td class="py-3 px-4 text-right font-bold text-on-surface">${a.overall_score || a.total || 0}%</td>
           `;
           tbody.appendChild(tr);
         });
@@ -1329,9 +1577,8 @@
       tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-secondary">Loading records…</td></tr>`;
 
       try {
-        const resp = await fetch("/api/dashboard?limit=25");
-        const data = await resp.json();
-        const sessions = data.sessions || [];
+        const data = await window.OralyzeApi.getDashboard();
+        const sessions = data.records || data.sessions || [];
 
         if (sessions.length === 0) {
           tbody.innerHTML = `
@@ -1351,18 +1598,33 @@
         sessions.forEach(s => {
           const dt = s.date ? new Date(s.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "Recent";
           const tr = document.createElement("tr");
+          tr.className = "hover:bg-surface-container-low transition-colors cursor-pointer";
+          tr.onclick = () => {
+            activeCode = s.code;
+            renderScorecard(s.code);
+            navTo("scorecard");
+          };
           tr.innerHTML = `
             <td class="py-3 px-4 font-mono font-bold text-primary">${s.code}</td>
             <td class="py-3 px-4 font-semibold text-on-surface">${s.subject}</td>
             <td class="py-3 px-4 text-secondary">${s.topic || "–"}</td>
             <td class="py-3 px-4 text-secondary">${dt}</td>
-            <td class="py-3 px-4 text-right font-bold text-on-surface">${s.avg_total}%</td>
+            <td class="py-3 px-4 text-right font-bold text-on-surface">${s.overall_score || s.avg_total || 0}%</td>
           `;
           tbody.appendChild(tr);
         });
       } catch (e) {
         tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-error font-medium">Unable to load dashboard records</td></tr>`;
       }
+    }
+
+    // Initialize on load
+    window.addEventListener("DOMContentLoaded", () => {
+      handleHashRouting();
+    });
+    // In case DOM is already loaded
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      handleHashRouting();
     }
   </script>
 </body>

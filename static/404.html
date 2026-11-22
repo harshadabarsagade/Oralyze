@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oralyze — Redirecting</title>
+  <script>
+    // GitHub Pages SPA 404 redirect script
+    // Preserves path and hash when navigating directly to deep links
+    (function() {
+      var path = window.location.pathname;
+      var repo = '/Oralyze';
+      if (path.startsWith(repo)) {
+        path = path.slice(repo.length);
+      }
+      var clean = path.replace(/^\/+/, '');
+      var hash = window.location.hash || '';
+      if (clean && !hash) {
+        hash = '#/' + clean;
+      }
+      window.location.replace('./' + hash);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting to <a href="./">Oralyze</a>...</p>
+</body>
+</html>

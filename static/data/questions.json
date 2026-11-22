@@ -1,0 +1,137 @@
+{
+  "default": [
+    {
+      "text": "What is the difference between synchronous and asynchronous operations?",
+      "level": "understand",
+      "key_points": ["blocking", "non-blocking", "event loop", "callback", "concurrency", "execution flow"]
+    },
+    {
+      "text": "Explain the concept of recursion and state its base condition importance.",
+      "level": "understand",
+      "key_points": ["function calls itself", "base case", "call stack", "stack overflow", "termination condition"]
+    },
+    {
+      "text": "What is an API, and how does a RESTful service differ from a SOAP service?",
+      "level": "analyze",
+      "key_points": ["application programming interface", "HTTP methods", "stateless", "JSON vs XML", "protocol vs architectural style"]
+    },
+    {
+      "text": "How does version control benefit collaborative software engineering?",
+      "level": "apply",
+      "key_points": ["commit history", "branching", "merging", "conflict resolution", "auditability", "git"]
+    },
+    {
+      "text": "What is the difference between compilation and interpretation in programming languages?",
+      "level": "remember",
+      "key_points": ["machine code", "bytecode", "ahead of time", "runtime interpreter", "execution speed", "error detection"]
+    }
+  ],
+  "dbms": [
+    {
+      "text": "Explain the ACID properties of a relational database management system.",
+      "level": "understand",
+      "key_points": ["atomicity", "consistency", "isolation", "durability", "transactions", "rollback"]
+    },
+    {
+      "text": "What is database normalization, and why are 1NF, 2NF, and 3NF important?",
+      "level": "analyze",
+      "key_points": ["data redundancy", "anomalies", "atomic values", "partial dependency", "transitive dependency", "primary key"]
+    },
+    {
+      "text": "Differentiate between clustered and non-clustered indexing in relational databases.",
+      "level": "analyze",
+      "key_points": ["physical order", "pointer", "leaf nodes", "one per table", "B-tree", "search performance"]
+    },
+    {
+      "text": "What are deadlocks in DBMS and how can they be prevented or detected?",
+      "level": "apply",
+      "key_points": ["mutual exclusion", "wait-for graph", "lock timeout", "two-phase locking", "cycle detection"]
+    },
+    {
+      "text": "Explain the difference between SQL and NoSQL databases with typical use cases.",
+      "level": "evaluate",
+      "key_points": ["relational vs document/key-value", "schema rigid vs dynamic", "vertical vs horizontal scaling", "ACID vs BASE"]
+    }
+  ],
+  "os": [
+    {
+      "text": "What is the difference between a process and a thread?",
+      "level": "understand",
+      "key_points": ["address space", "memory sharing", "context switching overhead", "lightweight", "PCB vs TCB"]
+    },
+    {
+      "text": "Explain virtual memory, demand paging, and page faults.",
+      "level": "understand",
+      "key_points": ["virtual address space", "page table", "swap space", "page replacement algorithm", "TLB", "RAM limit"]
+    },
+    {
+      "text": "What are the four necessary conditions for a deadlock to occur in an operating system?",
+      "level": "remember",
+      "key_points": ["mutual exclusion", "hold and wait", "no preemption", "circular wait"]
+    },
+    {
+      "text": "Describe CPU scheduling algorithms like Round Robin, FCFS, and Shortest Job First.",
+      "level": "analyze",
+      "key_points": ["time quantum", "preemptive vs non-preemptive", "turnaround time", "waiting time", "convoy effect", "starvation"]
+    },
+    {
+      "text": "What is thrashing in operating systems and how can it be mitigated?",
+      "level": "apply",
+      "key_points": ["excessive paging", "high CPU drop", "working set model", "page fault frequency", "insufficient physical memory"]
+    }
+  ],
+  "computer networks": [
+    {
+      "text": "Explain the functions of the OSI 7-layer model and compare it with the TCP/IP model.",
+      "level": "understand",
+      "key_points": ["physical", "data link", "network", "transport", "session", "presentation", "application", "encapsulation"]
+    },
+    {
+      "text": "How does the TCP three-way handshake establish a reliable connection?",
+      "level": "understand",
+      "key_points": ["SYN", "SYN-ACK", "ACK", "sequence numbers", "connection establishment", "reliability"]
+    },
+    {
+      "text": "Compare TCP and UDP protocols highlighting their performance and reliability tradeoffs.",
+      "level": "analyze",
+      "key_points": ["connection-oriented vs connectionless", "flow control", "congestion control", "overhead", "streaming vs web/email"]
+    },
+    {
+      "text": "Explain how the Domain Name System (DNS) resolves a domain name into an IP address.",
+      "level": "apply",
+      "key_points": ["root nameserver", "TLD nameserver", "authoritative nameserver", "recursive resolver", "DNS caching", "UDP port 53"]
+    },
+    {
+      "text": "What is the purpose of subnetting, and how does CIDR notation work?",
+      "level": "apply",
+      "key_points": ["subnet mask", "network ID", "host ID", "IP address conservation", "broadcast domain", "routing efficiency"]
+    }
+  ],
+  "data structures": [
+    {
+      "text": "Compare an array and a linked list in terms of memory layout and time complexity.",
+      "level": "analyze",
+      "key_points": ["contiguous memory", "pointer overhead", "O(1) random access", "O(1) insertion/deletion at head", "cache locality"]
+    },
+    {
+      "text": "How does a Hash Table handle collisions, and what is its average vs worst-case complexity?",
+      "level": "understand",
+      "key_points": ["hash function", "chaining", "open addressing", "linear probing", "O(1) average", "O(n) worst case", "load factor"]
+    },
+    {
+      "text": "Explain the difference between a Binary Search Tree (BST) and a balanced tree like an AVL or Red-Black tree.",
+      "level": "analyze",
+      "key_points": ["left smaller right greater", "tree height", "rotation", "O(log n) vs O(n) worst case degradation", "balance factor"]
+    },
+    {
+      "text": "Explain Breadth-First Search (BFS) and Depth-First Search (DFS) algorithms on graphs.",
+      "level": "apply",
+      "key_points": ["queue vs stack/recursion", "shortest path in unweighted graphs", "visited set", "backtracking", "time complexity O(V+E)"]
+    },
+    {
+      "text": "What is a Heap data structure and how is it used to implement a Priority Queue?",
+      "level": "understand",
+      "key_points": ["complete binary tree", "max-heap / min-heap property", "heapify", "O(log n) extract-max", "array representation"]
+    }
+  ]
+}

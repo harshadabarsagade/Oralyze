@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80" fill="none">
+  <!-- Soft subtle gradient definition -->
+  <defs>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B5BFF"/>
+      <stop offset="100%" stop-color="#6E5BFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Logo Icon Mark (Geometric Voice/Acoustic Ring) -->
+  <g transform="translate(16, 16)">
+    <rect width="48" height="48" rx="14" fill="#3B5BFF" fill-opacity="0.08"/>
+    <circle cx="24" cy="24" r="16" stroke="url(#primaryGrad)" stroke-width="2.5" stroke-dasharray="3 3"/>
+    <circle cx="24" cy="24" r="9" fill="url(#primaryGrad)"/>
+    <!-- Voice Wave Lines -->
+    <path d="M19 24v-4M24 24v-7M29 24v-4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+    <path d="M19 24v4M24 24v7M29 24v4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Logotype Typography (Modern geometric sans) -->
+  <text x="78" y="47" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="28" font-weight="700" letter-spacing="-0.03em" fill="#0E1726">
+    Oralyze
+  </text>
+  <!-- Accent Dot -->
+  <circle cx="184" cy="43" r="3.5" fill="#3B5BFF"/>
+
+  <!-- Subtitle Tagline -->
+  <text x="79" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" font-size="10.5" font-weight="600" letter-spacing="0.08em" fill="#7A8798">
+    AI VOICE VIVA EXAMINER
+  </text>
+</svg>
