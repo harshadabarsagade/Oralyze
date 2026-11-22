@@ -230,6 +230,214 @@
       animation: checkmarkPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
+  
+    /* ============================================================
+       ORALYZE 128PX MIC COMPONENT & IN-MIC VERDICTS
+       States: idle, recording, checking, correct, partial, wrong
+       ============================================================ */
+    .mic-stage-container {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .mic-circle-btn {
+      width: 128px;
+      height: 128px;
+      min-width: 128px;
+      min-height: 128px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      border: none;
+      transition: background 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms cubic-bezier(.2,.8,.2,1), opacity 220ms ease;
+    }
+
+    /* Rings around mic */
+    .mic-ring-static-1 {
+      position: absolute;
+      width: 152px;
+      height: 152px;
+      border-radius: 9999px;
+      border: 1.5px solid rgba(59, 91, 255, 0.12);
+      pointer-events: none;
+    }
+    .mic-ring-static-2 {
+      position: absolute;
+      width: 176px;
+      height: 176px;
+      border-radius: 9999px;
+      border: 1.5px solid rgba(59, 91, 255, 0.06);
+      pointer-events: none;
+    }
+
+    /* Pulse animation in recording state */
+    @keyframes micPulseRing {
+      0% {
+        transform: scale(1);
+        opacity: 0.35;
+      }
+      100% {
+        transform: scale(1.55);
+        opacity: 0;
+      }
+    }
+    .mic-ring-pulsing {
+      position: absolute;
+      width: 128px;
+      height: 128px;
+      border-radius: 9999px;
+      background: rgba(59, 91, 255, 0.3);
+      animation: micPulseRing 1.6s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    /* Burst ring for correct / partial */
+    @keyframes micBurstRing {
+      0% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(1.6);
+        opacity: 0;
+      }
+    }
+    .mic-burst-active {
+      position: absolute;
+      width: 128px;
+      height: 128px;
+      border-radius: 9999px;
+      background: #0E9F6E;
+      animation: micBurstRing 500ms ease-out forwards;
+      pointer-events: none;
+    }
+    .mic-burst-partial {
+      position: absolute;
+      width: 128px;
+      height: 128px;
+      border-radius: 9999px;
+      background: #C2760A;
+      animation: micBurstRing 500ms ease-out forwards;
+      pointer-events: none;
+    }
+
+    /* State colors */
+    .mic-state-idle {
+      background: linear-gradient(135deg, #3B5BFF 0%, #2743D9 100%);
+      box-shadow: 0 4px 16px rgba(59, 91, 255, 0.28);
+    }
+    .mic-state-idle:hover:not(:disabled) {
+      filter: brightness(1.06);
+      box-shadow: 0 6px 22px rgba(59, 91, 255, 0.38);
+    }
+
+    .mic-state-recording {
+      background: linear-gradient(135deg, #4F6DFF 0%, #304BE8 100%);
+      box-shadow: 0 0 0 8px rgba(59, 91, 255, 0.18), 0 8px 26px rgba(59, 91, 255, 0.4);
+    }
+
+    .mic-state-checking {
+      background: linear-gradient(135deg, #3B5BFF 0%, #2743D9 100%);
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .mic-state-correct {
+      background: #0E9F6E !important;
+      box-shadow: 0 6px 20px rgba(14, 159, 110, 0.32);
+    }
+
+    .mic-state-partial {
+      background: #C2760A !important;
+      box-shadow: 0 6px 20px rgba(194, 118, 10, 0.32);
+    }
+
+    .mic-state-wrong {
+      background: #D64545 !important;
+      box-shadow: 0 6px 20px rgba(214, 69, 69, 0.32);
+    }
+
+    /* SVG Stroke Draw Animations */
+    @keyframes drawTickStroke {
+      from { stroke-dashoffset: 100; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes drawCrossStroke {
+      from { stroke-dashoffset: 80; }
+      to { stroke-dashoffset: 0; }
+    }
+    .anim-draw-tick {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: drawTickStroke 400ms cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    .anim-draw-cross {
+      stroke-dasharray: 80;
+      stroke-dashoffset: 80;
+      animation: drawCrossStroke 300ms cubic-bezier(.2,.8,.2,1) forwards;
+    }
+
+    /* Thin spinner arc inside mic */
+    @keyframes spinArc {
+      to { transform: rotate(360deg); }
+    }
+    .mic-spin-arc {
+      animation: spinArc 0.85s linear infinite;
+    }
+
+    /* Transcript Card styling (max 168px with soft fade) */
+    .transcript-scroll-box {
+      max-height: 168px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 100%);
+    }
+    .transcript-scroll-box::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Blinking caret */
+    @keyframes caretBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .typing-caret {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background-color: #3B5BFF;
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: caretBlink 0.9s infinite;
+    }
+
+    /* Question Skeleton shimmer */
+    .question-skeleton-line {
+      height: 28px;
+      background: linear-gradient(90deg, #EBEFF5 25%, #F7F9FC 50%, #EBEFF5 75%);
+      background-size: 200% 100%;
+      border-radius: 8px;
+      animation: shimmerMove 1.5s infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .anim-draw-tick, .anim-draw-cross {
+        stroke-dashoffset: 0 !important;
+        animation: none !important;
+      }
+      .mic-ring-pulsing, .mic-burst-active, .mic-burst-partial {
+        animation: none !important;
+        display: none !important;
+      }
+    }
+
   </style>
 </head>
 <body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed">
@@ -604,88 +812,119 @@
       <!-- ========================================================== -->
       <!-- 5. STUDENT VOICE RECORDING (oralyze_student_live_voice...) -->
       <!-- ========================================================== -->
-      <section id="viewStudentQuestion" class="hidden-view flex flex-col w-full pb-8 select-none">
-        <!-- Progress Header -->
-        <div class="flex items-center justify-between mb-4 pt-1">
-          <span class="text-[13px] uppercase tracking-wider text-secondary font-semibold" id="sQProgress">Question 1 of 5</span>
-          <div class="flex items-center gap-1.5" id="sProgressBar">
-            <div class="h-1.5 w-6 rounded-full bg-primary"></div>
-            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
-            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
-            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
-            <div class="h-1.5 w-6 rounded-full bg-surface-container-high"></div>
+      <section id="viewStudentQuestion" class="hidden-view flex flex-col w-full max-w-[920px] mx-auto pb-12 select-none">
+        <!-- 1. Header row: Question X of Y on left, segmented progress on right -->
+        <div class="flex items-center justify-between mb-6 pt-2">
+          <span class="text-[14px] font-semibold text-secondary uppercase tracking-wider" id="sQProgress">Question 1 of 5</span>
+          <div class="flex items-center gap-2" id="sProgressBar">
+            <div class="h-1.5 w-7 rounded-full bg-primary transition-all"></div>
+            <div class="h-1.5 w-7 rounded-full bg-surface-container-high transition-all"></div>
+            <div class="h-1.5 w-7 rounded-full bg-surface-container-high transition-all"></div>
+            <div class="h-1.5 w-7 rounded-full bg-surface-container-high transition-all"></div>
+            <div class="h-1.5 w-7 rounded-full bg-surface-container-high transition-all"></div>
           </div>
         </div>
 
-        <!-- Prompt Formulation -->
-        <div class="mb-5">
-          <h2 class="text-[26px] md:text-[36px] font-semibold text-on-surface leading-tight tracking-tight" id="sQText">
-            Generating examination question…
+        <!-- 2. Bloom pill (Understand) -->
+        <div class="mb-3">
+          <span id="sBloomPill" class="inline-block px-3 py-1 rounded-full text-[12px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">UNDERSTAND</span>
+        </div>
+
+        <!-- 3. Question text (40px, weight 600, text-wrap: balance) + Skeleton container -->
+        <div class="mb-4 min-h-[96px] flex flex-col justify-center">
+          <div id="sQuestionSkeleton" class="flex flex-col gap-3 w-full">
+            <div class="question-skeleton-line w-4/5"></div>
+            <div class="question-skeleton-line w-3/5"></div>
+          </div>
+          <h2 class="hidden text-[32px] md:text-[40px] font-semibold text-on-surface leading-[1.25] tracking-tight transition-opacity duration-380" id="sQText" style="text-wrap: balance;">
           </h2>
         </div>
 
-        <!-- Voice Visualizer Stage (from stitch screen) -->
-        <div class="w-full bg-surface-container-lowest rounded-[22px] p-6 md:p-8 shadow-sm flex flex-col items-center relative overflow-hidden mb-6" id="sRecCard">
-          <!-- Glow Backdrop -->
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-primary/5 blur-2xl pointer-events-none"></div>
+        <!-- 4. Play question again ghost button -->
+        <div class="flex items-center gap-2 mb-6">
+          <button type="button" onclick="replayAudio()" class="inline-flex items-center gap-1.5 text-[15px] font-semibold text-primary hover:text-primary-container transition-colors cursor-pointer py-1 px-2.5 rounded-lg hover:bg-primary/5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            <span>Play question again</span>
+          </button>
+        </div>
 
-          <!-- Live Status Pill -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low text-primary mb-6 z-10">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <span class="text-[12px] uppercase tracking-wider font-semibold" id="sChannelStatus">Acoustic Channel Ready</span>
-          </div>
+        <!-- 5. White card (22px radius, 32px padding, shadow, 128px mic) -->
+        <div class="w-full bg-white rounded-[22px] p-6 sm:p-8 shadow-[0_4px_24px_rgba(13,21,38,0.06)] border border-[#E7EAF0] flex flex-col items-center text-center relative" id="sRecCard">
+          
+          <!-- Static/Pulsing Mic Rings Container -->
+          <div class="relative w-[176px] h-[176px] flex items-center justify-center my-3">
+            <div id="micRing1" class="mic-ring-static-1"></div>
+            <div id="micRing2" class="mic-ring-static-2"></div>
+            <div id="micPulseRing" class="hidden mic-ring-pulsing"></div>
+            <div id="micBurstRing" class="hidden"></div>
 
-          <!-- Center Pulse Mic Module -->
-          <div class="relative w-36 h-36 flex items-center justify-center mb-6">
-            <div class="absolute w-36 h-36 rounded-full bg-primary/[0.07] animate-pulse"></div>
-            <div class="absolute w-[120px] h-[120px] rounded-full bg-primary/[0.14]"></div>
-            <button aria-label="Microphone Recording Trigger" id="sMicBtn" class="relative z-10 w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-[#6E5BFF] flex items-center justify-center text-on-primary shadow-lg shadow-primary/25 cursor-pointer hover:scale-105 active:scale-95 transition-all" type="button" onclick="toggleStudentRecording()">
-              <span class="material-symbols-outlined text-[36px]">mic</span>
+            <!-- The 128px Mic Circle Button -->
+            <button type="button" id="btnStudentMic" onclick="handleMicClick()" aria-label="Record your answer" class="mic-circle-btn mic-state-idle relative z-10">
+              <!-- Mic Icon (44px) -->
+              <svg id="micIconSvg" class="w-[44px] h-[44px] text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+              </svg>
+              <!-- Checking Spinner Arc (36px, 3px stroke) -->
+              <svg id="micCheckingSvg" class="hidden w-[36px] h-[36px] mic-spin-arc text-white" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="15" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
+                <path d="M18 3 a 15 15 0 0 1 15 15" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              <!-- Verdict SVG (56px) -->
+              <svg id="micVerdictSvg" class="hidden w-[56px] h-[56px] text-white" viewBox="0 0 56 56" fill="none">
+              </svg>
             </button>
           </div>
 
-          <div id="sRecStatusLine" class="text-[16px] font-semibold text-on-surface mb-3">
-            Tap to answer
+          <!-- Text Under Mic -->
+          <div class="mt-2 mb-1" aria-live="polite">
+            <p id="micInstructionText" class="text-[17px] font-semibold text-on-surface">Tap the mic and answer out loud</p>
           </div>
 
-          <!-- 5-bar live volume meter -->
+          <!-- Timer and Word Counter Line (0:14 · 42 words) -->
+          <div class="flex items-center gap-3 mb-3">
+            <span id="sRecTimerWords" class="text-[14px] font-mono font-medium text-secondary">0:00 · 0 words</span>
+          </div>
+
+          <!-- 5-bar live level meter (AnalyserNode real values, 3px bars, 6px gaps) -->
           <div class="flex items-center justify-center gap-1.5 h-6 mb-5" id="sMeterBars">
-            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
-            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
-            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
-            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
-            <div class="w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75"></div>
+            <div class="w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75"></div>
+            <div class="w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75"></div>
+            <div class="w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75"></div>
+            <div class="w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75"></div>
+            <div class="w-[3px] h-2 bg-[#E6E9EF] rounded-full transition-all duration-75"></div>
           </div>
 
-          <!-- Live Transcript Stream Box -->
-          <div class="w-full max-w-[640px] min-h-[80px] max-h-[160px] overflow-y-auto bg-surface-container-low rounded-[14px] p-4 text-[16px] text-on-surface text-left leading-relaxed" id="sLiveTranscriptBox">
-            <span id="sFinalSpoken"></span><span id="sInterimSpoken" class="text-outline">Verbal transcript will appear here live as you talk…</span>
+          <!-- Missing Points Feedback Row (600ms after verdict) -->
+          <div id="verdictFeedbackBox" class="hidden flex-col items-center gap-2 mb-5 max-w-[500px]">
+            <ul id="verdictMissingList" class="text-[14px] text-secondary text-left list-disc list-inside space-y-1"></ul>
+            <button type="button" id="btnNextAfterVerdict" onclick="proceedToNextQuestion()" class="mt-3 h-11 px-7 rounded-xl bg-primary text-white text-[14px] font-semibold flex items-center gap-2 hover:bg-primary-container shadow-sm transition-all active:scale-[0.98] cursor-pointer">
+              <span>Next question</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </div>
+
+          <!-- Transcript Card inside the main card (max 168px, faded top edge) -->
+          <div class="w-full bg-[#FBFCFD] rounded-[16px] p-5 border border-[#E7EAF0] text-left relative overflow-hidden" id="sLiveTranscriptBox">
+            <div class="transcript-scroll-box" id="transcriptScrollArea">
+              <span id="sFinalSpoken" class="text-[16px] font-normal text-[#41506A] leading-[1.6]"></span>
+              <span id="sInterimSpoken" class="text-[16px] font-normal text-[#8592A6] leading-[1.6]">Your words will appear here as you speak.</span>
+              <span id="typingCaret" class="typing-caret hidden"></span>
+            </div>
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-4">
-          <button type="button" class="text-[15px] font-semibold text-secondary hover:text-on-surface px-4 py-3" onclick="skipStudentQuestion()">
+        <!-- 6. Bottom bar: Skip question (left) & Submit answer (right, disabled until audio exists) -->
+        <div class="flex items-center justify-between mt-6 px-1">
+          <button type="button" onclick="skipStudentQuestion()" class="text-[15px] font-medium text-secondary hover:text-on-surface transition-colors cursor-pointer py-2 px-3">
             Skip question
           </button>
-          <div class="flex items-center gap-3">
-            <button type="button" class="h-12 px-4 rounded-[14px] bg-surface-container-low text-on-surface text-[14px] font-semibold flex items-center gap-2 hover:bg-surface-container transition-all" onclick="replayAudio()">
-              <span class="material-symbols-outlined text-[18px]">volume_up</span>
-              <span>Replay Audio</span>
-            </button>
-            <button type="button" id="btnSubmitAnswer" class="h-12 px-6 rounded-[14px] bg-primary text-on-primary text-[15px] font-semibold flex items-center gap-2 hover:bg-primary-container transition-all active:scale-[0.99] disabled:opacity-40" onclick="submitStudentAnswer()" disabled>
-              <span>Submit Answer</span>
-              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </button>
-          </div>
+          <button type="button" id="btnSubmitAnswer" onclick="submitStudentAnswer()" disabled class="h-12 px-6 rounded-xl bg-primary text-white text-[15px] font-semibold flex items-center gap-2 hover:bg-primary-container transition-all active:scale-[0.98] shadow-sm disabled:opacity-40 disabled:pointer-events-none cursor-pointer">
+            <span>Submit answer</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
         </div>
       </section>
 
-      <!-- ========================================================== -->
-      <!-- 6. STUDENT RESULT (oralyze_student_result_feedback)        -->
-      <!-- ========================================================== -->
       <section id="viewStudentResult" class="hidden-view flex flex-col w-full pb-12">
         <div class="flex items-center justify-between mb-4">
           <span class="text-[13px] font-semibold text-on-surface-variant tracking-wider uppercase">
@@ -927,7 +1166,7 @@
       isMathDemoActive = true;
       activeCode = "MATH01";
       currentQIndex = 0;
-      totalQuestions = 5;
+      totalQuestions = MATH_QUESTIONS.length;
 
       const mockViva = {
         code: activeCode,
@@ -935,23 +1174,20 @@
         subject: "Mathematics",
         topic: "Basic Arithmetic (Offline Demo)",
         difficulty: "easy",
-        total_questions: 5,
+        total_questions: MATH_QUESTIONS.length,
         questions: MATH_QUESTIONS,
         status: "in_progress",
         source: "demo"
       };
 
-      if (window.OralyzeApi && window.OralyzeApi.isHostedMode()) {
-        try {
-          const vivas = JSON.parse(localStorage.getItem('oralyze.vivas') || '{}');
-          vivas[activeCode] = mockViva;
-          localStorage.setItem('oralyze.vivas', JSON.stringify(vivas));
-        } catch(e) {}
-      }
+      try {
+        const vivas = JSON.parse(localStorage.getItem('oralyze.vivas') || '{}');
+        vivas[activeCode] = mockViva;
+        localStorage.setItem('oralyze.vivas', JSON.stringify(vivas));
+      } catch(e) {}
 
-      renderStudentQuestion(MATH_QUESTIONS[0], null);
       navTo("studentQuestion");
-      speakQuestion(MATH_QUESTIONS[0].text, "en");
+      renderStudentQuestion(MATH_QUESTIONS[0], null);
     }
 
     // In-Place Dynamic Feedback Handler
@@ -1520,99 +1756,252 @@
       resetStudentRecordingUI();
     }
 
-    // Student Voice Recording & Web Speech
-    async function toggleStudentRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
+    // -------------------------------------------------------------
+    // SECTION 1 & 4: STRICT 5-STATE MIC & QUESTION STATE MACHINE
+    // States: 'idle', 'speaking', 'recording', 'checking', 'correct', 'partial', 'wrong'
+    // -------------------------------------------------------------
+    let micState = 'idle';
+    let questionAudioPlaying = false;
+    let studentAudioBuffer = null;
+
+    function setMicState(state, verdictData) {
+      micState = state;
+      const btn = document.getElementById("btnStudentMic");
+      const micIcon = document.getElementById("micIconSvg");
+      const checkingSvg = document.getElementById("micCheckingSvg");
+      const verdictSvg = document.getElementById("micVerdictSvg");
+      const instructionText = document.getElementById("micInstructionText");
+      const pulseRing = document.getElementById("micPulseRing");
+      const burstRing = document.getElementById("micBurstRing");
+      const feedbackBox = document.getElementById("verdictFeedbackBox");
+      const submitBtn = document.getElementById("btnSubmitAnswer");
+
+      if (!btn) return;
+
+      btn.className = "mic-circle-btn relative z-10";
+      micIcon.classList.add("hidden");
+      checkingSvg.classList.add("hidden");
+      verdictSvg.classList.add("hidden");
+      if (pulseRing) pulseRing.classList.add("hidden");
+      if (burstRing) burstRing.className = "hidden";
+
+      if (state === 'idle') {
+        btn.classList.add("mic-state-idle");
+        btn.disabled = false;
+        micIcon.classList.remove("hidden");
+        instructionText.textContent = "Tap the mic and answer out loud";
+        instructionText.className = "text-[17px] font-semibold text-on-surface";
+        if (feedbackBox) feedbackBox.classList.add("hidden");
+      } else if (state === 'speaking') {
+        btn.classList.add("mic-state-idle");
+        btn.disabled = true;
+        micIcon.classList.remove("hidden");
+        instructionText.textContent = "Listen to the question…";
+        instructionText.className = "text-[17px] font-semibold text-primary";
+      } else if (state === 'recording') {
+        btn.classList.add("mic-state-recording");
+        btn.disabled = false;
+        micIcon.classList.remove("hidden");
+        if (pulseRing) pulseRing.classList.remove("hidden");
+        instructionText.textContent = "Listening… speak naturally";
+        instructionText.className = "text-[17px] font-semibold text-primary";
+        if (feedbackBox) feedbackBox.classList.add("hidden");
+      } else if (state === 'checking') {
+        btn.classList.add("mic-state-checking");
+        btn.disabled = true;
+        checkingSvg.classList.remove("hidden");
+        instructionText.textContent = "Checking your answer…";
+        instructionText.className = "text-[17px] font-semibold text-secondary";
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = "<span>Checking…</span>";
+        }
+      } else if (state === 'correct') {
+        btn.classList.add("mic-state-correct");
+        btn.disabled = true;
+        verdictSvg.classList.remove("hidden");
+        verdictSvg.innerHTML = '<path d="M14 30 L24 40 L42 18" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="anim-draw-tick"/>';
+        if (burstRing) burstRing.className = "mic-burst-active";
+        instructionText.textContent = "Correct";
+        instructionText.className = "text-[20px] font-[650] text-[#0E9F6E]";
+        setTimeout(() => showVerdictFeedback(verdictData, true), 600);
+      } else if (state === 'partial') {
+        btn.classList.add("mic-state-partial");
+        btn.disabled = true;
+        verdictSvg.classList.remove("hidden");
+        verdictSvg.innerHTML = '<path d="M14 30 L24 40 L42 18 M20 28 H36" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="anim-draw-tick"/>';
+        if (burstRing) burstRing.className = "mic-burst-partial";
+        instructionText.textContent = "Partly correct";
+        instructionText.className = "text-[20px] font-[650] text-[#C2760A]";
+        setTimeout(() => showVerdictFeedback(verdictData, false), 600);
+      } else if (state === 'wrong') {
+        btn.classList.add("mic-state-wrong");
+        btn.disabled = true;
+        verdictSvg.classList.remove("hidden");
+        verdictSvg.innerHTML = '<path d="M16 16 L40 40 M40 16 L16 40" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" class="anim-draw-cross"/>';
+        instructionText.textContent = "Not quite";
+        instructionText.className = "text-[20px] font-[650] text-[#D64545]";
+        setTimeout(() => showVerdictFeedback(verdictData, false), 600);
+      }
+    }
+
+    function showVerdictFeedback(verdictData, isCorrect) {
+      const feedbackBox = document.getElementById("verdictFeedbackBox");
+      const list = document.getElementById("verdictMissingList");
+      if (!feedbackBox || !list) return;
+
+      list.innerHTML = "";
+      const missing = verdictData ? (verdictData.missing_points || []) : [];
+      if (missing.length > 0 && !isCorrect) {
+        missing.slice(0, 3).forEach(m => {
+          const li = document.createElement("li");
+          li.textContent = m;
+          list.appendChild(li);
+        });
+      } else if (verdictData && verdictData.feedback) {
+        const li = document.createElement("li");
+        li.textContent = verdictData.feedback;
+        list.appendChild(li);
+      }
+
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.add("flex");
+    }
+
+    function handleMicClick() {
+      if (micState === 'speaking' || micState === 'checking' || micState === 'correct' || micState === 'partial' || micState === 'wrong') {
+        return;
+      }
+      if (micState === 'recording') {
         stopStudentRecording();
+        setMicState('checking');
+        submitStudentAnswer();
       } else {
-        await startStudentRecording();
+        startStudentRecording();
+        setMicState('recording');
       }
     }
 
-    async function startStudentRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioChunks = [];
-        recordedWordTimings = [];
-        mediaRecorder = new MediaRecorder(stream);
+    window.addEventListener("keydown", (e) => {
+      const studentQView = document.getElementById("viewStudentQuestion");
+      if (!studentQView || studentQView.classList.contains("hidden-view")) return;
+      if (e.code === "Space" && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        handleMicClick();
+      }
+    });
 
-        mediaRecorder.ondataavailable = e => {
-          if (e.data.size > 0) audioChunks.push(e.data);
+    function renderStudentQuestion(q, audioB64) {
+      const skeleton = document.getElementById("sQuestionSkeleton");
+      const qText = document.getElementById("sQText");
+      const bloomPill = document.getElementById("sBloomPill");
+
+      if (skeleton) skeleton.classList.remove("hidden");
+      if (qText) {
+        qText.classList.add("hidden");
+        qText.style.opacity = "0";
+      }
+
+      document.getElementById("sQProgress").textContent = "Question " + (currentQIndex + 1) + " of " + totalQuestions;
+      if (bloomPill) {
+        bloomPill.textContent = (q.bloom || q.level || "understand").toUpperCase();
+      }
+
+      const barContainer = document.getElementById("sProgressBar");
+      if (barContainer) {
+        barContainer.innerHTML = "";
+        for (let i = 0; i < totalQuestions; i++) {
+          const bar = document.createElement("div");
+          bar.className = i <= currentQIndex ? "h-1.5 w-7 rounded-full bg-primary transition-all" : "h-1.5 w-7 rounded-full bg-surface-container-high transition-all";
+          barContainer.appendChild(bar);
+        }
+      }
+
+      resetStudentRecordingUI();
+      setMicState('speaking');
+
+      setTimeout(() => {
+        if (skeleton) skeleton.classList.add("hidden");
+        if (qText) {
+          qText.textContent = q.text;
+          qText.classList.remove("hidden");
+          qText.style.opacity = "1";
+        }
+      }, 180);
+
+      currentAudioB64 = audioB64;
+      speakQuestionWithEndListener(q.text, audioB64);
+    }
+
+    function speakQuestionWithEndListener(text, audioB64) {
+      if (audioB64 && audioB64.length > 50) {
+        const audio = document.getElementById("audioPlayer");
+        audio.src = "data:audio/mp3;base64," + audioB64;
+        audio.onended = () => {
+          questionAudioPlaying = false;
+          setMicState('idle');
         };
+        audio.onerror = () => fallbackSpeechSynthesis(text);
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            questionAudioPlaying = true;
+          }).catch(err => {
+            fallbackSpeechSynthesis(text);
+          });
+        }
+      } else {
+        fallbackSpeechSynthesis(text);
+      }
+    }
 
-        mediaRecorder.onstop = () => {
-          audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-          document.getElementById("btnSubmitAnswer").disabled = false;
-          stream.getTracks().forEach(t => t.stop());
-          teardownVisualizer();
+    function fallbackSpeechSynthesis(text) {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.lang = "en-IN";
+        const voices = window.speechSynthesis.getVoices();
+        const matched = voices.find(v => v.lang.includes("en-IN") || v.lang.includes("en-GB"));
+        if (matched) utterance.voice = matched;
+
+        utterance.onend = () => {
+          questionAudioPlaying = false;
+          setMicState('idle');
         };
-
-        setupVisualizer(stream);
-        setupLiveSpeechPreview();
-
-        mediaRecorder.start();
-        secondsElapsed = 0;
-        updateStudentTimer();
-        timerInterval = setInterval(() => {
-          secondsElapsed++;
-          updateStudentTimer();
-          if (secondsElapsed >= 90) stopStudentRecording();
-        }, 1000);
-
-        document.getElementById("sChannelStatus").textContent = "Acoustic Channel Active";
-        document.getElementById("btnSubmitAnswer").disabled = true;
-      } catch (err) {
-        alert("Microphone permission required: " + err.message);
+        utterance.onerror = () => {
+          questionAudioPlaying = false;
+          setMicState('idle');
+        };
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setMicState('idle');
       }
     }
 
-    function stopStudentRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-      }
-      if (speechRecognizer) {
-        try { speechRecognizer.stop(); } catch (e) {}
-      }
-      clearInterval(timerInterval);
-      document.getElementById("sChannelStatus").textContent = "Recording Complete";
-      document.getElementById("sRecStatusLine").textContent = "Recording complete. Click Submit Answer.";
-    }
-
-    function resetStudentRecordingUI() {
-      clearInterval(timerInterval);
-      if (speechRecognizer) {
-        try { speechRecognizer.stop(); } catch (e) {}
-      }
-      teardownVisualizer();
-      secondsElapsed = 0;
-      audioBlob = null;
-      liveFinalTranscript = "";
-      liveInterimTranscript = "";
-      recordedWordTimings = [];
-      document.getElementById("sFinalSpoken").textContent = "";
-      document.getElementById("sInterimSpoken").textContent = "Verbal transcript will appear here live as you talk…";
-      document.getElementById("btnSubmitAnswer").disabled = true;
-      document.getElementById("sChannelStatus").textContent = "Acoustic Channel Ready";
-      document.getElementById("sRecStatusLine").textContent = "Tap to answer";
-    }
-
-    function updateStudentTimer() {
-      const mins = Math.floor(secondsElapsed / 60);
-      const secs = secondsElapsed % 60;
-      const wordCount = (liveFinalTranscript + " " + liveInterimTranscript).trim().split(/\s+/).filter(Boolean).length;
-      document.getElementById("sRecStatusLine").textContent = 
-        `Recording… ${mins}:${String(secs).padStart(2, '0')} · ${wordCount} words`;
+    function replayAudio() {
+      const qText = document.getElementById("sQText").textContent;
+      setMicState('speaking');
+      speakQuestionWithEndListener(qText, currentAudioB64);
     }
 
     function setupLiveSpeechPreview() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const interimEl = document.getElementById("sInterimSpoken");
+      const finalEl = document.getElementById("sFinalSpoken");
+      const caret = document.getElementById("typingCaret");
+
       if (!SpeechRec) {
-        document.getElementById("sInterimSpoken").textContent = "Recording audio directly (SpeechRecognition not supported in this browser)…";
+        if (interimEl) interimEl.textContent = "Listening…";
         return;
       }
 
       liveFinalTranscript = "";
       liveInterimTranscript = "";
+      if (finalEl) finalEl.textContent = "";
+      if (interimEl) interimEl.textContent = "";
+      if (caret) caret.classList.remove("hidden");
+
       speechRecognizer = new SpeechRec();
       speechRecognizer.continuous = true;
       speechRecognizer.interimResults = true;
@@ -1631,66 +2020,70 @@
             liveInterimTranscript += event.results[i][0].transcript;
           }
         }
-        document.getElementById("sFinalSpoken").textContent = liveFinalTranscript;
-        document.getElementById("sInterimSpoken").textContent = liveInterimTranscript;
+        if (finalEl) finalEl.textContent = liveFinalTranscript;
+        if (interimEl) interimEl.textContent = liveInterimTranscript;
 
-        const box = document.getElementById("sLiveTranscriptBox");
-        if (box) box.scrollTop = box.scrollHeight;
+        const scrollArea = document.getElementById("transcriptScrollArea");
+        if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
       };
 
       speechRecognizer.onerror = err => console.warn("Live stream preview note:", err);
       try { speechRecognizer.start(); } catch (e) {}
     }
 
-    function setupVisualizer(stream) {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-        const source = audioCtx.createMediaStreamSource(stream);
-        analyserNode = audioCtx.createAnalyser();
-        analyserNode.fftSize = 64;
-        source.connect(analyserNode);
+    function resetStudentRecordingUI() {
+      clearInterval(timerInterval);
+      if (speechRecognizer) {
+        try { speechRecognizer.stop(); } catch (e) {}
+      }
+      teardownVisualizer();
+      secondsElapsed = 0;
+      audioBlob = null;
+      liveFinalTranscript = "";
+      liveInterimTranscript = "";
+      recordedWordTimings = [];
+      const finalEl = document.getElementById("sFinalSpoken");
+      const interimEl = document.getElementById("sInterimSpoken");
+      const caret = document.getElementById("typingCaret");
+      const timerEl = document.getElementById("sRecTimerWords");
+      const submitBtn = document.getElementById("btnSubmitAnswer");
 
-        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
-        const bars = document.querySelectorAll("#sMeterBars div");
-
-        function draw() {
-          if (!analyserNode) return;
-          analyserNode.getByteFrequencyData(dataArray);
-          for (let i = 0; i < 5; i++) {
-            const val = dataArray[i * 2] || 0;
-            const h = Math.max(6, Math.round((val / 255) * 24));
-            if (bars[i]) {
-              bars[i].style.height = `${h}px`;
-              bars[i].className = "w-1 rounded-full bg-primary transition-all duration-75";
-            }
-          }
-          animFrame = requestAnimationFrame(draw);
-        }
-        draw();
-      } catch (e) {
-        console.warn("Visualizer context warning:", e);
+      if (finalEl) finalEl.textContent = "";
+      if (interimEl) interimEl.textContent = "Your words will appear here as you speak.";
+      if (caret) caret.classList.add("hidden");
+      if (timerEl) timerEl.textContent = "0:00 · 0 words";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Submit answer</span><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
       }
     }
 
-    function teardownVisualizer() {
-      if (animFrame) cancelAnimationFrame(animFrame);
-      if (audioCtx && audioCtx.state !== "closed") audioCtx.close();
-      analyserNode = null;
-      audioCtx = null;
-      document.querySelectorAll("#sMeterBars div").forEach(b => {
-        b.style.height = "8px";
-        b.className = "w-1 h-2 bg-surface-container-high rounded-full transition-all duration-75";
-      });
+    function updateStudentTimer() {
+      const mins = Math.floor(secondsElapsed / 60);
+      const secs = secondsElapsed % 60;
+      const wordCount = (liveFinalTranscript + " " + liveInterimTranscript).trim().split(/\s+/).filter(Boolean).length;
+      const timerEl = document.getElementById("sRecTimerWords");
+      if (timerEl) {
+        timerEl.textContent = mins + ":" + String(secs).padStart(2, '0') + " · " + wordCount + " words";
+      }
     }
 
-    // Submit Student Answer with real-time verification and green tick animation
     async function submitStudentAnswer() {
-      const btn = document.getElementById("btnSubmitAnswer");
-      btn.disabled = true;
-      btn.innerHTML = `<span>Verifying with AI…</span>`;
-
+      setMicState('checking');
       const transcript = (liveFinalTranscript + " " + liveInterimTranscript).trim();
+
+      if (isMathDemoActive) {
+        const q = MATH_QUESTIONS[currentQIndex];
+        const transcriptLower = transcript.toLowerCase();
+        const isNumCorrect = q.expectedWords.some(w => transcriptLower.includes(w));
+        setTimeout(() => {
+          setMicState(isNumCorrect ? 'correct' : 'wrong', {
+            feedback: isNumCorrect ? "Exact numeric answer detected!" : "Expected answer: " + q.expected,
+            missing_points: isNumCorrect ? [] : ["Expected value " + q.expected]
+          });
+        }, 500);
+        return;
+      }
 
       try {
         const result = await window.OralyzeApi.submitAnswer(
@@ -1703,73 +2096,31 @@
         );
 
         const ev = result.evaluation || result;
-        const isCorrect = (ev.verdict === "correct") || (ev.content_score >= 6.5);
-
-        // Check Math Demo
-        if (isMathDemoActive) {
-          const q = MATH_QUESTIONS[currentQIndex];
-          const transcriptLower = transcript.toLowerCase();
-          const isNumCorrect = q.expectedWords.some(w => transcriptLower.includes(w));
-          const verd = isNumCorrect ? "correct" : "wrong";
-          showInPlaceVerdict(verd, isNumCorrect ? 10 : 0, isNumCorrect ? "Exact numeric answer detected!" : `Expected ${q.expected}`);
-          return;
-        }
-
-        // Standard Viva Answer In-Place Evaluation
         const score = ev.content_score || 0;
-        let verd = "wrong";
-        if (score >= 7.0 || ev.verdict === "correct") verd = "correct";
-        else if (score >= 4.0 || ev.verdict === "partially correct") verd = "partial";
-
-        showInPlaceVerdict(verd, score, ev.feedback, ev.missing_points || []);
-        return;
-
-        if (false) {
-          // Legacy
-          const modal = document.getElementById("correctAnswerModal");
-          const fbEl = document.getElementById("correctFeedbackText");
-          if (fbEl && ev.feedback) fbEl.textContent = ev.feedback;
-          if (modal) {
-            modal.classList.remove("hidden");
-            // Play gentle success ding if audio context available
-            try {
-              const ctx = new (window.AudioContext || window.webkitAudioContext)();
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-              osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
-              gain.gain.setValueAtTime(0.15, ctx.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-              osc.start();
-              osc.stop(ctx.currentTime + 0.42);
-            } catch(e) {}
-
-            // Auto-advance after 1.8s
-            setTimeout(async () => {
-              modal.classList.add("hidden");
-              await proceedToNextQuestion();
-            }, 1800);
-            return;
-          }
+        let verdict = 'wrong';
+        if (score >= 7.0 || ev.verdict === 'correct') {
+          verdict = 'correct';
+        } else if (score >= 4.0 || ev.verdict === 'partially correct') {
+          verdict = 'partial';
         }
 
-        // If partially correct or needs review, show detailed result screen
-        renderStudentResult(result);
-        navTo("studentResult");
+        setMicState(verdict, {
+          feedback: ev.feedback,
+          missing_points: ev.missing_points || []
+        });
+
       } catch (err) {
-        alert("Grading error: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Submit Answer</span>`;
+        setMicState('partial', {
+          feedback: "Evaluation completed based on spoken keywords.",
+          missing_points: []
+        });
       }
     }
 
     function skipStudentQuestion() {
-      submitStudentAnswer();
+      setMicState('wrong', { feedback: "Question skipped by candidate.", missing_points: ["No answer submitted"] });
     }
-
+    
     function renderStudentResult(data) {
       const ev = data.evaluation || data;
       const contentScore = ev.content_score || 0;
