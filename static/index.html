@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oralyze — AI Voice Viva Examiner</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111726;
+      --card-border: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-start: #6366f1;
+      --accent-end: #06b6d4;
+      --gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    .header {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .logo-group { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { font-size: 28px; }
+    .logo-title {
+      font-size: 24px;
+      font-weight: 700;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .tagline { font-size: 13px; color: var(--text-muted); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+    .badge.demo { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+    .badge.live { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 720px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      background: var(--card-bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: #1e293b;
+      color: #fff;
+      border-color: var(--accent-start);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    .section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0b1120;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, select:focus { border-color: var(--accent-start); }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: var(--gradient);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.95; }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+    .btn-secondary:hover { background: #273549; }
+
+    .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pill.bloom { background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.3); }
+    .q-text { font-size: 22px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; color: #f8fafc; }
+
+    .audio-control { display: flex; gap: 10px; margin-bottom: 24px; }
+    .audio-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+
+    .record-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 0;
+      margin-bottom: 20px;
+      background: #0b1120;
+      border-radius: 12px;
+      border: 1px dashed #334155;
+    }
+    .timer { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 12px; }
+    .record-btn-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: 4px solid #7f1d1d;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .record-btn-circle.recording {
+      animation: pulse 1.5s infinite;
+      border-color: #fca5a5;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .record-label { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+
+    /* Results */
+    .score-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .score-box {
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .score-num {
+      font-size: 38px;
+      font-weight: 800;
+      margin: 6px 0;
+    }
+    .score-num.content { color: #38bdf8; }
+    .score-num.fluency { color: #a78bfa; }
+    .score-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+    .chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .chip {
+      background: #1e293b;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+
+    .feedback-box {
+      background: #0b1120;
+      border-left: 4px solid var(--accent-start);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .collapsible {
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .collapsible-header {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+    .collapsible-content {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #cbd5e1;
+      border-top: 1px solid #1e293b;
+      display: none;
+    }
+    .collapsible.open .collapsible-content { display: block; }
+
+    /* Scorecard Table */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #1e293b; }
+    th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; }
+    .avg-banner {
+      display: flex;
+      justify-content: space-around;
+      background: #0b1120;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      margin: 20px 0;
+    }
+    .avg-item { text-align: center; }
+    .avg-val { font-size: 26px; font-weight: 700; color: #fff; }
+    .avg-lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .hidden { display: none !important; }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top: 3px solid #fff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      .header, .nav-tabs, .btn, .badge { display: none !important; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      .score-box, .avg-banner, table { border: 1px solid #ccc; color: #000; background: #fff; }
+      .score-num.content, .score-num.fluency, .avg-val { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-group">
+      <span class="logo-icon">🎙️</span>
+      <div>
+        <div class="logo-title">Oralyze</div>
+        <div class="tagline">AI Voice Viva Examiner • IBM Cloud Lite</div>
+      </div>
+    </div>
+    <div id="modeBadge" class="badge demo">● Demo Mode</div>
+  </div>
+
+  <div class="nav-tabs">
+    <button id="tabViva" class="tab-btn active" onclick="switchTab('viva')">Student Viva</button>
+    <button id="tabDash" class="tab-btn" onclick="switchTab('dash')">Teacher Dashboard</button>
+  </div>
+
+  <div class="container">
+
+    <!-- 1. SETUP SECTION -->
+    <div id="secSetup" class="card">
+      <div class="section-title">Start AI Viva Examination</div>
+      <div class="section-desc">Experience real-time oral assessment evaluated by IBM Granite for technical depth and speech analytics for delivery fluency.</div>
+      
+      <div class="form-group">
+        <label for="inpSubject">Subject / Topic</label>
+        <input type="text" id="inpSubject" value="DBMS" placeholder="DBMS, Operating Systems, Computer Networks, Data Structures">
+      </div>
+
+      <div class="form-group">
+        <label for="selLevel">Academic Level</label>
+        <select id="selLevel">
+          <option value="undergraduate" selected>Undergraduate (B.Tech / BCA)</option>
+          <option value="postgraduate">Postgraduate (M.Tech / MCA)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="selLanguage">Language</label>
+        <select id="selLanguage">
+          <option value="en" selected>English</option>
+          <option value="hi">Hindi / Hinglish</option>
+        </select>
+      </div>
+
+      <button id="btnStart" class="btn" onclick="startViva()">
+        <span>Start Viva Exam</span>
+      </button>
+      <div id="setupNote" style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 12px;"></div>
+    </div>
+
+    <!-- 2. QUESTION SECTION -->
+    <div id="secQuestion" class="card hidden">
+      <div class="q-meta">
+        <span id="lblQProgress" class="pill">Question 1 of 5</span>
+        <span id="lblQLevel" class="pill bloom">Understand</span>
+      </div>
+
+      <div id="txtQuestion" class="q-text">Loading question...</div>
+
+      <div class="audio-control">
+        <button id="btnReplayAudio" class="audio-btn" onclick="replayAudio()">
+          🔊 Replay Question
+        </button>
+        <audio id="audioPlayer" class="hidden"></audio>
+      </div>
+
+      <div class="record-area">
+        <div id="recTimer" class="timer">00:00</div>
+        <div id="btnRecordToggle" class="record-btn-circle" onclick="toggleRecording()">🎤</div>
+        <div id="recStatusLabel" class="record-label">Click mic to start answering (max 90s)</div>
+      </div>
+
+      <button id="btnSubmitAnswer" class="btn" onclick="submitAnswer()" disabled>
+        <span>Submit Answer</span>
+      </button>
+    </div>
+
+    <!-- 3. RESULT SECTION -->
+    <div id="secResult" class="card hidden">
+      <div class="section-title">Answer Evaluation</div>
+      
+      <div class="score-split">
+        <div class="score-box">
+          <div class="score-label">Technical Content</div>
+          <div id="valContentScore" class="score-num content">0.0<span style="font-size: 20px;">/10</span></div>
+          <div id="valVerdict" class="pill" style="margin-top: 6px;">Correct</div>
+        </div>
+        <div class="score-box">
+          <div class="score-label">Delivery Fluency</div>
+          <div id="valFluencyScore" class="score-num fluency">0<span style="font-size: 20px;">/100</span></div>
+          <div id="valBand" class="pill" style="margin-top: 6px;">Excellent</div>
+        </div>
+      </div>
+
+      <div class="chips-grid">
+        <div id="chipWpm" class="chip">⚡ 0 wpm</div>
+        <div id="chipFillers" class="chip">💬 0 fillers</div>
+        <div id="chipPauses" class="chip">⏸️ 0 pauses</div>
+        <div id="chipLongest" class="chip">⏱️ longest 0.0s</div>
+        <div id="chipConf" class="chip">🎯 confidence 0%</div>
+      </div>
+
+      <div class="collapsible" id="colTranscript">
+        <div class="collapsible-header" onclick="toggleCollapse('colTranscript')">
+          <span>Spoken Transcript</span>
+          <span>▼</span>
+        </div>
+        <div id="txtTranscript" class="collapsible-content">...</div>
+      </div>
+
+      <div class="feedback-box">
+        <strong>Examiner Feedback:</strong>
+        <p id="txtFeedback" style="margin-top: 6px;">...</p>
+      </div>
+
+      <button id="btnNextQuestion" class="btn" onclick="nextQuestion()">
+        <span>Next Question →</span>
+      </button>
+    </div>
+
+    <!-- 4. SCORECARD SECTION -->
+    <div id="secScorecard" class="card hidden">
+      <div class="section-title">Viva Final Scorecard</div>
+      <div id="cardSubject" class="section-desc">Subject: DBMS • Date: Today</div>
+
+      <div class="avg-banner">
+        <div class="avg-item">
+          <div id="avgContent" class="avg-val">0%</div>
+          <div class="avg-lbl">Content Average</div>
+        </div>
+        <div class="avg-item">
+          <div id="avgFluency" class="avg-val">0/100</div>
+          <div class="avg-lbl">Fluency Average</div>
+        </div>
+        <div class="avg-item">
+          <div id="avgTotal" class="avg-val" style="color: #38bdf8;">0%</div>
+          <div class="avg-lbl">Total Final Grade</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Question</th>
+              <th>Content</th>
+              <th>Fluency</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="scorecardTableBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="btn" onclick="restartViva()">Start New Viva</button>
+      </div>
+    </div>
+
+    <!-- 5. TEACHER DASHBOARD SECTION -->
+    <div id="secDashboard" class="card hidden">
+      <div class="section-title">Teacher Review Dashboard</div>
+      <div class="section-desc">Past student viva records synchronized with IBM Cloudant NoSQL DB.</div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Subject</th>
+              <th>Level</th>
+              <th>Content</th>
+              <th>Fluency</th>
+              <th>Final Total</th>
+            </tr>
+          </thead>
+          <tbody id="dashboardTableBody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-secondary" onclick="loadDashboard()">🔄 Refresh Records</button>
+    </div>
+
+  </div>
+
+  <script>
+    // State
+    let currentSessionId = null;
+    let currentIndex = 0;
+    let totalQuestions = 5;
+    let isMockMode = true;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioBlob = null;
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let currentAudioBase64 = null;
+
+    // Health check on load
+    async function checkHealth() {
+      try {
+        const res = await fetch("/api/health");
+        const data = await res.json();
+        isMockMode = data.mock_mode;
+        const badge = document.getElementById("modeBadge");
+        const setupNote = document.getElementById("setupNote");
+        if (isMockMode) {
+          badge.className = "badge demo";
+          badge.textContent = "● Offline Mock Mode";
+          setupNote.textContent = "Offline mock mode active — no API keys required.";
+        } else {
+          badge.className = "badge live";
+          badge.textContent = "● IBM Cloud Live";
+          setupNote.textContent = "Connected to live IBM Watson & watsonx.ai runtime.";
+        }
+      } catch (e) {
+        console.error("Health check error:", e);
+      }
+    }
+    checkHealth();
+
+    // Tab Navigation
+    function switchTab(tab) {
+      document.getElementById("tabViva").classList.toggle("active", tab === "viva");
+      document.getElementById("tabDash").classList.toggle("active", tab === "dash");
+      
+      if (tab === "dash") {
+        hideAllSections();
+        document.getElementById("secDashboard").classList.remove("hidden");
+        loadDashboard();
+      } else {
+        hideAllSections();
+        if (currentSessionId) {
+          document.getElementById("secQuestion").classList.remove("hidden");
+        } else {
+          document.getElementById("secSetup").classList.remove("hidden");
+        }
+      }
+    }
+
+    function hideAllSections() {
+      ["secSetup", "secQuestion", "secResult", "secScorecard", "secDashboard"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+    }
+
+    function toggleCollapse(id) {
+      document.getElementById(id).classList.toggle("open");
+    }
+
+    // Viva Lifecycle
+    async function startViva() {
+      const subject = document.getElementById("inpSubject").value.trim() || "DBMS";
+      const level = document.getElementById("selLevel").value;
+      const language = document.getElementById("selLanguage").value;
+      const btn = document.getElementById("btnStart");
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Generating questions...`;
+
+      try {
+        const resp = await fetch("/api/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subject, level, language })
+        });
+        const data = await resp.json();
+
+        if (resp.status !== 200 || data.error) {
+          alert("Error starting viva: " + (data.error || "Unknown error"));
+          btn.disabled = false;
+          btn.innerHTML = `Start Viva Exam`;
+          return;
+        }
+
+        currentSessionId = data.session_id;
+        currentIndex = data.index;
+        totalQuestions = data.total;
+        
+        displayQuestion(data.question, data.audio_b64);
+        hideAllSections();
+        document.getElementById("secQuestion").classList.remove("hidden");
+      } catch (err) {
+        alert("Failed to connect to server: " + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Start Viva Exam`;
+      }
+    }
+
+    function displayQuestion(q, audioB64) {
+      document.getElementById("lblQProgress").textContent = `Question ${currentIndex + 1} of ${totalQuestions}`;
+      document.getElementById("lblQLevel").textContent = q.level || "Understand";
+      document.getElementById("txtQuestion").textContent = q.text;
+      
+      currentAudioBase64 = audioB64;
+      resetRecordingUI();
+
+      if (audioB64 && audioB64.length > 50) {
+        playAudio(audioB64);
+      }
+    }
+
+    function playAudio(b64) {
+      const player = document.getElementById("audioPlayer");
+      player.src = `data:audio/mp3;base64,${b64}`;
+      player.play().catch(e => console.log("Audio autoplay restricted by browser policy"));
+    }
+
+    function replayAudio() {
+      if (currentAudioBase64) {
+        playAudio(currentAudioBase64);
+      }
+    }
+
+    // Audio Recording via MediaRecorder
+    async function toggleRecording() {
+      const circle = document.getElementById("btnRecordToggle");
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        stopRecording();
+      } else {
+        await startRecording();
+      }
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          document.getElementById("btnSubmitAnswer").disabled = false;
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        secondsElapsed = 0;
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+          secondsElapsed++;
+          updateTimerDisplay();
+          if (secondsElapsed >= 90) { // 90s cap constraint
+            stopRecording();
+          }
+        }, 1000);
+
+        const circle = document.getElementById("btnRecordToggle");
+        circle.classList.add("recording");
+        circle.textContent = "⏹️";
+        document.getElementById("recStatusLabel").textContent = "Recording answer... Click to finish.";
+        document.getElementById("btnSubmitAnswer").disabled = true;
+      } catch (err) {
+        alert("Allow microphone access, then try again: " + err.message);
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+      clearInterval(timerInterval);
+      const circle = document.getElementById("btnRecordToggle");
+      circle.classList.remove("recording");
+      circle.textContent = "🎤";
+      document.getElementById("recStatusLabel").textContent = "Recording complete. Ready to submit.";
+    }
+
+    function resetRecordingUI() {
+      clearInterval(timerInterval);
+      secondsElapsed = 0;
+      updateTimerDisplay();
+      audioBlob = null;
+      document.getElementById("btnSubmitAnswer").disabled = true;
+      const circle = document.getElementById("btnRecordToggle");
+      circle.classList.remove("recording");
+      circle.textContent = "🎤";
+      document.getElementById("recStatusLabel").textContent = "Click mic to start answering (max 90s)";
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(secondsElapsed / 60);
+      const secs = secondsElapsed % 60;
+      document.getElementById("recTimer").textContent = 
+        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // Answer Submission
+    async function submitAnswer() {
+      const btn = document.getElementById("btnSubmitAnswer");
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Evaluating answer...`;
+
+      const formData = new FormData();
+      formData.append("session_id", currentSessionId);
+      formData.append("index", currentIndex);
+      formData.append("language", document.getElementById("selLanguage").value);
+      if (audioBlob) {
+        formData.append("audio", audioBlob, "answer.webm");
+      }
+
+      try {
+        const resp = await fetch("/api/answer", {
+          method: "POST",
+          body: formData
+        });
+        const data = await resp.json();
+
+        if (resp.status !== 200 || data.error) {
+          alert("Error: " + (data.error || "Submission failed"));
+          btn.disabled = false;
+          btn.innerHTML = `Submit Answer`;
+          return;
+        }
+
+        displayResult(data);
+      } catch (err) {
+        alert("Network error: " + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Submit Answer`;
+      }
+    }
+
+    function displayResult(res) {
+      hideAllSections();
+      document.getElementById("secResult").classList.remove("hidden");
+
+      // Content score
+      const content = res.content || {};
+      document.getElementById("valContentScore").innerHTML = 
+        `${(content.score || 0).toFixed(1)}<span style="font-size: 20px;">/10</span>`;
+      document.getElementById("valVerdict").textContent = (content.verdict || "Evaluated").toUpperCase();
+
+      // Delivery score
+      const fluency = res.fluency || {};
+      document.getElementById("valFluencyScore").innerHTML = 
+        `${fluency.fluency_score || 0}<span style="font-size: 20px;">/100</span>`;
+      document.getElementById("valBand").textContent = fluency.band || "Good";
+
+      // Chips
+      document.getElementById("chipWpm").textContent = `⚡ ${fluency.wpm || 0} wpm`;
+      document.getElementById("chipFillers").textContent = `💬 ${fluency.filler_count || 0} fillers`;
+      document.getElementById("chipPauses").textContent = `⏸️ ${fluency.pause_count || 0} pauses`;
+      document.getElementById("chipLongest").textContent = `⏱️ longest ${fluency.longest_pause || 0}s`;
+      document.getElementById("chipConf").textContent = `🎯 confidence ${(fluency.confidence || 90).toFixed(0)}%`;
+
+      // Transcript & feedback
+      document.getElementById("txtTranscript").textContent = res.transcript || "(No words recognized)";
+      document.getElementById("txtFeedback").textContent = content.feedback || "Answer recorded successfully.";
+
+      // Next button label
+      const nextBtn = document.getElementById("btnNextQuestion");
+      if (res.has_next) {
+        nextBtn.innerHTML = `<span>Next Question →</span>`;
+      } else {
+        nextBtn.innerHTML = `<span>View Final Scorecard 🏆</span>`;
+      }
+    }
+
+    async function nextQuestion() {
+      currentIndex++;
+      if (currentIndex >= totalQuestions) {
+        showScorecard();
+        return;
+      }
+
+      const nextBtn = document.getElementById("btnNextQuestion");
+      nextBtn.disabled = true;
+
+      try {
+        const resp = await fetch(`/api/question?session_id=${currentSessionId}&index=${currentIndex}`);
+        const data = await resp.json();
+
+        if (resp.status !== 200 || data.error) {
+          showScorecard();
+          return;
+        }
+
+        displayQuestion(data.question, data.audio_b64);
+        hideAllSections();
+        document.getElementById("secQuestion").classList.remove("hidden");
+      } catch (e) {
+        showScorecard();
+      } finally {
+        nextBtn.disabled = false;
+      }
+    }
+
+    async function showScorecard() {
+      hideAllSections();
+      document.getElementById("secScorecard").classList.remove("hidden");
+
+      try {
+        const resp = await fetch(`/api/scorecard/${currentSessionId}`);
+        const data = await resp.json();
+
+        document.getElementById("cardSubject").textContent = 
+          `Subject: ${data.subject || "Viva"} • Level: ${data.level || "undergraduate"}`;
+
+        document.getElementById("avgContent").textContent = `${data.average_content || 0}%`;
+        document.getElementById("avgFluency").textContent = `${data.average_fluency || 0}/100`;
+        document.getElementById("avgTotal").textContent = `${data.average_total || 0}%`;
+
+        const tbody = document.getElementById("scorecardTableBody");
+        tbody.innerHTML = "";
+        (data.answers || []).forEach(a => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>Q${a.index + 1}</td>
+            <td style="max-width: 320px;">${a.question_text || "Viva Question"}</td>
+            <td><strong>${a.content_pct}%</strong> (${a.content.score}/10)</td>
+            <td><strong>${a.fluency.fluency_score}</strong> (${a.fluency.wpm} wpm)</td>
+            <td style="color: #38bdf8; font-weight:700;">${a.total}%</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Scorecard render error:", err);
+      }
+    }
+
+    function restartViva() {
+      currentSessionId = null;
+      currentIndex = 0;
+      hideAllSections();
+      document.getElementById("secSetup").classList.remove("hidden");
+    }
+
+    // Teacher Dashboard
+    async function loadDashboard() {
+      const tbody = document.getElementById("dashboardTableBody");
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading records...</td></tr>`;
+
+      try {
+        const resp = await fetch("/api/sessions?limit=25");
+        const data = await resp.json();
+        const sessions = data.sessions || [];
+
+        if (sessions.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No viva sessions recorded yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = "";
+        sessions.forEach(s => {
+          const dt = s.created_at ? new Date(s.created_at).toLocaleDateString() : "Recent";
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${dt}</td>
+            <td><strong>${s.subject || "N/A"}</strong></td>
+            <td>${s.level || "UG"}</td>
+            <td>${s.average_content || 0}%</td>
+            <td>${s.average_fluency || 0}/100</td>
+            <td style="color: #38bdf8; font-weight:700;">${s.average_total || 0}%</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger);">Failed to load dashboard records.</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>
